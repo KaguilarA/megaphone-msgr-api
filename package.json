@@ -15,9 +15,9 @@
   "type": "module",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "node --watch --experimental-strip-types src/app.ts",
+    "dev": "node --watch --env-file=.env --experimental-strip-types src/app.ts",
     "build": "tsc && copyfiles -u 1 src/views/**/*.pug dist",
-    "start": "node dist/app.js"
+    "start": "node --env-file=.env dist/app.js"
   },
   "dependencies": {
     "express": "^5.2.1",
