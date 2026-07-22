@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Email } from '../models/Email.ts';
 
 export const createEmail = async (req: Request, res: Response): Promise<void> => {

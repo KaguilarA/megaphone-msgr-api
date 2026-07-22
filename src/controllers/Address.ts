@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Address } from '../models/Address.ts';
 
 export const createAddress = async (req: Request, res: Response): Promise<void> => {
