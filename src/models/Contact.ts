@@ -3,8 +3,8 @@ import { Schema, model, Document, Types } from 'mongoose';
 export interface IContact extends Document {
   name: string;
   phoneNumbers: Types.ObjectId[];
-  email?: Types.ObjectId[];
-  idAddress?: Types.ObjectId[];
+  emails?: Types.ObjectId[];
+  addresses?: Types.ObjectId[];
 }
 
 const ContactSchema = new Schema<IContact>(
@@ -17,16 +17,17 @@ const ContactSchema = new Schema<IContact>(
     phoneNumbers: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'PhoneNumber'
+        ref: 'PhoneNumber',
+        required: true
       }
     ],
-    email: [
+    emails: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Email'
       }
     ],
-    idAddress: [
+    addresses: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Address'

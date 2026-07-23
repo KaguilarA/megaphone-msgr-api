@@ -9,15 +9,14 @@ const PhoneNumberSchema = new Schema<IPhoneNumber>(
   {
     phone: {
       type: String,
-      required: true,
-      unique: true,
+      required: [true, 'El número de teléfono es obligatorio.'],
       trim: true
     },
     countryNumber: {
       type: String,
       required: [true, 'El código de país es obligatorio.'],
       trim: true
-    },
+    }
   },
   {
     timestamps: true
