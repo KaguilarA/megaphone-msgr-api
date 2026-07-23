@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { renderContactsPage } from '../controllers/ViewContact.ts';
+import ViewContactRouter from './ViewContact.ts';
 
 const ViewRouter = Router();
 
-ViewRouter.get('/contacts', renderContactsPage);
+ViewRouter.use('/contacts', ViewContactRouter);
 
 export default ViewRouter;
