@@ -1,0 +1,22 @@
+extends ../layout
+
+block content
+  .page-header
+    h1 Lista de Contactos
+    a.btn.btn-success(href="/contacts/new") Agregar Contacto
+
+  #loadingState.alert.alert-info
+    | Cargando contactos...
+
+  .table-container.d-none#tableContainer
+    table.data-table
+      thead
+        tr
+          th Nombre
+          th Teléfonos
+          th Correos
+          th Direcciones
+          th Acciones
+      tbody#contactsTableBody
+
+  script(src="/js/contacts.js")
