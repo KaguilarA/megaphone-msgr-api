@@ -3,11 +3,29 @@ import { Contact } from '../models/Contact.ts';
 
 export const createContact = async (req: Request, res: Response): Promise<void> => {
   try {
-    const newContact = new Contact(req.body);
+    const { name, phoneNumbers, email, emails, idEmail, addresses, idAddress } = req.body;
+
+    if (!name) {
+      res.status(400).json({ message: 'El nombre del contacto es requerido' });
+      return;
+    }
+
+    // Normalizar los correos enviados (acepta email, emails o idEmail)
+    const resolvedEmails = emails || email || idEmail || [];
+    const resolvedAddresses = addresses || idAddress || [];
+
+    const newContact = new Contact({
+      name,
+      phoneNumbers: phoneNumbers || [],
+      email: resolvedEmails, // o 'emails' según la definición de tu ContactSchema
+      idAddress: resolvedAddresses
+    });
+
     const savedContact = await newContact.save();
+
     res.status(201).json(savedContact);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al crear el contacto', error });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Error al crear el contacto', error: error.message || error });
   }
 };
 

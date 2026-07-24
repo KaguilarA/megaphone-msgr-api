@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { renderContactsPage, renderNewContactPage } from '../controllers/ViewContact.ts';
+import { renderContactsPage, renderNewContactPage, renderEditContactView, loadCountries } from '../controllers/ViewContact.ts';
 
 const ViewContactRouter = Router();
 
 ViewContactRouter.get('/', renderContactsPage);
+ViewContactRouter.get('/countries', loadCountries);
 ViewContactRouter.get('/new', renderNewContactPage);
+ViewContactRouter.get('/:id/edit', renderEditContactView);
 
 export default ViewContactRouter;
