@@ -1,36 +1,88 @@
-document.addEventListener("DOMContentLoaded", () => {
+window.contactsListApp = function (initialContacts = []) {
+  return {
+    contacts: initialContacts,
+    search: "",
+    sortBy: "name",
+    sortAsc: true,
+    currentPage: 1,
+    perPage: 5,
 
-  document.addEventListener("click", async (e) => {
-    if (e.target.matches(".delete-btn")) {
-      const btn = e.target;
-      const contactId = btn.dataset.id;
+    get filteredContacts() {
+      let result = this.contacts;
 
-      if (!confirm("¿Estás seguro de que deseas eliminar este contacto?")) {
-        return;
+      if (this.search.trim()) {
+        const q = this.search.toLowerCase();
+        result = result.filter((c) => {
+          const nameMatch = c.name?.toLowerCase().includes(q);
+          const emailMatch = c.email?.some((e) =>
+            (e.email || e.address || "").toLowerCase().includes(q),
+          );
+          const phoneMatch = c.phoneNumbers?.some((p) => p.phone?.includes(q));
+          return nameMatch || emailMatch || phoneMatch;
+        });
       }
 
-      try {
-        btn.disabled = true;
-        const res = await fetch(`/api/contact/${contactId}`, {
-          method: "DELETE",
-        });
+      return result.sort((a, b) => {
+        let valA = a[this.sortBy] || "";
+        let valB = b[this.sortBy] || "";
 
-        if (res.ok) {
-          // Remover la fila del DOM suavemente
-          const row = btn.closest("tr");
-          row.remove();
-        } else {
-          const errData = await res.json();
-          alert(
-            `Error al eliminar: ${errData.message || "No se pudo completar la acción"}`,
-          );
-          btn.disabled = false;
+        if (typeof valA === "string") valA = valA.toLowerCase();
+        if (typeof valB === "string") valB = valB.toLowerCase();
+
+        if (valA < valB) return this.sortAsc ? -1 : 1;
+        if (valA > valB) return this.sortAsc ? 1 : -1;
+        return 0;
+      });
+    },
+
+    get paginatedContacts() {
+      const start = (this.currentPage - 1) * this.perPage;
+      return this.filteredContacts.slice(start, start + this.perPage);
+    },
+
+    get totalPages() {
+      return Math.ceil(this.filteredContacts.length / this.perPage) || 1;
+    },
+
+    sort(column) {
+      if (this.sortBy === column) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortBy = column;
+        this.sortAsc = true;
+      }
+    },
+
+    setPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+
+    navigateToAdd() {
+      window.location.href = "/contacts/new";
+    },
+    navigateToEdit(id) {
+      window.location.href = `/contacts/${id}/edit`;
+    },
+
+    async deleteContact(id) {
+      if (!confirm("¿Estás seguro de que deseas eliminar este contacto?"))
+        return;
+
+      try {
+        await httpRequests.delete(`/api/contact/${id}`);
+        this.contacts = this.contacts.filter((c) => c._id !== id);
+
+        if (this.paginatedContacts.length === 0 && this.currentPage > 1) {
+          this.currentPage--;
         }
       } catch (error) {
         console.error("Error al eliminar contacto:", error);
-        alert("Ocurrió un error al intentar eliminar el contacto.");
-        btn.disabled = false;
+        alert(
+          `Error al eliminar: ${error.message || "No se pudo completar la acción"}`,
+        );
       }
-    }
-  });
-});
+    },
+  };
+};

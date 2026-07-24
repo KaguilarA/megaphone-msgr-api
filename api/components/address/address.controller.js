@@ -1,7 +1,6 @@
-import type { Request, Response } from 'express';
-import { Address } from '../models/Address.ts';
+import { Address } from "./address.model";
 
-export const createAddress = async (req: Request, res: Response): Promise<void> => {
+export const createAddress = async (req, res) => {
   try {
     const newAddress = new Address(req.body);
     const savedAddress = await newAddress.save();
@@ -9,24 +8,24 @@ export const createAddress = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     res.status(400).json({
       message: 'Error al crear la dirección.',
-      error: error instanceof Error ? error.message : error
+      error: error.message
     });
   }
 };
 
-export const getAddresses = async (_req: Request, res: Response): Promise<void> => {
+export const getAddresses = async (_req, res) => {
   try {
     const addresses = await Address.find();
     res.status(200).json(addresses);
   } catch (error) {
     res.status(500).json({
       message: 'Error al obtener las direcciones.',
-      error: error instanceof Error ? error.message : error
+      error: error.message
     });
   }
 };
 
-export const getAddressById = async (req: Request, res: Response): Promise<void> => {
+export const getAddressById = async (req, res) => {
   try {
     const { id } = req.params;
     const address = await Address.findById(id);
@@ -40,12 +39,12 @@ export const getAddressById = async (req: Request, res: Response): Promise<void>
   } catch (error) {
     res.status(500).json({
       message: 'Error al obtener la dirección.',
-      error: error instanceof Error ? error.message : error
+      error: error.message
     });
   }
 };
 
-export const updateAddress = async (req: Request, res: Response): Promise<void> => {
+export const updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
     const updatedAddress = await Address.findByIdAndUpdate(id, req.body, {
@@ -62,12 +61,12 @@ export const updateAddress = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     res.status(400).json({
       message: 'Error al actualizar la dirección.',
-      error: error instanceof Error ? error.message : error
+      error: error.message
     });
   }
 };
 
-export const deleteAddress = async (req: Request, res: Response): Promise<void> => {
+export const deleteAddress = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedAddress = await Address.findByIdAndDelete(id);
@@ -81,7 +80,7 @@ export const deleteAddress = async (req: Request, res: Response): Promise<void> 
   } catch (error) {
     res.status(500).json({
       message: 'Error al eliminar la dirección.',
-      error: error instanceof Error ? error.message : error
+      error: error.message
     });
   }
 };

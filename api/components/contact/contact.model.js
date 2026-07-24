@@ -1,13 +1,6 @@
-import { Schema, model, Document, Types } from 'mongoose';
+import { Schema, model } from "mongoose";
 
-export interface IContact extends Document {
-  name: string;
-  phoneNumbers: Types.ObjectId[];
-  emails?: Types.ObjectId[];
-  addresses?: Types.ObjectId[];
-}
-
-const ContactSchema = new Schema<IContact>(
+const ContactSchema = new Schema(
   {
     name: {
       type: String,
@@ -39,4 +32,4 @@ const ContactSchema = new Schema<IContact>(
   }
 );
 
-export const Contact = model<IContact>('Contact', ContactSchema);
+export const Contact = model('Contact', ContactSchema);

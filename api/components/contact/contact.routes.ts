@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createContact,
   getContacts,
   getContactById,
   updateContact,
   deleteContact
-} from '../controllers/Contact.ts';
+} from "./contact.controller";
 
 const ContactRouter = Router();
 

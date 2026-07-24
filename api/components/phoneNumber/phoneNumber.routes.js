@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
   createPhoneNumber,
   getPhoneNumbers,
   getPhoneNumberById,
   updatePhoneNumber,
-  deletePhoneNumber
-} from '../controllers/PhoneNumber.ts';
+  deletePhoneNumber,
+} from "./phoneNumber.controller";
 
 const PhoneNumberRouter = Router();
 

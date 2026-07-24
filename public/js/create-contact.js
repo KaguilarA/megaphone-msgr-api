@@ -4,25 +4,16 @@ window.createContactApp = function () {
     countryCodes: [],
     loading: false,
 
-    // Estructura inicial alineada con las secciones dinámicas de Pug
+    // Se inicializan teléfonos con uno por defecto, pero emails y addresses vacíos
     phones: [{ countryNumber: "+506", phone: "" }],
-    emails: [{ email: "" }],
-    addresses: [
-      {
-        street: "",
-        city: "",
-        state: "",
-        postalCode: "",
-        country: "Costa Rica",
-      },
-    ],
+    emails: [],
+    addresses: [],
 
     async init() {
-      // Consume el singleton estático de países
       this.countryCodes = await countries.getCountryCodes();
     },
 
-    // --- Manejo de Teléfonos ---
+    // --- Manejo Dinámico de Teléfonos ---
     addPhone() {
       forms.addListItem(this.phones, { countryNumber: "+506", phone: "" });
     },
@@ -30,7 +21,7 @@ window.createContactApp = function () {
       forms.removeListItem(this.phones, index, 1);
     },
 
-    // --- Manejo de Correos ---
+    // --- Manejo Dinámico de Correos ---
     addEmail() {
       forms.addListItem(this.emails, { email: "" });
     },
@@ -38,7 +29,7 @@ window.createContactApp = function () {
       forms.removeListItem(this.emails, index, 0);
     },
 
-    // --- Manejo de Direcciones ---
+    // --- Manejo Dinámico de Direcciones ---
     addAddress() {
       forms.addListItem(this.addresses, {
         street: "",
@@ -52,20 +43,58 @@ window.createContactApp = function () {
       forms.removeListItem(this.addresses, index, 0);
     },
 
-    // --- Envío del Formulario ---
-    async submitForm() {
-      // Limpiamos los arrays dinámicos usando parsers antes de estructurar el payload
-      const payload = {
-        name: this.name,
-        phoneNumbers: parsers.cleanPhones(this.phones),
-        emails: parsers.cleanEmails(this.emails),
-        addresses: parsers.cleanAddresses(this.addresses),
-      };
+    // Helper de navegación seguro
+    navigateBack(event) {
+      if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
+      }
+      window.location.href = "/contacts";
+    },
 
-      // Delegamos la petición y gestión del estado de carga a forms y httpRequests
+    // --- Envío de Formulario ---
+    async submitForm() {
+      // 1. Limpiamos los datos ingresados
+      const cleanPhones = parsers.cleanPhones(this.phones);
+      const cleanEmails = parsers.cleanEmails(this.emails);
+      const cleanAddresses = parsers.cleanAddresses(this.addresses);
+
+      if (!this.name.trim() || cleanPhones.length === 0) {
+        alert("El nombre y al menos un teléfono válido son obligatorios.");
+        return;
+      }
+
       await forms.handleSubmit({
         state: this,
-        requestFn: () => httpRequests.post("/contacts", payload),
+        requestFn: async () => {
+          // 2. Crear subdocumentos en paralelo en la BD para obtener sus ObjectIds
+          const [createdPhones, createdEmails, createdAddresses] =
+            await Promise.all([
+              Promise.all(
+                cleanPhones.map((p) =>
+                  httpRequests.post("/api/phone-numbers", p),
+                ),
+              ),
+              Promise.all(
+                cleanEmails.map((e) => httpRequests.post("/api/emails", e)),
+              ),
+              Promise.all(
+                cleanAddresses.map((a) =>
+                  httpRequests.post("/api/addresses", a),
+                ),
+              ),
+            ]);
+
+          // 3. Mapear las respuestas para extraer únicamente los IDs generados
+          const payload = {
+            name: this.name.trim(),
+            phoneNumbers: createdPhones.map((p) => p._id || p.id),
+            emails: createdEmails.map((e) => e._id || e.id),
+            addresses: createdAddresses.map((a) => a._id || a.id),
+          };
+
+          // 4. Crear el Contacto relacionando los ObjectIds
+          return httpRequests.post("/api/contacts", payload);
+        },
         redirectUrl: "/contacts",
       });
     },

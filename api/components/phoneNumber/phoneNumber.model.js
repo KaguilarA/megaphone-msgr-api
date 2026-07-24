@@ -1,11 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from "mongoose";
 
-export interface IPhoneNumber extends Document {
-  phone: string;
-  countryNumber: string;
-}
-
-const PhoneNumberSchema = new Schema<IPhoneNumber>(
+const PhoneNumberSchema = new Schema(
   {
     phone: {
       type: String,
@@ -25,4 +20,4 @@ const PhoneNumberSchema = new Schema<IPhoneNumber>(
 
 PhoneNumberSchema.index({ phone: 1, countryNumber: 1 }, { unique: true });
 
-export const PhoneNumber = model<IPhoneNumber>('PhoneNumber', PhoneNumberSchema);
+export const PhoneNumber = model('PhoneNumber', PhoneNumberSchema);

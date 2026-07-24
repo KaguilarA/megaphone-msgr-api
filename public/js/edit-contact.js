@@ -64,6 +64,10 @@ window.editContactApp = function (initialData = {}) {
       forms.removeListItem(this.addresses, index, 0);
     },
 
+    navigateBack() {
+      window.location.href = "/contacts";
+    },
+
     // --- Envío de Formulario ---
     async submitForm() {
       const payload = {
@@ -75,7 +79,7 @@ window.editContactApp = function (initialData = {}) {
 
       await forms.handleSubmit({
         state: this,
-        requestFn: () => httpRequests.put(`/contacts/${this.id}`, payload),
+        requestFn: () => httpRequests.put(`/api/contacts/${this.id}`, payload),
         redirectUrl: "/contacts",
       });
     },
