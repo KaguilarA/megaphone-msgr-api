@@ -1,11 +1,10 @@
-window.contactsListApp = function (initialContacts = []) {
-  return {
-    contacts: initialContacts,
-    search: "",
-    sortBy: "name",
-    sortAsc: true,
-    currentPage: 1,
-    perPage: 5,
+window.contactsListApp = (initialContacts = []) =>
+  new (class {
+    currentPage = 1;
+    search = "";
+    sortAsc = true;
+    sortBy = "name";
+    perPage = 5;
 
     get filteredContacts() {
       let result = this.contacts;
@@ -33,38 +32,20 @@ window.contactsListApp = function (initialContacts = []) {
         if (valA > valB) return this.sortAsc ? 1 : -1;
         return 0;
       });
-    },
+    }
 
     get paginatedContacts() {
       const start = (this.currentPage - 1) * this.perPage;
       return this.filteredContacts.slice(start, start + this.perPage);
-    },
+    }
 
     get totalPages() {
       return Math.ceil(this.filteredContacts.length / this.perPage) || 1;
-    },
+    }
 
-    sort(column) {
-      if (this.sortBy === column) {
-        this.sortAsc = !this.sortAsc;
-      } else {
-        this.sortBy = column;
-        this.sortAsc = true;
-      }
-    },
-
-    setPage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
-      }
-    },
-
-    navigateToAdd() {
-      window.location.href = "/contacts/new";
-    },
-    navigateToEdit(id) {
-      window.location.href = `/contacts/${id}/edit`;
-    },
+    constructor(contacts = []) {
+      this.contacts = contacts;
+    }
 
     async deleteContact(id) {
       if (!confirm("¿Estás seguro de que deseas eliminar este contacto?"))
@@ -83,6 +64,28 @@ window.contactsListApp = function (initialContacts = []) {
           `Error al eliminar: ${error.message || "No se pudo completar la acción"}`,
         );
       }
-    },
-  };
-};
+    }
+
+    navigateToAdd() {
+      window.location.href = "/contacts/new";
+    }
+
+    navigateToEdit(id) {
+      window.location.href = `/contacts/${id}/edit`;
+    }
+
+    setPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    }
+
+    sort(column) {
+      if (this.sortBy === column) {
+        this.sortAsc = !this.sortAsc;
+      } else {
+        this.sortBy = column;
+        this.sortAsc = true;
+      }
+    }
+  })(initialContacts);
