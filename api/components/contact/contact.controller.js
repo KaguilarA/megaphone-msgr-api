@@ -1,4 +1,4 @@
-import { Contact } from "./../../../db/models/contact.model.js";
+import ContactModel from "./../../../db/models/contact.model.js";
 
 export const createContact = async (req, res) => {
   try {
@@ -9,14 +9,12 @@ export const createContact = async (req, res) => {
       return;
     }
 
-    const newContact = new Contact({
+    const savedContact = await ContactModel.save({
       name,
       phoneNumbers: phoneNumbers || [],
       emails: emails || [],
-      addresses: addresses || []
+      addresses: addresses || [],
     });
-
-    const savedContact = await newContact.save();
 
     res.status(201).json(savedContact);
   } catch (error) {
@@ -26,11 +24,13 @@ export const createContact = async (req, res) => {
 
 export const getContacts = async (_req, res) => {
   try {
-    const contacts = await Contact.find()
-      .populate('addresses')
-      .populate('emails')
-      .populate('phoneNumbers');
+    const contacts = await ContactModel.model
+      .find()
+      .populate("addresses")
+      .populate("emails")
+      .populate("phoneNumbers");
 
+      console.log("Contacts retrieved:", contacts); // Log the retrieved contacts for debugging
     res.json(contacts);
   } catch (error) {
     res.status(500).json({ message: 'Error al obtener los contactos', error: error.message || error });
@@ -40,10 +40,10 @@ export const getContacts = async (_req, res) => {
 export const getContactById = async (req, res) => {
   try {
     const { id } = req.params;
-    const contact = await Contact.findById(id)
-      .populate('addresses')
-      .populate('emails')
-      .populate('phoneNumbers');
+    const contact = await ContactModel.getById(id)
+      .populate("addresses")
+      .populate("emails")
+      .populate("phoneNumbers");
 
     if (!contact) {
       res.status(404).json({ message: 'Contacto no encontrado' });
@@ -59,10 +59,12 @@ export const getContactById = async (req, res) => {
 export const updateContact = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedContact = await Contact.findByIdAndUpdate(id, req.body, { new: true })
-      .populate('addresses')
-      .populate('emails')
-      .populate('phoneNumbers');
+    const updatedContact = await ContactModel.update(id, req.body, {
+      new: true,
+    })
+      .populate("addresses")
+      .populate("emails")
+      .populate("phoneNumbers");
 
     if (!updatedContact) {
       res.status(404).json({ message: 'Contacto no encontrado' });
@@ -78,7 +80,7 @@ export const updateContact = async (req, res) => {
 export const deleteContact = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedContact = await Contact.findByIdAndDelete(id);
+    const deletedContact = await ContactModel.delete(id);
 
     if (!deletedContact) {
       res.status(404).json({ message: 'Contacto no encontrado' });

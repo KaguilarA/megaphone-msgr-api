@@ -1,9 +1,8 @@
-import { Address } from "./../../../db/models/address.model.js";
+import AddressModel from "./../../../db/models/address.model.js";
 
 export const createAddress = async (req, res) => {
   try {
-    const newAddress = new Address(req.body);
-    const savedAddress = await newAddress.save();
+    const savedAddress = await AddressModel.save(req.body);
     res.status(201).json(savedAddress);
   } catch (error) {
     res.status(400).json({
@@ -15,7 +14,7 @@ export const createAddress = async (req, res) => {
 
 export const getAddresses = async (_req, res) => {
   try {
-    const addresses = await Address.find();
+    const addresses = await AddressModel.getAll();
     res.status(200).json(addresses);
   } catch (error) {
     res.status(500).json({
@@ -28,7 +27,7 @@ export const getAddresses = async (_req, res) => {
 export const getAddressById = async (req, res) => {
   try {
     const { id } = req.params;
-    const address = await Address.findById(id);
+    const address = await AddressModel.getById(id);
 
     if (!address) {
       res.status(404).json({ message: 'Dirección no encontrada.' });
@@ -47,9 +46,9 @@ export const getAddressById = async (req, res) => {
 export const updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedAddress = await Address.findByIdAndUpdate(id, req.body, {
+    const updatedAddress = await AddressModel.update(id, req.body, {
       new: true,
-      runValidators: true
+      runValidators: true,
     });
 
     if (!updatedAddress) {
@@ -69,7 +68,7 @@ export const updateAddress = async (req, res) => {
 export const deleteAddress = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedAddress = await Address.findByIdAndDelete(id);
+    const deletedAddress = await AddressModel.delete(id);
 
     if (!deletedAddress) {
       res.status(404).json({ message: 'Dirección no encontrada.' });

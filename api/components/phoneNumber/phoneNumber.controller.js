@@ -1,4 +1,4 @@
-import { PhoneNumberModel } from "./../../../db/models/phoneNumber.model.js";
+import PhoneNumberModel from "./../../../db/models/phoneNumber.model.js";
 
 export const createPhoneNumber = async (req, res) => {
   try {

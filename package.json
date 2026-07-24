@@ -11,7 +11,7 @@
     "url": "git+https://github.com/KaguilarA/whatsapp-amp.git"
   },
   "type": "module",
-  "main": "dist/app.js",
+  "main": "index.js",
   "license": "ISC",
   "author": {
     "name": "KaguilarA",
@@ -24,22 +24,15 @@
   },
   "packageManager": "npm@12.0.1",
   "scripts": {
-    "dev": "node --watch --env-file=.env --experimental-strip-types src/app.ts",
-    "build": "tsc && copyfiles -u 1 src/views/**/*.pug dist",
-    "start": "node --env-file=.env dist/app.js"
+    "dev": "node --watch --env-file=.env index.js",
+    "start": "node --env-file=.env index.js"
   },
   "dependencies": {
     "alpinejs": "^3.15.12",
     "bcryptjs": "^3.0.3",
     "express": "^5.2.1",
     "mongoose": "^8.12.0",
-    "pug": "^3.0.4"
-  },
-  "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.1.1",
-    "copyfiles": "^2.4.1",
-    "typescript": "^7.0.2"
+    "pug": "^3.0.4",
+    "reactive-values": "^1.0.20"
   }
 }

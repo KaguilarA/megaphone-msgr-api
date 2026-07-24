@@ -1,4 +1,4 @@
-import { Contact } from "./../../../db/models/contact.model.js";
+import ContactModel from "./../../../db/models/contact.model.js";
 
 export const loadCountries = async (_req, res) => {
   const controller = new AbortController();
@@ -46,7 +46,8 @@ export const loadCountries = async (_req, res) => {
 
 export const renderContactsPage = async (_req, res) => {
   try {
-    const contacts = await Contact.find()
+    const contacts = await ContactModel.model
+      .find()
       .populate("phoneNumbers")
       .populate("emails")
       .populate("addresses")
@@ -87,7 +88,7 @@ export const renderEditContactView = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const contact = await Contact.findById(id)
+    const contact = await ContactModel.getById(id)
       .populate("phoneNumbers")
       .populate("emails")
       .populate("addresses");

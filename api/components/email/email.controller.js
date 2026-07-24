@@ -1,9 +1,8 @@
-import { Email } from "./../../../db/models/email.model.js";
+import EmailModel from "./../../../db/models/email.model.js";
 
 export const createEmail = async (req, res) => {
   try {
-    const newEmail = new Email(req.body);
-    const savedEmail = await newEmail.save();
+    const savedEmail = await EmailModel.save(req.body);
     res.status(201).json(savedEmail);
   } catch (error) {
     res.status(400).json({
@@ -15,7 +14,7 @@ export const createEmail = async (req, res) => {
 
 export const getEmails = async (_req, res) => {
   try {
-    const emails = await Email.find();
+    const emails = await EmailModel.find();
     res.status(200).json(emails);
   } catch (error) {
     res.status(500).json({
@@ -28,7 +27,7 @@ export const getEmails = async (_req, res) => {
 export const getEmailById = async (req, res) => {
   try {
     const { id } = req.params;
-    const email = await Email.findById(id);
+    const email = await EmailModel.findById(id);
 
     if (!email) {
       res.status(404).json({ message: 'Email no encontrado' });
@@ -47,7 +46,7 @@ export const getEmailById = async (req, res) => {
 export const updateEmail = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedEmail = await Email.findByIdAndUpdate(id, req.body, {
+    const updatedEmail = await EmailModel.update(id, req.body, {
       new: true,
       runValidators: true
     });
@@ -69,7 +68,7 @@ export const updateEmail = async (req, res) => {
 export const deleteEmail = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedEmail = await Email.findByIdAndDelete(id);
+    const deletedEmail = await EmailModel.delete(id);
 
     if (!deletedEmail) {
       res.status(404).json({ message: 'Email no encontrado' });

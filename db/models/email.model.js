@@ -1,22 +1,15 @@
-import { Schema, model } from "mongoose";
+import DBModel from "./../utils/model.js";
 
-const EmailSchema = new Schema(
-  {
-    email: {
-      type: String,
-      required: [true, "El correo electrónico es obligatorio."],
-      unique: true,
-      trim: true,
-      lowercase: true,
-      match: [
-        /^\S+@\S+\.\S+$/,
-        "El formato del correo electrónico no es válido.",
-      ],
-    },
+export default new DBModel("Email", {
+  email: {
+    type: String,
+    required: [true, "El correo electrónico es obligatorio."],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [
+      /^\S+@\S+\.\S+$/,
+      "El formato del correo electrónico no es válido.",
+    ],
   },
-  {
-    timestamps: true,
-  },
-);
-
-export const Email = model("Email", EmailSchema);
+});

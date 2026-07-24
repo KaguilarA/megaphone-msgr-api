@@ -1,6 +1,11 @@
-export class DBModel {
-  constructor(model) {
-    this.model = model;
+import { Schema, model } from "mongoose";
+
+export default class {
+  
+  constructor(id, schema) {
+    this.schema = new Schema(schema, { timestamps: true });
+    this.id = id;
+    this.model = model(this.id, this.schema);
   }
 
   async delete(id) {
