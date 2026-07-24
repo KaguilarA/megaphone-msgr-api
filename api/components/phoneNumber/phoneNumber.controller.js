@@ -1,9 +1,9 @@
-import { PhoneNumber } from "./phoneNumber.model";
+import { PhoneNumberModel } from "./../../../db/models/phoneNumber.model.js";
 
 export const createPhoneNumber = async (req, res) => {
   try {
-    const newPhoneNumber = new PhoneNumber(req.body);
-    const savedPhoneNumber = await newPhoneNumber.save();
+    const savedPhoneNumber = await PhoneNumberModel.save(req.body);
+
     res.status(201).json(savedPhoneNumber);
   } catch (error) {
     res.status(400).json({
@@ -15,7 +15,7 @@ export const createPhoneNumber = async (req, res) => {
 
 export const getPhoneNumbers = async (_req, res) => {
   try {
-    const phoneNumbers = await PhoneNumber.find();
+    const phoneNumbers = await PhoneNumberModel.getAll();
     res.status(200).json(phoneNumbers);
   } catch (error) {
     res.status(500).json({
@@ -28,7 +28,7 @@ export const getPhoneNumbers = async (_req, res) => {
 export const getPhoneNumberById = async (req, res) => {
   try {
     const { id } = req.params;
-    const phoneNumber = await PhoneNumber.findById(id);
+    const phoneNumber = await PhoneNumberModel.getById(id);
 
     if (!phoneNumber) {
       res.status(404).json({ message: 'Número de teléfono no encontrado' });
@@ -47,10 +47,7 @@ export const getPhoneNumberById = async (req, res) => {
 export const updatePhoneNumber = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedPhoneNumber = await PhoneNumber.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    const updatedPhoneNumber = await PhoneNumberModel.update(id, req.body);
 
     if (!updatedPhoneNumber) {
       res.status(404).json({ message: 'Número de teléfono no encontrado' });
@@ -69,7 +66,7 @@ export const updatePhoneNumber = async (req, res) => {
 export const deletePhoneNumber = async (req, res) => {
   try {
     const { id } = req.params;
-    const deletedPhoneNumber = await PhoneNumber.findByIdAndDelete(id);
+    const deletedPhoneNumber = await PhoneNumberModel.delete(id);
 
     if (!deletedPhoneNumber) {
       res.status(404).json({ message: 'Número de teléfono no encontrado' });

@@ -4,32 +4,32 @@ const ContactSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, 'El nombre del contacto es obligatorio.'],
-      trim: true
+      required: [true, "El nombre del contacto es obligatorio."],
+      trim: true,
     },
     phoneNumbers: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'PhoneNumber',
-        required: true
-      }
+        ref: "PhoneNumber",
+        required: true,
+      },
     ],
     emails: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Email'
-      }
+        ref: "Email",
+      },
     ],
     addresses: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Address'
-      }
-    ]
+        ref: "Address",
+      },
+    ],
   },
   {
-    timestamps: true
-  }
+    timestamps: true,
+  },
 );
 
-export const Contact = model('Contact', ContactSchema);
+export const Contact = model("Contact", ContactSchema);

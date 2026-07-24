@@ -1,4 +1,4 @@
-import { Email } from "./email.model";
+import { Email } from "./../../../db/models/email.model.js";
 
 export const createEmail = async (req, res) => {
   try {

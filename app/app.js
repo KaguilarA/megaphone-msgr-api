@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ViewContactRouter from "./components/contact/contact.routes";
+import ViewContactRouter from "./components/contact/contact.routes.js";
 
 const ViewRouter = Router();
 
