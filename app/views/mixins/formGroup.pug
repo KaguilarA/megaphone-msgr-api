@@ -1,0 +1,11 @@
+mixin formGroup(label, name, type = 'text', options = {})
+  .form-group
+    if label
+      label= label
+    input.form-control(
+      type=type,
+      name=name,
+      autocomplete=options.autocomplete || 'off',
+      placeholder=options.placeholder || '',
+      x-model=options.xModel || false
+    )&attributes(attributes)

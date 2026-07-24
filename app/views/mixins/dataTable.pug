@@ -1,0 +1,38 @@
+mixin dataTable(columnsConfig = [], dataList = 'paginatedContacts')
+  .table-container(x-show="filteredContacts.length > 0")
+    table.data-table
+      thead
+        tr
+          each col in columnsConfig
+            if col.sortable
+              th.sortable(@click=`sort('${col.key}')` style="cursor: pointer;")
+                span= col.label + ' '
+                span(x-show=`sortBy === '${col.key}'`)
+                  span(x-text="sortAsc ? '▲' : '▼'")
+            else
+              th= col.label
+          
+          if block
+            th.text-end Acciones
+
+      tbody
+        template(x-for=`item in ${dataList}` :key="item._id || item.id")
+          tr
+            each col in columnsConfig
+              td
+                if col.type === 'list'
+                  // Para Renderizar Arrays/Listas
+                  template(x-if=`item.${col.key} && item.${col.key}.length > 0`)
+                    ul.list-unstyled.m-0
+                      template(x-for=`subItem in item.${col.key}`)
+                        li(x-text=`subItem.${col.subKey || 'name'} || subItem`)
+                  template(x-if=`!item.${col.key} || item.${col.key}.length === 0`)
+                    span.text-muted —
+
+                else
+                  // Texto plano o valor por defecto
+                  span(x-text=`item.${col.key} || '—'`)
+
+            if block
+              td.actions-cell
+                block

@@ -1,0 +1,44 @@
+extends ../layout
+
+include ../mixins/formGroup
+include ../mixins/button
+include ../mixins/phoneSelect
+include ../mixins/phoneSection
+include ../mixins/emailSection
+include ../mixins/addressSection
+
+block content
+  // Colocamos x-data arriba para abarcar toda la página
+  .edit-page-wrapper(x-data=`editContactApp(${JSON.stringify(contact)})`)
+    .page-header
+      h1 Editar Contacto
+      // Ahora Alpine sí reconoce este @click dentro del scope
+      +button('Volver a Contactos', 'outline-secondary')(@click="navigateBack()")
+
+    .form-container
+      form#contactForm(
+        @submit.prevent="submitForm"
+        autocomplete="off"
+      )
+        .form-section
+          h2.section-title Información General
+          +formGroup('Nombre Completo *', 'name', 'text', { xModel: 'name' })(
+            id="name",
+            required
+          )
+
+        +phoneSection()
+        +emailSection()
+        +addressSection()
+
+        .form-actions
+          +button('', 'primary', '', 'submit')(
+            :disabled="loading"
+          )
+            span(x-text="loading ? 'Actualizando...' : 'Actualizar Contacto'")
+          
+          +button('Cancelar', 'outline-secondary')(@click="navigateBack()")
+
+block scripts
+  script(src="/js/shared/forms.js")
+  script(src="/js/edit-contact.js")

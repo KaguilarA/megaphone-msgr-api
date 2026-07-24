@@ -14,7 +14,8 @@ app.use(express.json());
 app.set('view engine', 'pug');
 app.set('views', path.join(process.cwd(), 'src/views'));
 
-app.use('/js/vendor', express.static(path.join(process.cwd(), 'node_modules/alpinejs/dist')));
+app.use('/js/vendor/alpine', express.static(path.join(process.cwd(), 'node_modules/alpinejs/dist')));
+app.use('/js/vendor/reactive-values', express.static(path.join(process.cwd(), 'node_modules/reactive-values/dist')));
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 app.use('', ViewRouter);

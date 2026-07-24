@@ -7,7 +7,7 @@ if (SECRET_KEY.length !== 32) {
   throw new Error('ENCRYPTION_KEY debe ser un string hexadecimal de 64 caracteres (32 bytes).');
 }
 
-export function encrypt(text: string): string {
+export function encrypt(text) {
   const iv = crypto.randomBytes(12); // IV de 12 bytes para GCM
   const cipher = crypto.createCipheriv(ALGORITHM, SECRET_KEY, iv);
 
@@ -19,7 +19,7 @@ export function encrypt(text: string): string {
   return `${iv.toString('hex')}:${authTag}:${encrypted}`;
 }
 
-export function decrypt(encryptedData: string): string {
+export function decrypt(encryptedData) {
   const [ivHex, authTagHex, encryptedText] = encryptedData.split(':');
 
   if (!ivHex || !authTagHex || !encryptedText) {

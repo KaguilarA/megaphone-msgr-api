@@ -1,0 +1,15 @@
+include ./button
+include ./formGroup
+
+mixin emailSection()
+  .form-section
+    .section-header
+      h2.section-title Correos Electrónicos
+      +button('+ Agregar Correo', 'secondary', 'sm')(@click="addEmail")
+
+    .dynamic-list
+      template(x-for="(email, index) in emails" :key="index")
+        .dynamic-row.grid-2
+          +formGroup('Correo Electrónico', '', 'email', { placeholder: 'correo@ejemplo.com', xModel: 'email.email' })
+          
+          +button('Eliminar', 'outline-danger', 'sm')(@click="removeEmail(index)")
