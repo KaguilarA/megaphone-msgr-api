@@ -1,14 +1,16 @@
-import express from "express";
-import AddressRouter from "./components/address/address.routes.js";
-import ContactRouter from "./components/contact/contact.routes.js";
-import EmailRouter from "./components/email/email.routes.js";
-import PhoneNumberRouter from "./components/phoneNumber/phoneNumber.routes.js";
+import { Router } from "express";
+import AddressRouter from "./routes/address.routes.js";
+import ContactRouter from "./routes/contact.routes.js";
+import EmailRouter from "./routes/email.routes.js";
+import PhoneNumberRouter from "./routes/phoneNumber.routes.js";
 
-const router = express.Router();
+export default ([address, contact, email, phoneNumber]) => {
+  const router = Router();
 
-router.use("/address", AddressRouter);
-router.use("/contact", ContactRouter);
-router.use("/email", EmailRouter);
-router.use("/phone-number", PhoneNumberRouter);
+  router.use("/address", AddressRouter(address));
+  router.use("/contact", ContactRouter(contact));
+  router.use("/email", EmailRouter(email));
+  router.use("/phone-number", PhoneNumberRouter(phoneNumber));
 
-export default router;
+  return router;
+};

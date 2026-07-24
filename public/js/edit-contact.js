@@ -79,7 +79,7 @@ window.editContactApp = function (initialData = {}) {
 
       await forms.handleSubmit({
         state: this,
-        requestFn: () => httpRequests.put(`/api/contacts/${this.id}`, payload),
+        requestFn: () => httpRequests.put(`/api/${this.id}`, payload),
         redirectUrl: "/contacts",
       });
     },

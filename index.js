@@ -1,6 +1,7 @@
 import path from "node:path";
 import express from "express";
 import { connectDB } from "./db/config/database.js";
+import ModelsList from "./db/models.list.js";
 import { corsMiddleware } from "./config/cors.js";
 
 import apiRouter from "./api/api.js";
@@ -25,7 +26,7 @@ app.use(
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use("", ViewRouter);
-app.use("/api", apiRouter);
+app.use("/api", apiRouter(ModelsList));
 
 app.listen(PORT, () => {
   connectDB();

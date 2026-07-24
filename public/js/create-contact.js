@@ -93,7 +93,7 @@ window.createContactApp = function () {
           };
 
           // 4. Crear el Contacto relacionando los ObjectIds
-          return httpRequests.post("/api/contacts", payload);
+          return httpRequests.post("/api", payload);
         },
         redirectUrl: "/contacts",
       });

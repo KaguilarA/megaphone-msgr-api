@@ -1,7 +1,5 @@
 import ContactModel from "./../../../db/models/contact.model.js";
 
-const POPULATE_FIELDS = ["addresses", "emails", "phoneNumbers"];
-
 export const loadCountries = async (_req, res) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2500); // Max 2.5s de espera
@@ -48,7 +46,9 @@ export const loadCountries = async (_req, res) => {
 
 export const renderContactsPage = async (_req, res) => {
   try {
-    const contacts = await ContactModel.getAll({ populate: POPULATE_FIELDS });
+    const contacts = await ContactModel.getAll({
+      populate: ["addresses", "emails", "phoneNumbers"],
+    });
 
     res.render("contacts/index", {
       title: "Contactos",
@@ -85,7 +85,7 @@ export const renderEditContactView = async (req, res) => {
   try {
     const { id } = req.params;
     const contact = await ContactModel.getById(id, {
-      populate: POPULATE_FIELDS,
+      populate: ["addresses", "emails", "phoneNumbers"],
     });
 
     if (!contact) {
