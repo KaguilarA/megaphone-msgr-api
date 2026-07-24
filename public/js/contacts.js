@@ -14,8 +14,8 @@ window.contactsListApp = function (initialContacts = []) {
         const q = this.search.toLowerCase();
         result = result.filter((c) => {
           const nameMatch = c.name?.toLowerCase().includes(q);
-          const emailMatch = c.email?.some((e) =>
-            (e.email || e.address || "").toLowerCase().includes(q),
+          const emailMatch = c.emails?.some((e) =>
+            (e.email || "").toLowerCase().includes(q),
           );
           const phoneMatch = c.phoneNumbers?.some((p) => p.phone?.includes(q));
           return nameMatch || emailMatch || phoneMatch;

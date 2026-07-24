@@ -40,7 +40,11 @@ export default (id, schema) =>
           query = query.populate(field);
         });
       }
-      return await query;
+      const data = await query;
+      data.forEach((doc) => {
+        console.log(doc);
+      });
+      return data;
     }
 
     /**

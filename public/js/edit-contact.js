@@ -11,10 +11,10 @@ window.editContactApp = function (initialData = {}) {
         : [{ countryNumber: "+506", phone: "" }],
 
     emails:
-      initialData.email && initialData.email.length
-        ? initialData.email.map((e) => ({
+      initialData.emails && initialData.emails.length
+        ? initialData.emails.map((e) => ({
             _id: e._id,
-            email: e.email || e.address || "",
+            email: e.email || "",
           }))
         : [{ email: "" }],
 

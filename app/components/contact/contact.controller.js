@@ -64,7 +64,7 @@ export const renderContactsPage = async (_req, res) => {
         },
         {
           label: "Correos",
-          key: "email",
+          key: "emails",
           type: "list",
           subKey: "email",
           sortable: false,
