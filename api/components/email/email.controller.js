@@ -14,7 +14,7 @@ export const createEmail = async (req, res) => {
 
 export const getEmails = async (_req, res) => {
   try {
-    const emails = await EmailModel.find();
+    const emails = await EmailModel.getAll();
     res.status(200).json(emails);
   } catch (error) {
     res.status(500).json({
@@ -27,7 +27,7 @@ export const getEmails = async (_req, res) => {
 export const getEmailById = async (req, res) => {
   try {
     const { id } = req.params;
-    const email = await EmailModel.findById(id);
+    const email = await EmailModel.getById(id);
 
     if (!email) {
       res.status(404).json({ message: 'Email no encontrado' });

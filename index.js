@@ -1,6 +1,6 @@
 import path from "node:path";
 import express from "express";
-import { connectDB } from "./config/database.js";
+import { connectDB } from "./db/config/database.js";
 import { corsMiddleware } from "./config/cors.js";
 
 import apiRouter from "./api/api.js";

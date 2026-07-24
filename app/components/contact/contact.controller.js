@@ -1,5 +1,7 @@
 import ContactModel from "./../../../db/models/contact.model.js";
 
+const POPULATE_FIELDS = ["addresses", "emails", "phoneNumbers"];
+
 export const loadCountries = async (_req, res) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 2500); // Max 2.5s de espera
@@ -46,12 +48,7 @@ export const loadCountries = async (_req, res) => {
 
 export const renderContactsPage = async (_req, res) => {
   try {
-    const contacts = await ContactModel.model
-      .find()
-      .populate("phoneNumbers")
-      .populate("emails")
-      .populate("addresses")
-      .sort({ createdAt: -1 });
+    const contacts = await ContactModel.getAll({ populate: POPULATE_FIELDS });
 
     res.render("contacts/index", {
       title: "Contactos",
@@ -87,11 +84,9 @@ export const renderNewContactPage = (_req, res) => {
 export const renderEditContactView = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const contact = await ContactModel.getById(id)
-      .populate("phoneNumbers")
-      .populate("emails")
-      .populate("addresses");
+    const contact = await ContactModel.getById(id, {
+      populate: POPULATE_FIELDS,
+    });
 
     if (!contact) {
       res.status(404).send("Contacto no encontrado");
