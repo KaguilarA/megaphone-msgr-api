@@ -1,6 +1,6 @@
 import DBModel from "./../utils/model.js";
 
-export default new DBModel("Email", {
+export default DBModel("Email", {
   email: {
     type: String,
     required: [true, "El correo electrónico es obligatorio."],

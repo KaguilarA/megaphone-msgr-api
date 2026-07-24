@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 import DBModel from "./../utils/model.js";
 
-export default new DBModel("Contact", {
+export default DBModel("Contact", {
   name: {
     type: String,
     required: [true, "El nombre del contacto es obligatorio."],

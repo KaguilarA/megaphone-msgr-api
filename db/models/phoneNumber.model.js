@@ -1,6 +1,6 @@
 import DBModel from "./../utils/model.js";
 
-export default new DBModel("PhoneNumber", {
+export default DBModel("PhoneNumber", {
   phone: {
     type: String,
     required: [true, "El número de teléfono es obligatorio."],

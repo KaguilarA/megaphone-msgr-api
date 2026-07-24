@@ -1,6 +1,6 @@
 import DBModel from "./../utils/model.js";
 
-export default new DBModel("Address", {
+export default DBModel("Address", {
   street: {
     type: String,
     trim: true,
