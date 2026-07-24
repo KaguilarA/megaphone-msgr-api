@@ -1,41 +1,31 @@
 extends ../layout
 
+include ../mixins/phoneSelect
+include ../mixins/phoneSection
+include ../mixins/emailSection
+include ../mixins/addressSection
+
 block content
   .page-header
     h1 Nuevo Contacto
     a.btn.btn-outline-warning(href="/contacts") Cancelar
 
   .form-container
-    form#contactForm
+    form#contactForm(x-data="createContactApp()", @submit.prevent="submitForm")
       .form-section
         h2.section-title Datos Personales
         .form-group
           label(for="name") Nombre Completo *
-          input#name.form-control(type="text", name="name", required, placeholder="Ej: Juan Pérez")
+          input#name.form-control(type="text", x-model="name", required, placeholder="Ej: Juan Pérez")
 
-      // Sección de Teléfonos
-      .form-section
-        .section-header
-          h2.section-title Teléfonos
-          button#addPhoneBtn.btn.btn-secondary.btn-sm(type="button") + Agregar Teléfono
-        #phonesContainer.dynamic-list
-
-      // Sección de Correos
-      .form-section
-        .section-header
-          h2.section-title Correos Electrónicos
-          button#addEmailBtn.btn.btn-secondary.btn-sm(type="button") + Agregar Correo
-        #emailsContainer.dynamic-list
-
-      // Sección de Direcciones
-      .form-section
-        .section-header
-          h2.section-title Direcciones
-          button#addAddressBtn.btn.btn-secondary.btn-sm(type="button") + Agregar Dirección
-        #addressesContainer.dynamic-list
+      +phoneSection()
+      +emailSection()
+      +addressSection()
 
       .form-actions
-        button.btn.btn-success(type="submit") Guardar Contacto
+        button.btn.btn-success(type="submit", :disabled="loading")
+          span(x-text="loading ? 'Guardando...' : 'Guardar Contacto'")
         a.btn.btn-outline-danger(href="/contacts") Cancelar
 
+block scripts
   script(src="/js/create-contact.js")

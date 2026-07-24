@@ -3,20 +3,58 @@ extends ../layout
 block content
   .page-header
     h1 Lista de Contactos
-    a.btn.btn-success(href="/contacts/new") Agregar Contacto
+    a.btn.btn-success(href="/contacts/new") + Agregar Contacto
 
-  #loadingState.alert.alert-info
-    | Cargando contactos...
+  if contacts && contacts.length > 0
+    .table-container
+      table.data-table
+        thead
+          tr
+            th Nombre
+            th Teléfonos
+            th Correos
+            th Direcciones
+            th Acciones
+        tbody
+          each contact in contacts
+            tr
+              // Nombre Completo
+              td
+                strong= contact.name
 
-  .table-container.d-none#tableContainer
-    table.data-table
-      thead
-        tr
-          th Nombre
-          th Teléfonos
-          th Correos
-          th Direcciones
-          th Acciones
-      tbody#contactsTableBody
+              // Teléfonos poblados
+              td
+                if contact.phoneNumbers && contact.phoneNumbers.length > 0
+                  ul.list-unstyled.m-0
+                    each phone in contact.phoneNumbers
+                      li= `${phone.countryNumber} ${phone.phone}`
+                else
+                  span.text-muted Sin teléfono
 
-  script(src="/js/contacts.js")
+              // Correos poblados
+              td
+                if contact.email && contact.email.length > 0
+                  ul.list-unstyled.m-0
+                    each mail in contact.email
+                      li= mail.email || mail.address
+                else
+                  span.text-muted Sin correo
+
+              // Direcciones pobladas
+              td
+                if contact.addresses && contact.addresses.length > 0
+                  ul.list-unstyled.m-0
+                    each addr in contact.addresses
+                      li= [addr.street, addr.city, addr.country].filter(Boolean).join(', ')
+                else
+                  span.text-muted Sin dirección
+
+              // Acciones
+              td.actions-cell
+                a.btn.btn-sm.btn-outline-primary(href=`/contacts/${contact._id}/edit`) Editar
+                button.btn.btn-sm.btn-outline-danger.delete-btn(data-id=contact._id) Eliminar
+  else
+    .alert.alert-info.text-center
+      p.m-0 No hay contactos registrados. ¡Comienza agregando uno nuevo!
+
+  script(src="/js/contacts.js", defer)
