@@ -3,14 +3,17 @@ html(lang="es")
   head
     meta(charset="UTF-8")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title Gestor de Contactos
+    title= title || "Amplificador de mensajes"
     link(rel="stylesheet", href="/css/styles.css")
-  body
-    header.main-header
-      .container.header-content
-        a.brand(href="/contacts") 📇 Gestor de Contactos
-        nav.nav-links
-          a.btn.btn-primary(href="/contacts/new") + Nuevo Contacto
 
-    main.container
-      block content
+  body.container
+    block content
+
+    script(src="/js/shared/httpRequests.js")
+    script(src="/js/shared/parsers.js")
+    script(src="/js/shared/forms.js")
+    script(src="/js/shared/countries.js")
+
+    block scripts
+
+    script(src="/js/vendor/cdn.min.js", defer)

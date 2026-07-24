@@ -1,0 +1,30 @@
+include ./phoneSelect
+
+mixin phoneSection()
+  .form-section
+    .section-header
+      h2.section-title Teléfonos *
+      button.btn.btn-secondary.btn-sm(
+        type="button",
+        @click="addPhone"
+      ) + Agregar Teléfono
+
+    .dynamic-list
+      template(x-for="(phone, index) in phones" :key="index")
+        .dynamic-row.grid-3
+          +countryCodeSelect('phone.countryNumber', true)
+
+          .form-group
+            label Número de Teléfono *
+            input.form-control(
+              type="text",
+              x-model="phone.phone",
+              required,
+              autocomplete="off",
+              placeholder="88888888"
+            )
+          button.btn.btn-outline-danger.btn-sm(
+            type="button",
+            @click="removePhone(index)",
+            x-show="phones.length > 1"
+          ) Eliminar

@@ -1,0 +1,14 @@
+mixin countryCodeSelect(modelPath="phone.countryNumber", required=true)
+  .form-group
+    label Código País *
+    select.form-control(
+      x-model=modelPath,
+      required=required
+    )
+      template(x-if="countryCodes.length === 0")
+        option(value="+506") Cargando...
+      template(x-for="country in countryCodes" :key="country.code")
+        option(
+          :value="country.idd",
+          x-text="`${country.code} (${country.idd})`"
+        )
