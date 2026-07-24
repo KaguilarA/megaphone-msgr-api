@@ -5,7 +5,7 @@ mixin formGroup(label, name, type = 'text', options = {})
     input.form-control(
       type=type,
       name=name,
-      autocomplete=options.autocomplete || 'off',
+      autocomplete='off',
       placeholder=options.placeholder || '',
       x-model=options.xModel || false
     )&attributes(attributes)

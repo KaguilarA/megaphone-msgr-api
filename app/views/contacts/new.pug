@@ -8,10 +8,10 @@ include ../mixins/emailSection
 include ../mixins/addressSection
 
 block content
-  .create-page-wrapper(x-data="createContactApp()")
+  .create-page-wrapper(x-data="createContactApp")
     .page-header
       h1 Nuevo Contacto
-      +button('Volver a Contactos', 'outline-secondary')(@click="navigateBack($event)")
+      +button('Volver a Contactos', 'outline-secondary')(@click="navigateBack")
 
     .form-container
       form#contactForm(
@@ -40,5 +40,7 @@ block content
           +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
 
 block scripts
+  script(src="/js/shared/parsers.js")
+  script(src="/js/shared/countries.js")
   script(src="/js/shared/forms.js")
-  script(type="module" src="/js/create-contact.js")
+  script(src="/js/create-contact.js")
