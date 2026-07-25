@@ -49,7 +49,7 @@ window.createContactApp = () =>
 
           return httpRequests.post("/api/contact", payload);
         },
-        redirectUrl: "/contacts",
+        redirectUrl: "/contact",
       });
     }
 

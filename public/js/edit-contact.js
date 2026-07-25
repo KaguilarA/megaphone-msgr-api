@@ -87,7 +87,7 @@ window.editContactApp = (initialData = {}) =>
 
           return httpRequests.put(`/api/contact/${this.id}`, payload);
         },
-        redirectUrl: "/contacts",
+        redirectUrl: "/contact",
       });
     }
 
