@@ -2,7 +2,7 @@ import { Router } from "express";
 import DBController from "../utils/base.controller.js";
 
 export default (model) => {
-  const controller = new DBController("Contact", model, [
+  const controller = DBController("Contact", model, [
     "addresses",
     "emails",
     "phoneNumbers",

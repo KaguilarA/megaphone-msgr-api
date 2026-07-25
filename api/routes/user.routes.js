@@ -2,10 +2,10 @@ import { Router } from "express";
 import DBController from "../utils/base.controller.js";
 
 export default (model) => {
-  const controller = new DBController("User", model, [
+  const controller = DBController("User", model, [
+    "address",
     "email",
     "phoneNumber",
-    "address",
   ]);
   const router = Router();
 
