@@ -1,8 +1,14 @@
 import { Router } from "express";
+import CountriesRouter from "./components/countries/contries.routes.js";
 import ViewContactRouter from "./components/contact/contact.routes.js";
+import ViewUserRouter from "./components/user/user.routes.js";
 
-const ViewRouter = Router();
+export default ([contact, user]) => {
+  const router = Router();
 
-ViewRouter.use("/contacts", ViewContactRouter);
+  router.use("/countries", CountriesRouter);
+  router.use("/contact", ViewContactRouter(contact));
+  router.use("/user", ViewUserRouter(user));
 
-export default ViewRouter;
+  return router;
+};

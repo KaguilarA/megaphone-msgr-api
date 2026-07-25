@@ -1,4 +1,4 @@
-export function corsMiddleware(req, res, next) {
+export default function (req, res, next) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",

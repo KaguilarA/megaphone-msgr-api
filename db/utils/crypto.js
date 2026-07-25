@@ -37,3 +37,9 @@ export function decrypt(encryptedData) {
 
   return decrypted;
 }
+
+export function isEncrypted(val) {
+  if (typeof val !== "string") return false;
+  const parts = val.split(":");
+  return parts.length === 3 && parts[0].length === 24 && parts[1].length === 32;
+};

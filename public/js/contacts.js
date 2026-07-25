@@ -67,11 +67,11 @@ window.contactsListApp = (initialContacts = []) =>
     }
 
     navigateToAdd() {
-      window.location.href = "/contacts/new";
+      window.location.href = "/contact/new";
     }
 
     navigateToEdit(id) {
-      window.location.href = `/contacts/${id}/edit`;
+      window.location.href = `/contact/${id}/edit`;
     }
 
     setPage(page) {

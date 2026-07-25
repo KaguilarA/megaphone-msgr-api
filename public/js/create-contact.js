@@ -72,7 +72,7 @@ window.createContactApp = () =>
     }
 
     navigateBack() {
-      window.location.href = "/contacts";
+      window.location.href = "/contact";
     }
 
     removeAddress(index) {

@@ -1,16 +1,15 @@
 import { Router } from "express";
-import {
-  renderContactsPage,
-  renderNewContactPage,
-  renderEditContactView,
-  loadCountries,
-} from "./contact.controller.js";
+import viewController from "./contact.controller.js";
 
-const ViewContactRouter = Router();
+export default (model) => {
+  const router = Router();
+  const controller = viewController(model);
 
-ViewContactRouter.get("/", renderContactsPage);
-ViewContactRouter.get("/countries", loadCountries);
-ViewContactRouter.get("/new", renderNewContactPage);
-ViewContactRouter.get("/:id/edit", renderEditContactView);
+  router.get("/", controller.renderHome.bind(controller));
+  router.get("/new", controller.renderRegister.bind(controller));
+  router.get("/:id/edit", controller.renderEdit.bind(controller));
 
-export default ViewContactRouter;
+  return router;
+};
+
+

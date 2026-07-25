@@ -1,11 +1,11 @@
 import path from "node:path";
 import express from "express";
-import { connectDB } from "./db/config/database.js";
+import connectDB from "./db/config/database.js";
 import ModelsList from "./db/models.list.js";
-import { corsMiddleware } from "./config/cors.js";
+import corsMiddleware from "./config/cors.js";
 
 import apiRouter from "./api/api.js";
-import ViewRouter from "./app/app.js";
+import appRouter from "./app/app.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,8 +25,8 @@ app.use(
 );
 app.use(express.static(path.join(process.cwd(), "public")));
 
-app.use("", ViewRouter);
-app.use("/api", apiRouter(ModelsList));
+app.use("", appRouter(ModelsList.app));
+app.use("/api", apiRouter(ModelsList.api));
 
 app.listen(PORT, () => {
   connectDB();

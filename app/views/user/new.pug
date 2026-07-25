@@ -1,0 +1,71 @@
+extends ../layout
+
+include ../mixins/formGroup
+include ../mixins/button
+include ../mixins/phoneSelect
+include ../mixins/phoneSection
+include ../mixins/emailSection
+include ../mixins/addressSection
+
+block content
+  .create-page-wrapper(x-data="createUserApp")
+    .page-header
+      h1 Nuevo Usuario
+      +button('Volver a Usuarios', 'outline-secondary')(@click="navigateBack")
+
+    .form-container
+      form#userForm(
+        @submit.prevent="submitForm"
+        autocomplete="off"
+      )
+        .form-section
+          h2.section-title Datos Personales
+          +formGroup('Nombre *', 'name', 'text', { xModel: 'name' })(
+            id="name"
+            required
+            placeholder="Ej: Juan"
+          )
+          +formGroup('Apellido *', 'lastname', 'text', { xModel: 'lastname' })(
+            id="lastname"
+            required
+            placeholder="Ej: Pérez"
+          )
+          +formGroup('Contraseña *', 'password', 'password', { xModel: 'password' })(
+            id="password"
+            required
+            placeholder="••••••••"
+          )
+
+        .form-section
+          h2.section-title Tokens e Integraciones
+          +formGroup('Token de Correo (emailToken)', 'emailToken', 'text', { xModel: 'emailToken' })(
+            id="emailToken"
+            placeholder="Opcional"
+          )
+          +formGroup('Token de WhatsApp (waToken)', 'waToken', 'text', { xModel: 'waToken' })(
+            id="waToken"
+            placeholder="Opcional"
+          )
+          +formGroup('Token de Telegram (telegramToken)', 'telegramToken', 'text', { xModel: 'telegramToken' })(
+            id="telegramToken"
+            placeholder="Opcional"
+          )
+
+        // Secciones dinámicas para Teléfono (requerido), Email (requerido) y Dirección (opcional)
+        +phoneSection()
+        +emailSection()
+        +addressSection()
+
+        .form-actions
+          +button('', 'success', '', 'submit')(
+            :disabled="loading"
+          )
+            span(x-text="loading ? 'Guardando...' : 'Guardar Usuario'")
+          
+          +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
+
+block scripts
+  script(src="/js/shared/parsers.js")
+  script(src="/js/shared/countries.js")
+  script(src="/js/shared/forms.js")
+  script(src="/js/create-user.js")

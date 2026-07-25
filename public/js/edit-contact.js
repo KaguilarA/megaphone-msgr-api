@@ -113,7 +113,7 @@ window.editContactApp = (initialData = {}) =>
       if (event && typeof event.preventDefault === "function") {
         event.preventDefault();
       }
-      window.location.href = "/contacts";
+      window.location.href = "/contact";
     }
 
     removeAddress(index) {

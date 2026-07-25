@@ -1,38 +1,145 @@
 import { Schema, model } from "mongoose";
+import bcrypt from "bcryptjs";
+import { encrypt, decrypt, isEncrypted } from "../utils/crypto.js";
 
-/**
- * @class DBModel
- * @description Clase genérica para gestionar operaciones CRUD básicas utilizando Mongoose.
- */
-export default (id, schema) =>
+const isBcryptHash = (val) => {
+  if (typeof val !== "string") return false;
+  return /^\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}$/.test(val);
+};
+
+export default (id, schema, encryptedFields = [], hashedFields = []) =>
   new (class {
-    /**
-     * Crea una instancia del modelo de base de datos.
-     * @constructor
-     * @param {string} id - El nombre identificador del modelo en Mongoose.
-     * @param {import('mongoose').SchemaDefinition} schema - La definición del esquema de Mongoose.
-     */
-    constructor(id, schema) {
+    constructor(id, schema, encryptedFields, hashedFields) {
       this.schema = new Schema(schema, { timestamps: true });
       this.id = id;
+      this.encryptedFields = encryptedFields;
+      this.hashedFields = hashedFields;
+
+      if (this.encryptedFields.length > 0 || this.hashedFields.length > 0) {
+        this.setupSecurityHooks();
+      }
+
       this.model = model(this.id, this.schema);
     }
 
-    /**
-     * Elimina un documento por su ID.
-     * @async
-     * @param {string} id - El ID del documento a eliminar.
-     * @returns {Promise<import('mongoose').Document|null>} El documento eliminado o null si no se encuentra.
-     */
+    setupSecurityHooks() {
+      const encFields = this.encryptedFields;
+      const hashFields = this.hashedFields;
+
+      this.schema.pre("save", async function (next) {
+        // Cifrado reversible (AES)
+        encFields.forEach((field) => {
+          if (
+            this.isModified(field) &&
+            this[field] &&
+            !isEncrypted(this[field])
+          ) {
+            this[field] = encrypt(this[field]);
+          }
+        });
+
+        // Hash unidireccional (Bcryptjs)
+        for (const field of hashFields) {
+          if (
+            this.isModified(field) &&
+            this[field] &&
+            !isBcryptHash(this[field])
+          ) {
+            const salt = await bcrypt.genSalt(10);
+            this[field] = await bcrypt.hash(this[field], salt);
+          }
+        }
+
+        next();
+      });
+
+      this.schema.pre(
+        ["findOneAndUpdate", "updateOne", "updateMany"],
+        async function (next) {
+          const update = this.getUpdate();
+          if (!update) return next();
+
+          encFields.forEach((field) => {
+            const val = update[field] || (update.$set && update.$set[field]);
+            if (val && typeof val === "string" && !isEncrypted(val)) {
+              const encryptedVal = encrypt(val);
+              if (update[field]) update[field] = encryptedVal;
+              if (update.$set && update.$set[field])
+                update.$set[field] = encryptedVal;
+            }
+          });
+
+          for (const field of hashFields) {
+            const val = update[field] || (update.$set && update.$set[field]);
+
+            if (val && typeof val === "string" && !isBcryptHash(val)) {
+              const salt = await bcrypt.genSalt(10);
+              const hashedVal = await bcrypt.hash(val, salt);
+              if (update[field]) update[field] = hashedVal;
+              if (update.$set && update.$set[field])
+                update.$set[field] = hashedVal;
+            }
+          }
+
+          next();
+        },
+      );
+
+      const processDocumentAfterQuery = (doc) => {
+        if (!doc) return;
+
+        encFields.forEach((field) => {
+          if (doc[field] && isEncrypted(doc[field])) {
+            try {
+              doc[field] = decrypt(doc[field]);
+            } catch (error) {
+              console.error(
+                `Error al descifrar el campo ${field}:`,
+                error.message,
+              );
+            }
+          }
+        });
+      };
+
+      this.schema.post(
+        ["find", "findOne", "findOneAndUpdate"],
+        function (result) {
+          if (!result) return;
+          if (Array.isArray(result)) {
+            result.forEach(processDocumentAfterQuery);
+          } else {
+            processDocumentAfterQuery(result);
+          }
+        },
+      );
+
+      this.schema.set("toJSON", {
+        transform: (doc, ret) => {
+          encFields.forEach((field) => delete ret[field]);
+          hashFields.forEach((field) => delete ret[field]);
+          return ret;
+        },
+      });
+    }
+
+    async compareHash(id, field, candidateValue) {
+      if (!this.hashedFields.includes(field)) {
+        throw new Error(
+          `El campo '${field}' no está registrado en los hashedFields de este modelo.`,
+        );
+      }
+
+      const doc = await this.model.findById(id).select(`+${field}`).lean();
+      if (!doc || !doc[field]) return false;
+
+      return await bcrypt.compare(candidateValue, doc[field]);
+    }
+
     async delete(id) {
       return await this.model.findByIdAndDelete(id);
     }
 
-    /**
-     * Obtiene todos los documentos de la colección.
-     * @async
-     * @returns {Promise<import('mongoose').Document[]>} Una lista con todos los documentos.
-     */
     async getAll(options = {}) {
       let query = this.model.find();
       if (options.populate) {
@@ -40,19 +147,9 @@ export default (id, schema) =>
           query = query.populate(field);
         });
       }
-      const data = await query;
-      data.forEach((doc) => {
-        console.log(doc);
-      });
-      return data;
+      return await query;
     }
 
-    /**
-     * Busca un documento por su ID.
-     * @async
-     * @param {string} id - El ID del documento a buscar.
-     * @returns {Promise<import('mongoose').Document|null>} El documento encontrado o null si no existe.
-     */
     async getById(id, options = {}) {
       let query = this.model.findById(id);
       if (options.populate) {
@@ -63,26 +160,11 @@ export default (id, schema) =>
       return await query;
     }
 
-    /**
-     * Guarda un nuevo documento en la base de datos.
-     * @async
-     * @param {Object} data - Los datos del documento a guardar.
-     * @returns {Promise<import('mongoose').Document>} El documento recién guardado.
-     */
     async save(data) {
       const newData = new this.model(data);
-      const savedData = await newData.save();
-
-      return savedData;
+      return await newData.save();
     }
 
-    /**
-     * Actualiza un documento existente por su ID.
-     * @async
-     * @param {string} id - El ID del documento a actualizar.
-     * @param {Object} data - Los nuevos datos para actualizar.
-     * @returns {Promise<import('mongoose').Document|null>} El documento actualizado o null si no se encuentra.
-     */
     async update(id, data, options = {}) {
       let query = this.model.findByIdAndUpdate(id, data, {
         new: true,
@@ -95,4 +177,4 @@ export default (id, schema) =>
       }
       return await query;
     }
-  })(id, schema);
+  })(id, schema, encryptedFields, hashedFields);
