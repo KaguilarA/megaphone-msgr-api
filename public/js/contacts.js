@@ -1,4 +1,4 @@
-window.contactsListApp = (initialContacts = []) =>
+window.contactsListApp = (dataList = []) =>
   new (class {
     currentPage = 1;
     search = "";
@@ -6,8 +6,8 @@ window.contactsListApp = (initialContacts = []) =>
     sortBy = "name";
     perPage = 5;
 
-    get filteredContacts() {
-      let result = this.contacts;
+    get filteredList() {
+      let result = this.dataList;
 
       if (this.search.trim()) {
         const q = this.search.toLowerCase();
@@ -34,17 +34,17 @@ window.contactsListApp = (initialContacts = []) =>
       });
     }
 
-    get paginatedContacts() {
+    get paginatedList() {
       const start = (this.currentPage - 1) * this.perPage;
-      return this.filteredContacts.slice(start, start + this.perPage);
+      return this.filteredList.slice(start, start + this.perPage);
     }
 
     get totalPages() {
-      return Math.ceil(this.filteredContacts.length / this.perPage) || 1;
+      return Math.ceil(this.filteredList.length / this.perPage) || 1;
     }
 
-    constructor(contacts = []) {
-      this.contacts = contacts;
+    constructor(dataList = []) {
+      this.dataList = dataList;
     }
 
     async deleteContact(id) {
@@ -53,9 +53,9 @@ window.contactsListApp = (initialContacts = []) =>
 
       try {
         await httpRequests.delete(`/api/contact/${id}`);
-        this.contacts = this.contacts.filter((c) => c._id !== id);
+        this.dataList = this.dataList.filter((c) => c._id !== id);
 
-        if (this.paginatedContacts.length === 0 && this.currentPage > 1) {
+        if (this.paginatedList.length === 0 && this.currentPage > 1) {
           this.currentPage--;
         }
       } catch (error) {
@@ -88,4 +88,4 @@ window.contactsListApp = (initialContacts = []) =>
         this.sortAsc = true;
       }
     }
-  })(initialContacts);
+  })(dataList);

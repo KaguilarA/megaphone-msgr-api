@@ -1,5 +1,5 @@
-mixin dataTable(columnsConfig = [], dataList = 'paginatedContacts')
-  .table-container(x-show="filteredContacts.length > 0")
+mixin dataTable(columnsConfig = [], dataList = 'paginatedList')
+  .table-container(x-show="filteredList.length > 0")
     table.data-table
       thead
         tr

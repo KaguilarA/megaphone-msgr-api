@@ -28,14 +28,14 @@ export default (model) =>
 
     async renderHome(_req, res) {
       try {
-        const contacts = await this.model.getAll({
+        const dataList = await this.model.getAll({
           populate: ["addresses", "emails", "phoneNumbers"],
         });
 
         res.render("contact/index", {
           title: "Contactos",
-          contacts,
-          contactColumns: this.columns,
+          dataList,
+          columns: this.columns,
         });
       } catch (error) {
         console.error("Error al renderizar la página de contactos:", error);

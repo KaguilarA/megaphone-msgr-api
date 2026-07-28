@@ -6,6 +6,7 @@ export default (model) => {
   const router = Router();
   const controller = viewController(model);
 
+  router.get("/", controller.renderHome.bind(controller));
   router.get("/new", controller.renderRegister.bind(controller));
 
   return router;

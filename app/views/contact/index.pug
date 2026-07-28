@@ -4,13 +4,13 @@ include ../mixins/dataTable
 include ../mixins/button
 
 block content
-  .list-page-wrapper(x-data=`contactsListApp(${JSON.stringify(contacts || [])})`)
+  .list-page-wrapper(x-data=`contactsListApp(${JSON.stringify(dataList || [])})`)
     .page-header
       h1 Lista de Contactos
       // Usamos el mixin +button para mantener consistencia semántica y de estilos
       +button('+ Agregar Contacto', 'success')(@click="navigateToAdd")
 
-    if !contacts || contacts.length === 0
+    if !dataList || dataList.length === 0
       .alert.alert-info.text-center
         p.m-0 No hay contactos registrados. ¡Comienza agregando uno nuevo!
     else
@@ -33,7 +33,7 @@ block content
             option(value="10") 10
             option(value="25") 25
 
-      +dataTable(contactColumns, 'paginatedContacts')
+      +dataTable(columns, 'paginatedList')
         +button('Editar', 'outline-primary', 'sm')(@click="navigateToEdit(item._id)")
         +button('Eliminar', 'outline-danger', 'sm')(@click="deleteContact(item._id)")
 
