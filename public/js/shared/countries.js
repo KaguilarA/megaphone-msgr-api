@@ -1,7 +1,10 @@
 const countries = new (class {
+  countries = [];
+
   async getCountryCodes() {
     try {
-      return await window.httpRequests.get("/countries");
+      const data = await httpRequests.get("/countries");
+      return data;
     } catch (error) {
       console.warn("Usando fallback local para códigos de país");
       return [

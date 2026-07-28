@@ -30,7 +30,6 @@ export default async (_req, res) => {
     clearTimeout(timeoutId);
     console.warn("API de países falló o expiró. Cargando lista de respaldo.");
 
-    // Fallback por defecto si la API falla o excede tiempo
     res.status(200).json([
       { code: "CR", idd: "+506" },
       { code: "US", idd: "+1" },

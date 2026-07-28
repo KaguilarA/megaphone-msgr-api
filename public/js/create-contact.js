@@ -8,6 +8,10 @@ window.createContactApp = () =>
     emails = [];
     addresses = [];
 
+    constructor() { 
+      this.init();
+    }
+
     async init() {
       this.countryCodes = await countries.getCountryCodes();
     }

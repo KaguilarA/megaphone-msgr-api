@@ -32,7 +32,7 @@ export default (model) =>
           populate: ["addresses", "emails", "phoneNumbers"],
         });
 
-        res.render("contacts/index", {
+        res.render("contact/index", {
           title: "Contactos",
           contacts,
           contactColumns: this.columns,
@@ -46,7 +46,7 @@ export default (model) =>
     }
 
     async renderRegister(_req, res) {
-      res.render("contacts/new", { title: "Nuevo Contacto" });
+      res.render("contact/new", { title: "Nuevo Contacto" });
     }
 
     async renderEdit(req, res) {
@@ -61,7 +61,7 @@ export default (model) =>
           return;
         }
 
-        res.render("contacts/edit", {
+        res.render("contact/edit", {
           title: "Editar Contacto",
           contact,
         });

@@ -28,6 +28,8 @@ window.editContactApp = (initialData = {}) =>
         initialData.phoneNumbers && initialData.phoneNumbers.length
           ? initialData.phoneNumbers
           : [{ countryNumber: "+506", phone: "" }];
+
+      this.init();
     }
 
     async init() {

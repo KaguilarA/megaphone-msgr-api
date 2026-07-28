@@ -5,10 +5,17 @@ html(lang="es")
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     title= title || "Amplificador de mensajes"
     link(rel="stylesheet", href="/css/styles.css")
+    script(src="/js/shared/httpRequests.js")
 
   body.container
+    header
+      nav
+        ul
+          li
+            a(href="/contact") Contacts
+          li
+            a(href="/user") Users
     block content
 
-    script(src="/js/shared/httpRequests.js")
     block scripts
     script(src="/js/vendor/alpine/cdn.min.js", defer)
