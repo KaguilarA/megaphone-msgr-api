@@ -2,26 +2,34 @@ export default (model) =>
   new (class {
     columns = [
       {
-        label: "Nombre Completo",
+        label: "Nombre",
         key: "name",
+        sortable: true,
+      },
+      {
+        label: "Apellido",
+        key: "lastname",
         sortable: true,
       },
       {
         label: "Teléfono",
         key: "phoneNumber",
+        type: "data",
         subKey: "phone",
-        sortable: false,
+        sortable: true,
       },
       {
-        label: "Correos",
+        label: "Correo",
         key: "email",
+        type: "data",
+        subKey: "email",
         sortable: true,
       },
       {
         label: "Contactos",
         key: "contacts",
         type: "list",
-        subKey: "contacts",
+        subKey: "name",
         sortable: false,
       },
     ];

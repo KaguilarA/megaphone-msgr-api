@@ -1,22 +1,16 @@
 window.contactsListApp = (dataList = []) =>
-  new (class {
-    currentPage = 1;
-    search = "";
-    sortAsc = true;
+  new (class extends APMViewList {
     sortBy = "name";
-    perPage = 5;
 
     get filteredList() {
-      let result = this.list;
+      let result = this.dataList;
 
       if (this.search.trim()) {
         const q = this.search.toLowerCase();
         result = result.filter((c) => {
           const nameMatch = c.name?.toLowerCase().includes(q);
-          const emailMatch = c.emails?.some((e) =>
-            (e.email || "").toLowerCase().includes(q),
-          );
-          const phoneMatch = c.phoneNumbers?.some((p) => p.phone?.includes(q));
+          const emailMatch = c.email.emal?.toLowerCase().includes(q);
+          const phoneMatch = c.phoneNumber.phone?.includes(q);
           return nameMatch || emailMatch || phoneMatch;
         });
       }
@@ -43,17 +37,13 @@ window.contactsListApp = (dataList = []) =>
       return Math.ceil(this.filteredList.length / this.perPage) || 1;
     }
 
-    constructor(list = []) {
-      this.list = list;
-    }
-
     async deleteContact(id) {
       if (!confirm("¿Estás seguro de que deseas eliminar este usuario?"))
         return;
 
       try {
-        await httpRequests.delete(`/api/contact/${id}`);
-        this.list = this.list.filter((c) => c._id !== id);
+        await httpRequests.delete(`${this.baseUrl}/${id}`);
+        this.dataList = this.dataList.filter((c) => c._id !== id);
 
         if (this.paginatedList.length === 0 && this.currentPage > 1) {
           this.currentPage--;
@@ -65,27 +55,4 @@ window.contactsListApp = (dataList = []) =>
         );
       }
     }
-
-    navigateToAdd() {
-      window.location.href = "/user/new";
-    }
-
-    navigateToEdit(id) {
-      window.location.href = `/user/${id}/edit`;
-    }
-
-    setPage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
-      }
-    }
-
-    sort(column) {
-      if (this.sortBy === column) {
-        this.sortAsc = !this.sortAsc;
-      } else {
-        this.sortBy = column;
-        this.sortAsc = true;
-      }
-    }
-  })(dataList);
+  })(dataList, "user");

@@ -8,7 +8,7 @@ window.createContactApp = () =>
     emails = [];
     addresses = [];
 
-    constructor() { 
+    constructor() {
       this.init();
     }
 

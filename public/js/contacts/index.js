@@ -1,10 +1,6 @@
 window.contactsListApp = (dataList = []) =>
-  new (class {
-    currentPage = 1;
-    search = "";
-    sortAsc = true;
+  new (class extends APMViewList {
     sortBy = "name";
-    perPage = 5;
 
     get filteredList() {
       let result = this.dataList;
@@ -43,16 +39,12 @@ window.contactsListApp = (dataList = []) =>
       return Math.ceil(this.filteredList.length / this.perPage) || 1;
     }
 
-    constructor(dataList = []) {
-      this.dataList = dataList;
-    }
-
     async deleteContact(id) {
       if (!confirm("¿Estás seguro de que deseas eliminar este contacto?"))
         return;
 
       try {
-        await httpRequests.delete(`/api/contact/${id}`);
+        await httpRequests.delete(`${this.baseUrl}${id}`);
         this.dataList = this.dataList.filter((c) => c._id !== id);
 
         if (this.paginatedList.length === 0 && this.currentPage > 1) {
@@ -65,27 +57,4 @@ window.contactsListApp = (dataList = []) =>
         );
       }
     }
-
-    navigateToAdd() {
-      window.location.href = "/contact/new";
-    }
-
-    navigateToEdit(id) {
-      window.location.href = `/contact/${id}/edit`;
-    }
-
-    setPage(page) {
-      if (page >= 1 && page <= this.totalPages) {
-        this.currentPage = page;
-      }
-    }
-
-    sort(column) {
-      if (this.sortBy === column) {
-        this.sortAsc = !this.sortAsc;
-      } else {
-        this.sortBy = column;
-        this.sortAsc = true;
-      }
-    }
-  })(dataList);
+  })(dataList, 'contact');

@@ -33,7 +33,7 @@ block content
             option(value="10") 10
             option(value="25") 25
 
-      +dataTable(columns, 'paginatedList')
+      +dataTable(columns)
         +button('Editar', 'outline-primary', 'sm')(@click="navigateToEdit(item._id)")
         +button('Eliminar', 'outline-danger', 'sm')(@click="deleteContact(item._id)")
 
@@ -55,4 +55,5 @@ block content
           )
 
 block scripts
-  script(src="/js/contacts.js")
+  script(src="/js/shared/baseList.js")
+  script(src="/js/contacts/index.js")

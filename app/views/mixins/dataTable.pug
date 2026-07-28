@@ -11,7 +11,7 @@ mixin dataTable(columnsConfig = [], dataList = 'paginatedList')
                   span(x-text="sortAsc ? '▲' : '▼'")
             else
               th= col.label
-          
+
           if block
             th.text-end Acciones
 
@@ -20,18 +20,27 @@ mixin dataTable(columnsConfig = [], dataList = 'paginatedList')
           tr
             each col in columnsConfig
               td
-                if col.type === 'list'
-                  // Para Renderizar Arrays/Listas
-                  template(x-if=`item.${col.key} && item.${col.key}.length > 0`)
-                    ul.list-unstyled.m-0
-                      template(x-for=`subItem in item.${col.key}`)
-                        li(x-text=`subItem.${col.subKey || 'name'} || subItem`)
-                  template(x-if=`!item.${col.key} || item.${col.key}.length === 0`)
-                    span.text-muted —
 
-                else
-                  // Texto plano o valor por defecto
-                  span(x-text=`item.${col.key} || '—'`)
+                case col.type
+                  when 'list'
+                    // Para Renderizar Arrays/Listas
+                    template(x-if=`item.${col.key} && item.${col.key}.length > 0`)
+                      ul.list-unstyled.m-0
+                        template(x-for=`subItem in item.${col.key}`)
+                          li(x-text=`subItem.${col.subKey || 'name'} || subItem`)
+                    template(x-if=`!item.${col.key} || item.${col.key}.length === 0`)
+                      span.text-muted —
+                  when 'data'
+                    // Para Renderizar Objects
+                    template(x-if=`item.${col.key} && item.${col.key}.${col.subKey}`)
+                      ul.list-unstyled.m-0
+                        li(x-text=`item.${col.key}.${col.subKey}`)
+                    template(x-if=`!item.${col.key} && item.${col.key}.${col.subKey}`)
+                      span.text-muted —
+                  default 
+                    // Texto plano o valor por defecto
+                    span(x-text=`item.${col.key} || '—'`)
+
 
             if block
               td.actions-cell
