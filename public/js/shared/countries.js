@@ -1,6 +1,4 @@
 const countries = new (class {
-  countries = [];
-
   async getCountryCodes() {
     try {
       const data = await httpRequests.get("/countries");

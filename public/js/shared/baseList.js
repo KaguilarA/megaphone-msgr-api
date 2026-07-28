@@ -4,8 +4,35 @@ class APMViewList {
   search = "";
   sortAsc = true;
 
-  get baseUrl() { 
+  get baseUrl() {
     return `/api/${this.id}/`;
+  }
+
+  get filteredList() {
+    let result = this.dataList;
+
+    if (this.search.trim()) result = this.searchResult;
+
+    return result.sort((a, b) => {
+      let valA = a[this.sortBy] || "";
+      let valB = b[this.sortBy] || "";
+
+      if (typeof valA === "string") valA = valA.toLowerCase();
+      if (typeof valB === "string") valB = valB.toLowerCase();
+
+      if (valA < valB) return this.sortAsc ? -1 : 1;
+      if (valA > valB) return this.sortAsc ? 1 : -1;
+      return 0;
+    });
+  }
+
+  get paginatedList() {
+    const start = (this.currentPage - 1) * this.perPage;
+    return this.filteredList.slice(start, start + this.perPage);
+  }
+
+  get totalPages() {
+    return Math.ceil(this.filteredList.length / this.perPage) || 1;
   }
 
   constructor(dataList = [], id = "viewList") {

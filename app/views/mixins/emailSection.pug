@@ -1,11 +1,12 @@
 include ./button
 include ./formGroup
 
-mixin emailSection()
+mixin emailSection(hideAdd = false)
   .form-section
     .section-header
       h2.section-title Correos Electrónicos
-      +button('+ Agregar Correo', 'secondary', 'sm')(@click="addEmail")
+      if(!hideAdd)
+        +button('+ Agregar Correo', 'secondary', 'sm')(@click="addEmail")
 
     .dynamic-list
       template(x-for="(email, index) in emails" :key="index")

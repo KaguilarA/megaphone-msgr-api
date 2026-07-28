@@ -1,4 +1,5 @@
 import { Router } from "express";
+
 import viewController from "./contact.controller.js";
 
 export default (model) => {

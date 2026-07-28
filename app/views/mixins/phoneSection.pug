@@ -2,11 +2,12 @@ include ./phoneSelect
 include ./button
 include ./formGroup
 
-mixin phoneSection()
+mixin phoneSection(hideAdd = false)
   .form-section
     .section-header
       h2.section-title Teléfonos *
-      +button('+ Agregar Teléfono', 'secondary', 'sm')(@click="addPhone")
+      if(!hideAdd)
+        +button('+ Agregar Teléfono', 'secondary', 'sm')(@click="addPhone")
 
     .dynamic-list
       template(x-for="(phone, index) in phones" :key="index")

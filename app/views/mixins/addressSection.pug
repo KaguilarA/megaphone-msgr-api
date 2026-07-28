@@ -1,11 +1,13 @@
 include ./button
 include ./formGroup
 
-mixin addressSection()
+mixin addressSection(hideAdd = false)
+  
   .form-section
     .section-header
-      h2.section-title Direcciones
-      +button('+ Agregar Dirección', 'secondary', 'sm')(@click="addAddress")
+      h2.section-title Direcciones 
+      if(!hideAdd)
+        +button('+ Agregar Dirección', 'secondary', 'sm')(@click="addAddress")
 
     .dynamic-list
       template(x-for="(addr, index) in addresses" :key="index")

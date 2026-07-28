@@ -20,7 +20,6 @@ mixin dataTable(columnsConfig = [], dataList = 'paginatedList')
           tr
             each col in columnsConfig
               td
-
                 case col.type
                   when 'list'
                     // Para Renderizar Arrays/Listas

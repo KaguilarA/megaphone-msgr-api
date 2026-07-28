@@ -4,15 +4,15 @@ include ../mixins/dataTable
 include ../mixins/button
 
 block content
-  .list-page-wrapper(x-data=`contactsListApp(${JSON.stringify(dataList || [])})`)
+  .list-page-wrapper(x-data=`usersListApp(${JSON.stringify(dataList || [])})`)
     .page-header
       h1 Lista de Usuarios
       // Usamos el mixin +button para mantener consistencia semántica y de estilos
-      +button('+ Agregar Contacto', 'success')(@click="navigateToAdd")
+      +button('Registrar Usuario', 'success')(@click="navigateToAdd")
 
     if !dataList || dataList.length === 0
       .alert.alert-info.text-center
-        p.m-0 No hay contactos registrados. ¡Comienza agregando uno nuevo!
+        p.m-0 No hay usuarios registrados. ¡Comienza agregando uno nuevo!
     else
       // Barrita de Búsqueda y Paginador
       .d-flex.justify-content-between.align-items-center.mb-3

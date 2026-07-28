@@ -11,7 +11,7 @@ window.createUserApp = () =>
 
     phones = [{ countryNumber: "+506", phone: "" }];
     // email y address son únicos (no arreglos en el esquema de User)
-    emails = [];
+    emails = [{ email: "" }];
     addresses = [];
 
     async init() {
@@ -61,7 +61,6 @@ window.createUserApp = () =>
             emailToken: this.emailToken.trim() || undefined,
             waToken: this.waToken.trim() || undefined,
             telegramToken: this.telegramToken.trim() || undefined,
-            // User espera un solo ObjectId para phoneNumber y address, y un único email
             phoneNumber: createdPhones[0]
               ? createdPhones[0]._id || createdPhones[0].id
               : undefined,
@@ -75,12 +74,11 @@ window.createUserApp = () =>
 
           return httpRequests.post("/api/user", payload);
         },
-        redirectUrl: "/users",
+        redirectUrl: "/user",
       });
     }
 
     addAddress() {
-      // Aunque address es único en el modelo, si la interfaz permite agregarlo como bloque único:
       if (this.addresses.length === 0) {
         forms.addListItem(this.addresses, {
           street: "",
@@ -92,31 +90,11 @@ window.createUserApp = () =>
       }
     }
 
-    addEmail() {
-      if (this.emails.length === 0) {
-        forms.addListItem(this.emails, { email: "" });
-      }
-    }
-
-    addPhone() {
-      if (this.phones.length === 0) {
-        forms.addListItem(this.phones, { countryNumber: "+506", phone: "" });
-      }
-    }
-
     navigateBack() {
       window.location.href = "/user";
     }
 
     removeAddress(index) {
       forms.removeListItem(this.addresses, index, 0);
-    }
-
-    removeEmail(index) {
-      forms.removeListItem(this.emails, index, 0);
-    }
-
-    removePhone(index) {
-      forms.removeListItem(this.phones, index, 1);
     }
   })();
