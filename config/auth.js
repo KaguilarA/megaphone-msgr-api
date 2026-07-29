@@ -1,4 +1,4 @@
-import userModel from "../db/models/user.model.js";
+import userModel from "../db/models/user.js";
 
 const USER_POPULATE_FIELDS = [
   "addresses",
@@ -12,6 +12,7 @@ const USER_POPULATE_FIELDS = [
 ];
 
 export const attachActiveUser = async (req, res, next) => {
+  console.log(req.session);
   if (!req.session?.userId) {
     return next();
   }
@@ -35,6 +36,9 @@ export const attachActiveUser = async (req, res, next) => {
 };
 
 export const ensureAuthenticated = (req, res, next) => {
+  console.log(req.session);
+  
+
   if (req.user) {
     return next();
   }

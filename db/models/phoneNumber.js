@@ -1,0 +1,25 @@
+import { Schema } from "mongoose";
+import DBModel from "../utils/model.js";
+
+/**
+ * PhoneNumber model definition using the DBModel factory.
+ * Handles structural properties for phone numbers, country codes, and relational state references.
+ */
+export default DBModel("PhoneNumber", {
+  phone: {
+    type: String,
+    required: [true, "El número de teléfono es obligatorio."],
+    trim: true,
+  },
+  countryNumber: {
+    type: String,
+    required: [true, "El código de país es obligatorio."],
+    trim: true,
+  },
+  state: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "State",
+    },
+  ],
+});

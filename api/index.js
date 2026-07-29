@@ -1,9 +1,9 @@
-import address from "./../db/models/address.model.js";
-import contact from "./../db/models/contact.model.js";
-import email from "./../db/models/email.model.js";
-import phoneNumber from "./../db/models/phoneNumber.model.js";
-import user from "./../db/models/user.model.js";
-import userTokens from "./../db/models/userTokens.model.js";
+import address from "../db/models/address.js";
+import contact from "../db/models/contact.js";
+import email from "../db/models/email.js";
+import phoneNumber from "../db/models/phoneNumber.js";
+import user from "../db/models/user.js";
+import userTokens from "../db/models/userTokens.js";
 
 export default [
   {

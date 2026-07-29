@@ -1,6 +1,10 @@
 import { Schema } from "mongoose";
-import DBModel from "./../utils/model.js";
+import DBModel from "../utils/model.js";
 
+/**
+ * User model definition using the DBModel factory.
+ * Handles structural properties for user accounts, relationships, and secure password hashing.
+ */
 export default DBModel(
   "User",
   {
@@ -43,7 +47,11 @@ export default DBModel(
     ],
     userTokens: {
       type: Schema.Types.ObjectId,
-      ref: "UserToken"
+      ref: "UserToken",
+    },
+    state: {
+      type: Schema.Types.ObjectId,
+      ref: "State",
     },
   },
   [],

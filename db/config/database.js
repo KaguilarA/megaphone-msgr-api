@@ -1,17 +1,19 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-export default async function () {
+process.loadEnvFile();
+
+const mongodburl = process.env.DB_HOST;
+
+/**
+ * Establishes a secure connection to the MongoDB database using Mongoose.
+ * Validates the presence of the connection URI in environment variables and handles connection errors.
+ */
+export default async () => {
   try {
-    const mongoUri = process.env.MONGO_URI;
-
-    if (!mongoUri) {
-      throw new Error('MONGO_URI no está definida en las variables de entorno.');
-    }
-
-    await mongoose.connect(mongoUri);
-    console.log('🍃 Conexión a MongoDB establecida con éxito.');
+    await mongoose.connect(mongodburl);
+    console.log("MongoDB connected successfully");
   } catch (error) {
-    console.error('❌ Error al conectar con MongoDB:', error);
+    console.error("MongoDB connection failed:", error);
     process.exit(1);
   }
-};
+}

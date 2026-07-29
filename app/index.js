@@ -1,6 +1,6 @@
-import contact from "./../db/models/contact.model.js";
-import email from "./../db/models/email.model.js";
-import user from "./../db/models/user.model.js";
+import contact from "../db/models/contact.js";
+import email from "../db/models/email.js";
+import user from "../db/models/user.js";
 
 export default [
   {
