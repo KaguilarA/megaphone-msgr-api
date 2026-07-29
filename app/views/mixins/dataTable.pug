@@ -26,7 +26,14 @@ mixin dataTable(columnsConfig = [], dataList = 'paginatedList')
                     template(x-if=`item.${col.key} && item.${col.key}.length > 0`)
                       ul.list-unstyled.m-0
                         template(x-for=`subItem in item.${col.key}`)
-                          li(x-text=`subItem.${col.subKey || 'name'} || subItem`)
+                          li.subitem-row
+                            span.subitem-name(x-text=`subItem.${col.subKey || 'name'} || subItem`)
+                            if col.subItemLinkBase
+                              a.btn.btn-outline-primary.btn-sm.ms-2(
+                                :href=`'${col.subItemLinkBase}' + (subItem._id || subItem.id) + '${col.subItemLinkSuffix || ""}'`
+                              ) Editar
+                            if col.subItemDeleteAction
+                              button.btn.btn-outline-danger.btn-sm.ms-2(type="button" @click=`deleteContact(subItem._id || subItem.id)`) Eliminar
                     template(x-if=`!item.${col.key} || item.${col.key}.length === 0`)
                       span.text-muted —
                   when 'data'

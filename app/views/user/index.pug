@@ -35,7 +35,7 @@ block content
 
       +dataTable(columns)
         +button('Editar', 'outline-primary', 'sm')(@click="navigateToEdit(item._id)")
-        +button('Eliminar', 'outline-danger', 'sm')(@click="deleteContact(item._id)")
+        +button('Eliminar', 'outline-danger', 'sm')(@click="deleteUser(item._id)")
 
       .d-flex.justify-content-between.align-items-center.mt-3(x-show="totalPages > 1")
         span.small.text-muted

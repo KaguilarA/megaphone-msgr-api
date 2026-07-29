@@ -14,7 +14,7 @@ window.usersListApp = (dataList = []) =>
       });
     }
 
-    async deleteContact(id) {
+    async deleteUser(id) {
       if (!confirm("¿Estás seguro de que deseas eliminar este usuario?"))
         return;
 
@@ -29,6 +29,29 @@ window.usersListApp = (dataList = []) =>
         console.error("Error al eliminar usuario:", error);
         alert(
           `Error al eliminar: ${error.message || "No se pudo completar la acción"}`,
+        );
+      }
+    }
+
+    async deleteContact(id) {
+      if (!confirm("¿Estás seguro de que deseas eliminar este contacto?")) return;
+
+      try {
+        await httpRequests.delete(`/api/contact/${id}`);
+        this.dataList = this.dataList.map((item) => ({
+          ...item,
+          contacts: (item.contacts || []).filter(
+            (contact) => (contact._id || contact.id) !== id,
+          ),
+        }));
+
+        if (this.paginatedList.length === 0 && this.currentPage > 1) {
+          this.currentPage--;
+        }
+      } catch (error) {
+        console.error("Error al eliminar contacto:", error);
+        alert(
+          `Error al eliminar el contacto: ${error.message || "No se pudo completar la acción"}`,
         );
       }
     }

@@ -102,6 +102,17 @@ body {
   color: white;
 }
 
+.nav-link-link {
+  color: var(--primary);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.nav-link-link:hover,
+.nav-link-link:focus-visible {
+  color: var(--primary-hover);
+}
+
 .nav-link--accent:hover,
 .nav-link--accent:focus-visible {
   background-color: var(--primary-hover);
@@ -185,6 +196,22 @@ body {
   border-color: var(--danger);
   color: var(--danger);
   background: transparent;
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--danger);
+  color: white;
+}
+
+.btn-outline-primary {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: transparent;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary);
+  color: white;
 }
 
 .btn-outline-danger:hover {

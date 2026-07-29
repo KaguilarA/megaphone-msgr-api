@@ -30,6 +30,9 @@ export default (model) =>
         key: "contacts",
         type: "list",
         subKey: "name",
+        subItemLinkBase: "/contact/",
+        subItemLinkSuffix: "/edit",
+        subItemDeleteAction: true,
         sortable: false,
       },
     ];
