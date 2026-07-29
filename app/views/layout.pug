@@ -7,17 +7,28 @@ html(lang="es")
     link(rel="stylesheet", href="/css/styles.css")
     script(src="/js/shared/httpRequests.js")
 
-  body.container
-    header
-      nav
-        ul
-          li
-            a(href="/contact") Contacts
-          li
-            a(href="/user") Users
-          li
-            a(href="/auth") Login
-    block content
+  body
+    include ./mixins/nav
+    +mainNav()
+
+    main.container
+      block content
 
     block scripts
     script(src="/js/vendor/alpine/cdn.min.js", defer)
+    script.
+      (() => {
+        const currentPath = window.location.pathname.replace(/\/+$/, "");
+        document.querySelectorAll('.nav-link').forEach((link) => {
+          const href = link.getAttribute('href')?.replace(/\/+$/, '');
+          if (!href) return;
+          const isActive =
+            href !== '/' && currentPath.startsWith(href) ||
+            href === currentPath;
+          if (isActive) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+      })();
