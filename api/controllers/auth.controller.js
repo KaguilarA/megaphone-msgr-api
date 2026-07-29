@@ -1,6 +1,6 @@
-export default ({ id, models: [emailModel, userModel] }) =>
+export default ({ id, models: [userConfig, emailConfig] }) =>
   new (class {
-    constructor(id, emailModel, userModel) {
+    constructor(id, userModel, emailModel) {
       this.id = id;
       this.emailModel = emailModel;
       this.userModel = userModel;
@@ -15,7 +15,7 @@ export default ({ id, models: [emailModel, userModel] }) =>
             .status(400)
             .json({ error: "El correo y la contraseña son obligatorios." });
         }
-        const emailDoc = await this.emailModel.findOne({
+        const emailDoc = await this.emailModel.getOne({
           email: emailInput.trim().toLowerCase(),
         });
 
@@ -71,4 +71,15 @@ export default ({ id, models: [emailModel, userModel] }) =>
         return res.status(200).json({ message: "Sesión cerrada exitosamente" });
       });
     }
-  })(id, emailModel, userModel);
+
+    status(req, res) {
+      if (req.user) {
+        return res.status(200).json({
+          authenticated: true,
+          user: req.user.toJSON ? req.user.toJSON() : req.user,
+        });
+      }
+
+      return res.status(200).json({ authenticated: false });
+    }
+  })(id, userConfig.model, emailConfig.model);

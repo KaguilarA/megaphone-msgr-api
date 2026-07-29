@@ -1,12 +1,13 @@
 import { Router } from "express";
-import viewController from "./../controllers/auth.controller.js";
+import authController from "./../controllers/auth.controller.js";
 
 export default (data) => {
   const router = Router();
-  const controller = viewController(data);
+  const controller = authController(data);
 
-  router.get("/", controller.logout.bind(controller));
-  router.post("/", controller.logIn.bind(controller));
+  router.post("/login", controller.logIn.bind(controller));
+  router.post("/logout", controller.logout.bind(controller));
+  router.get("/status", controller.status.bind(controller));
 
   return router;
 };
