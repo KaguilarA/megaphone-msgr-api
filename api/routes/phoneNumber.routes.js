@@ -1,5 +1,5 @@
 import { Router } from "express";
-import DBController from "../utils/base.controller.js";
+import DBController from "../utils/controller.js";
 import { ensureAuthenticated } from "../../config/auth.js";
 
 export default (data) => {

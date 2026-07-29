@@ -1,7 +1,7 @@
 import { Router } from "express";
-import DBController from "../utils/base.controller.js";
+import DBController from "../utils/controller.js";
 import { ensureAuthenticated } from "../../config/auth.js";
-import userModel from "../../db/models/user.model.js";
+import userModel from "../../db/models/user.js";
 
 export default (data) => {
   const router = Router();
@@ -11,6 +11,7 @@ export default (data) => {
 
   router.post("/", async (req, res) => {
     try {
+      console.log(req.session);
       const createdContact = await data.model.save(req.body);
 
       if (req.user) {
