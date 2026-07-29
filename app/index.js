@@ -18,7 +18,7 @@ export default [
   {
     url: "/auth",
     config: {
-      models: [email, user],
+      model: undefined,
     },
   },
 ];

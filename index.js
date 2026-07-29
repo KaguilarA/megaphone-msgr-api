@@ -1,7 +1,6 @@
 import path from "node:path";
 import express from "express";
 import connectDB from "./db/config/database.js";
-import ModelsList from "./db/models.list.js";
 import corsMiddleware from "./config/cors.js";
 import sessionMiddleware from "./config/session.js";
 import { attachActiveUser } from "./config/auth.js";
@@ -38,7 +37,7 @@ app.use(
 );
 app.use(express.static(path.join(process.cwd(), "public")));
 
-app.use("", appRouter(ModelsList.app));
+app.use("", appRouter());
 app.use("/api", apiRouter());
 
 app.listen(PORT, () => {
