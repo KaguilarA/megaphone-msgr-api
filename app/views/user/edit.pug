@@ -50,10 +50,9 @@ block content
         +addressSection()
 
         .form-actions
-          +button('', 'primary', '', 'submit')(
+          +button('Actualizar Usuario', 'primary', '', 'submit')(
             :disabled="loading"
           )
-            span(x-text="loading ? 'Actualizando...' : 'Actualizar Usuario'")
           +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
 
 block scripts

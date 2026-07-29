@@ -1,0 +1,30 @@
+extends ../layout
+
+include ../mixins/formGroup
+include ../mixins/button
+
+block content
+  .auth-page-wrapper(x-data="loginApp()")
+    .page-header
+      h1 Iniciar Sesión
+
+    .form-container
+      form#loginForm(@submit.prevent="submitForm" autocomplete="off")
+        .form-section
+          +formGroup('Correo Electrónico *', 'email', 'email', { xModel: 'email' })(
+            id="email"
+            required
+            placeholder="correo@ejemplo.com"
+          )
+          +formGroup('Contraseña *', 'password', 'password', { xModel: 'password' })(
+            id="password"
+            required
+            placeholder="••••••••"
+          )
+
+        .form-actions
+          +button('Iniciar Sesión', 'primary btn-full', '', 'submit')(:disabled="loading")
+
+block scripts
+  script(src="/js/shared/forms.js")
+  script(src="/js/auth/login.js")

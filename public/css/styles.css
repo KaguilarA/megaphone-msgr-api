@@ -270,6 +270,20 @@ body {
   border-color: var(--primary);
 }
 
+.auth-page-wrapper {
+  max-width: 440px;
+  margin: 3rem auto;
+}
+
+.auth-page-wrapper .form-actions {
+  justify-content: center;
+}
+
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
 /* Dynamic Rows */
 .dynamic-row {
   background: #f8fafc;

@@ -32,10 +32,9 @@ block content
         +addressSection()
 
         .form-actions
-          +button('', 'success', '', 'submit')(
+          +button('Guardar Contacto', 'success', '', 'submit')(
             :disabled="loading"
           )
-            span(x-text="loading ? 'Guardando...' : 'Guardar Contacto'")
           
           +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
 

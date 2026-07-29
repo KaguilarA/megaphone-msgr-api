@@ -32,10 +32,9 @@ block content
         +addressSection()
 
         .form-actions
-          +button('', 'primary', '', 'submit')(
+          +button('Actualizar Contacto', 'primary', '', 'submit')(
             :disabled="loading"
           )
-            span(x-text="loading ? 'Actualizando...' : 'Actualizar Contacto'")
           
           +button('Cancelar', 'outline-secondary')(@click="navigateBack()")
 

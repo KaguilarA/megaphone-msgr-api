@@ -57,10 +57,9 @@ block content
         +addressSection()
 
         .form-actions
-          +button('', 'success', '', 'submit')(
+          +button('Guardar Usuario', 'success', '', 'submit')(
             :disabled="loading"
           )
-            span(x-text="loading ? 'Guardando...' : 'Guardar Usuario'")
           
           +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
 
