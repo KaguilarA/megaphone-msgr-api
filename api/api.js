@@ -3,16 +3,25 @@ import AddressRouter from "./routes/address.routes.js";
 import ContactRouter from "./routes/contact.routes.js";
 import EmailRouter from "./routes/email.routes.js";
 import PhoneNumberRouter from "./routes/phoneNumber.routes.js";
-import UserRouter from "./routes/phoneNumber.routes.js";
+import UserRouter from "./routes/user.routes.js";
+import UserTokensRouter from "./routes/userTokens.routes.js";
 
-export default ([address, contact, email, phoneNumber, user]) => {
+import ApiConfig from "./index.js";
+
+export default () => {
+  const controllers = [
+    AddressRouter,
+    ContactRouter,
+    EmailRouter,
+    PhoneNumberRouter,
+    UserRouter,
+    UserTokensRouter,
+  ];
   const router = Router();
 
-  router.use("/address", AddressRouter(address));
-  router.use("/contact", ContactRouter(contact));
-  router.use("/email", EmailRouter(email));
-  router.use("/phone-number", PhoneNumberRouter(phoneNumber));
-  router.use("/user", UserRouter(user));
+  ApiConfig.forEach(({ url, config }, i) => {
+    router.use(url, controllers[i](config));
+  });
 
   return router;
 };

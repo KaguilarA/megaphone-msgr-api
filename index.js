@@ -3,6 +3,7 @@ import express from "express";
 import connectDB from "./db/config/database.js";
 import ModelsList from "./db/models.list.js";
 import corsMiddleware from "./config/cors.js";
+import sessionMiddleware from "./config/session.js";
 
 import apiRouter from "./api/api.js";
 import appRouter from "./app/app.js";
@@ -11,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(corsMiddleware);
+app.use(sessionMiddleware());
 app.use(express.json());
 
 app.set("view engine", "pug");
@@ -26,7 +28,7 @@ app.use(
 app.use(express.static(path.join(process.cwd(), "public")));
 
 app.use("", appRouter(ModelsList.app));
-app.use("/api", apiRouter(ModelsList.api));
+app.use("/api", apiRouter());
 
 app.listen(PORT, () => {
   connectDB();

@@ -22,23 +22,12 @@ export default DBModel(
     email: {
       type: Schema.Types.ObjectId,
       ref: "Email",
-    },
-    emailToken: {
-      type: String,
-      trim: true,
+      required: true,
     },
     phoneNumber: {
       type: Schema.Types.ObjectId,
       ref: "PhoneNumber",
       required: true,
-    },
-    waToken: {
-      type: String,
-      trim: true,
-    },
-    telegramToken: {
-      type: String,
-      trim: true,
     },
     contacts: [
       {
@@ -46,11 +35,17 @@ export default DBModel(
         ref: "Contact",
       },
     ],
-    address: {
+    addresses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Address",
+      },
+    ],
+    userTokens: {
       type: Schema.Types.ObjectId,
-      ref: "Address",
+      ref: "UserToken"
     },
   },
-  ["emailToken", "waToken", "telegramToken"],
-  ['password']
+  [],
+  ["password"],
 );

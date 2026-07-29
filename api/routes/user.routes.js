@@ -1,12 +1,8 @@
 import { Router } from "express";
 import DBController from "../utils/base.controller.js";
 
-export default (model) => {
-  const controller = DBController("User", model, [
-    "address",
-    "email",
-    "phoneNumber",
-  ]);
+export default ({ id, model, populatedFields }) => {
+  const controller = DBController(id, model, populatedFields);
   const router = Router();
 
   router.post("/", controller.register.bind(controller));
