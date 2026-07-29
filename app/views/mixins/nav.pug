@@ -4,9 +4,23 @@ mixin mainNav()
       a.brand(href="/") WhatsApp AMP
       nav.main-nav
         ul.nav-list
-          li.nav-item
-            a.nav-link(href="/contact") Contactos
-          li.nav-item
-            a.nav-link(href="/user") Usuarios
-          li.nav-item
-            a.nav-link.nav-link--accent(href="/auth") Login
+          if user
+            li.nav-item
+              span.nav-user Hola #{user.name}
+            li.nav-item
+              a.nav-link(href="/contact")
+                i.fas.fa-address-book
+                |  Contactos
+            li.nav-item
+              a.nav-link.nav-link--accent(href="/auth/logout")
+                i.fas.fa-sign-out-alt
+                |  Logout
+          else
+            li.nav-item
+              a.nav-link(href="/auth")
+                i.fas.fa-sign-in-alt
+                |  Login
+            li.nav-item
+              a.nav-link(href="/auth/register")
+                i.fas.fa-user-plus
+                |  Registrar

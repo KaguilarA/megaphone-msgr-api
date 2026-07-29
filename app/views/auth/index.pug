@@ -5,10 +5,11 @@ include ../mixins/button
 
 block content
   .auth-page-wrapper(x-data="loginApp()")
-    .page-header
-      h1 Iniciar Sesión
+    .auth-card
+      .auth-card-header
+        h1.auth-title Iniciar Sesión
+        p.auth-subtitle Accede a tus contactos y administra tu agenda desde un solo lugar.
 
-    .form-container
       form#loginForm(@submit.prevent="submitForm" autocomplete="off")
         .form-section
           +formGroup('Correo Electrónico *', 'email', 'email', { xModel: 'email' })(
@@ -23,7 +24,13 @@ block content
           )
 
         .form-actions
-          +button('Iniciar Sesión', 'primary btn-full', '', 'submit')(:disabled="loading")
+          +button('Iniciar Sesión', 'primary btn-full', '', 'submit', 'fas fa-sign-in-alt')(:disabled="loading")
+
+      .auth-footer
+        span ¿Aún no tienes cuenta?
+        a.auth-link(href="/auth/register")
+          i.fas.fa-user-plus
+          |  Regístrate
 
 block scripts
   script(src="/js/shared/forms.js")
