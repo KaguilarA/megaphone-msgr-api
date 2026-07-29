@@ -59,4 +59,20 @@ export default (model) =>
     async renderRegister(_req, res) {
       res.render("user/new", { title: "Registro de usuario" });
     }
+
+    async renderEdit(req, res) {
+      try {
+        const { id } = req.params;
+        const response = await fetch(`http://localhost:3000/api/user/${id}`);
+        const user = await response.json();
+
+        res.render("user/edit", {
+          title: "Editar Usuario",
+          user,
+        });
+      } catch (error) {
+        console.error("Error al cargar la vista de edición de usuario:", error);
+        res.status(500).send("Error al cargar la vista de edición de usuario");
+      }
+    }
   })(model);

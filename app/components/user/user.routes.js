@@ -8,6 +8,7 @@ export default (model) => {
 
   router.get("/", controller.renderHome.bind(controller));
   router.get("/new", controller.renderRegister.bind(controller));
+  router.get("/:id/edit", controller.renderEdit.bind(controller));
 
   return router;
 };

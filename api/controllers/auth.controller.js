@@ -25,14 +25,18 @@ export default ({ id, models: [emailModel, userModel] }) =>
 
         const user = await this.userModel.getOne(
           { email: emailDoc._id },
-          { populatedFiels: [] },
+          { populate: [] },
         );
 
         if (!user) {
           return res.status(401).json({ error: "Credenciales inválidas." });
         }
 
-        const isMatch = await user.compareHash(password, user.password);
+        const isMatch = await this.userModel.compareHash(
+          user._id,
+          "password",
+          password,
+        );
 
         if (!isMatch) {
           return res.status(401).json({ error: "Credenciales inválidas." });
@@ -40,9 +44,16 @@ export default ({ id, models: [emailModel, userModel] }) =>
 
         req.session.userId = user._id;
 
-        return res
-          .status(200)
-          .json({ message: "Inicio de sesión exitoso", user: user.toJSON() });
+        req.session.save((err) => {
+          if (err) {
+            console.error("Error guardando la sesión:", err);
+            return res.status(500).json({ error: "Error interno del servidor." });
+          }
+
+          return res
+            .status(200)
+            .json({ message: "Inicio de sesión exitoso", user: user.toJSON() });
+        });
       } catch (error) {
         console.error("Error en login:", error);
         return res.status(500).json({ error: "Error interno del servidor." });

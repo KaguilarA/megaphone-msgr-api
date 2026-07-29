@@ -1,0 +1,63 @@
+extends ../layout
+
+include ../mixins/formGroup
+include ../mixins/button
+include ../mixins/phoneSelect
+include ../mixins/phoneSection
+include ../mixins/emailSection
+include ../mixins/addressSection
+
+block content
+  .edit-page-wrapper(x-data=`editUserApp(${JSON.stringify(user)})`)
+    .page-header
+      h1 Editar Usuario
+      +button('Volver a Usuarios', 'outline-secondary')(@click="navigateBack()")
+
+    .form-container
+      form#userForm(
+        @submit.prevent="submitForm"
+        autocomplete="off"
+      )
+        .form-section
+          h2.section-title Datos Personales
+          +formGroup('Nombre *', 'name', 'text', { xModel: 'name' })(
+            id="name"
+            required
+          )
+          +formGroup('Apellido *', 'lastname', 'text', { xModel: 'lastname' })(
+            id="lastname"
+            required
+          )
+          +formGroup('Contraseña', 'password', 'password', { xModel: 'password' })(
+            id="password"
+            placeholder="Dejar vacío para mantener la contraseña actual"
+          )
+
+        .form-section
+          h2.section-title Tokens e Integraciones
+          +formGroup('Token de Correo (emailToken)', 'emailToken', 'text', { xModel: 'emailToken' })(
+            id="emailToken"
+          )
+          +formGroup('Token de WhatsApp (waToken)', 'waToken', 'text', { xModel: 'waToken' })(
+            id="waToken"
+          )
+          +formGroup('Token de Telegram (telegramToken)', 'telegramToken', 'text', { xModel: 'telegramToken' })(
+            id="telegramToken"
+          )
+
+        +phoneSection(true)
+        +emailSection(true)
+        +addressSection()
+
+        .form-actions
+          +button('', 'primary', '', 'submit')(
+            :disabled="loading"
+          )
+            span(x-text="loading ? 'Actualizando...' : 'Actualizar Usuario'")
+          +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
+
+block scripts
+  script(src="/js/shared/parsers.js")
+  script(src="/js/shared/countries.js")
+  script(src="/js/shared/forms.js")
+  script(src="/js/users/edit.js")
