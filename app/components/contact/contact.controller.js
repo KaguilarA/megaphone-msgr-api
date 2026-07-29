@@ -26,37 +26,54 @@ export default (model) =>
       this.model = model;
     }
 
-    async renderHome(_req, res) {
+    async renderHome(req, res) {
       try {
-        const response = await fetch("http://localhost:3000/api/contact");
-        const dataList = await response.json();
-
         res.render("contact/index", {
           title: "Contactos",
-          dataList,
+          dataList: req.user.contacts,
           columns: this.columns,
         });
       } catch (error) {
         console.error("Error al renderizar la página de contactos:", error);
-        res
-          .status(500)
-          .send("Error al obtener los contactos de la base de datos");
+        res.status(500).send("Error al obtener los contactos de la base de datos");
       }
     }
 
-    async renderRegister(_req, res) {
-      res.render("contact/new", { title: "Nuevo Contacto" });
+    async renderRegister(req, res) {
+      res.render("contact/new", {
+        title: "Nuevo Contacto",
+        backUrl: "/contact",
+      });
     }
 
     async renderEdit(req, res) {
       try {
         const { id } = req.params;
-        const response = await fetch(`http://localhost:3000/api/contact/${id}`);
-        const contact = await response.json();
+
+        const contact = await this.model.model
+          .findById(id)
+          .populate(["phoneNumbers", "emails", "addresses"])
+          .lean();
+
+        if (!contact) {
+          return res.status(404).send("Contacto no encontrado");
+        }
+
+        const ownsContact = (req.user.contacts || []).some((item) => {
+          const itemId = `${item._id || item.id}`;
+          return itemId === id;
+        });
+
+        if (!ownsContact) {
+          return res.status(404).send("Contacto no encontrado");
+        }
+
+        const normalized = { ...contact, _id: contact._id || contact.id };
 
         res.render("contact/edit", {
           title: "Editar Contacto",
-          contact,
+          contact: normalized,
+          backUrl: "/contact",
         });
       } catch (error) {
         console.error("Error al cargar la vista de edición:", error);

@@ -1,7 +1,15 @@
 import crypto from 'node:crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const SECRET_KEY = Buffer.from(process.env.ENCRYPTION_KEY || '', 'hex');
+const DEFAULT_DEV_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+const keyHex = process.env.ENCRYPTION_KEY || DEFAULT_DEV_KEY;
+const SECRET_KEY = Buffer.from(keyHex, 'hex');
+
+if (!process.env.ENCRYPTION_KEY && process.env.NODE_ENV !== 'production') {
+  console.warn(
+    'Advertencia: ENCRYPTION_KEY no está definido. Usando clave de desarrollo predeterminada.',
+  );
+}
 
 if (SECRET_KEY.length !== 32) {
   throw new Error('ENCRYPTION_KEY debe ser un string hexadecimal de 64 caracteres (32 bytes).');
