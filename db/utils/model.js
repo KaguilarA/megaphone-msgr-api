@@ -27,7 +27,6 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
       const hashFields = this.hashedFields;
 
       this.schema.pre("save", async function (next) {
-        // Cifrado reversible (AES)
         encFields.forEach((field) => {
           if (
             this.isModified(field) &&
@@ -38,7 +37,6 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
           }
         });
 
-        // Hash unidireccional (Bcryptjs)
         for (const field of hashFields) {
           if (
             this.isModified(field) &&
@@ -123,6 +121,44 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
       });
     }
 
+    _applyPopulate(query, populateOption) {
+      if (!populateOption) return query;
+
+      const parsePopulateString = (str) => {
+        const parts = str.split(".");
+        if (parts.length === 1) return str;
+
+        let nestedObj = null;
+        for (let i = parts.length - 1; i >= 0; i--) {
+          if (i === parts.length - 1) {
+            nestedObj = { path: parts[i] };
+          } else {
+            nestedObj = { path: parts[i], populate: nestedObj };
+          }
+        }
+        return nestedObj;
+      };
+
+      if (Array.isArray(populateOption)) {
+        populateOption.forEach((item) => {
+          if (typeof item === "string" && item.includes(".")) {
+            query = query.populate(parsePopulateString(item));
+          } else {
+            query = query.populate(item);
+          }
+        });
+      } else if (
+        typeof populateOption === "string" &&
+        populateOption.includes(".")
+      ) {
+        query = query.populate(parsePopulateString(populateOption));
+      } else {
+        query = query.populate(populateOption);
+      }
+
+      return query;
+    }
+
     async compareHash(id, field, candidateValue) {
       if (!this.hashedFields.includes(field)) {
         throw new Error(
@@ -143,9 +179,7 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
     async getAll(options = {}) {
       let query = this.model.find();
       if (options.populate) {
-        options.populate.forEach((field) => {
-          query = query.populate(field);
-        });
+        query = this._applyPopulate(query, options.populate);
       }
       return await query;
     }
@@ -153,9 +187,15 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
     async getById(id, options = {}) {
       let query = this.model.findById(id);
       if (options.populate) {
-        options.populate.forEach((field) => {
-          query = query.populate(field);
-        });
+        query = this._applyPopulate(query, options.populate);
+      }
+      return await query;
+    }
+
+    async getOne(filter = {}, options = {}) {
+      let query = this.model.findOne(filter);
+      if (options.populate) {
+        query = this._applyPopulate(query, options.populate);
       }
       return await query;
     }
@@ -171,9 +211,7 @@ export default (id, schema, encryptedFields = [], hashedFields = []) =>
         ...options,
       });
       if (options.populate) {
-        options.populate.forEach((field) => {
-          query = query.populate(field);
-        });
+        query = this._applyPopulate(query, options.populate);
       }
       return await query;
     }
