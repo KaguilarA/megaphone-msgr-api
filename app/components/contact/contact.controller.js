@@ -28,9 +28,8 @@ export default (model) =>
 
     async renderHome(_req, res) {
       try {
-        const dataList = await this.model.getAll({
-          populate: ["addresses", "emails", "phoneNumbers"],
-        });
+        const response = await fetch("http://localhost:3000/api/contact");
+        const dataList = await response.json();
 
         res.render("contact/index", {
           title: "Contactos",
@@ -52,14 +51,8 @@ export default (model) =>
     async renderEdit(req, res) {
       try {
         const { id } = req.params;
-        const contact = await this.model.getById(id, {
-          populate: ["addresses", "emails", "phoneNumbers"],
-        });
-
-        if (!contact) {
-          res.status(404).send("Contacto no encontrado");
-          return;
-        }
+        const response = await fetch(`http://localhost:3000/api/contact/${id}`);
+        const contact = await response.json();
 
         res.render("contact/edit", {
           title: "Editar Contacto",

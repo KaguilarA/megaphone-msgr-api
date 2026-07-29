@@ -14,6 +14,32 @@ export default [
     },
   },
   {
+    url: "/auth",
+    config: {
+      id: "Auth",
+      models: [
+        {
+          id: "User",
+          model: user,
+          populatedFields: [
+            "addresses",
+            "contacts",
+            "contacts.phoneNumbers",
+            "contacts.emails",
+            "contacts.addresses",
+            "email",
+            "phoneNumber",
+            "userTokens",
+          ],
+        },
+        {
+          id: "Email",
+          model: email,
+        },
+      ],
+    },
+  },
+  {
     url: "/contact",
     config: {
       id: "Contact",

@@ -1,9 +1,9 @@
 import { Router } from "express";
 import DBController from "../utils/base.controller.js";
 
-export default ({ id, model }) => {
-  const controller = DBController(id, model);
+export default (data) => {
   const router = Router();
+  const controller = DBController(data);
 
   router.post("/", controller.register.bind(controller));
   router.get("/", controller.getAll.bind(controller));
@@ -12,4 +12,4 @@ export default ({ id, model }) => {
   router.delete("/:id", controller.delete.bind(controller));
 
   return router;
-}
+};

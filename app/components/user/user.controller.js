@@ -40,9 +40,8 @@ export default (model) =>
 
     async renderHome(_req, res) {
       try {
-        const dataList = await this.model.getAll({
-          populate: ["address", "email", "phoneNumber", "contacts"],
-        });
+        const response = await fetch("http://localhost:3000/api/user");
+        const dataList = await response.json();
 
         res.render("user/index", {
           title: "Users",

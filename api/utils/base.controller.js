@@ -1,9 +1,9 @@
-export default (id, model, populatedFiels = []) =>
+export default (data) =>
   new (class {
-    constructor(id, model, populatedFiels) {
+    constructor({ id, model, populatedFields = [] }) {
       this.id = id;
       this.model = model;
-      this.populatedFiels = populatedFiels;
+      this.populatedFiels = populatedFields;
     }
 
     async delete(req, res) {
@@ -34,6 +34,16 @@ export default (id, model, populatedFiels = []) =>
       } catch (error) {
         res.status(500).json({
           message: `${this.id} list error.`,
+          error: error.message || error,
+        });
+      }
+    }
+
+    async getOne(req, res) {
+      try {
+      } catch (error) {
+        res.status(500).json({
+          message: `${this.id} search error.`,
           error: error.message || error,
         });
       }
@@ -92,4 +102,4 @@ export default (id, model, populatedFiels = []) =>
         });
       }
     }
-  })(id, model, populatedFiels);
+  })(data);

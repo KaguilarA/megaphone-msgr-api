@@ -58,18 +58,9 @@ window.createUserApp = () =>
             name: this.name.trim(),
             lastname: this.lastname.trim(),
             password: this.password.trim(),
-            emailToken: this.emailToken.trim() || undefined,
-            waToken: this.waToken.trim() || undefined,
-            telegramToken: this.telegramToken.trim() || undefined,
-            phoneNumber: createdPhones[0]
-              ? createdPhones[0]._id || createdPhones[0].id
-              : undefined,
-            email: createdEmails[0]
-              ? createdEmails[0]._id || createdEmails[0].id
-              : undefined,
-            address: createdAddresses[0]
-              ? createdAddresses[0]._id || createdAddresses[0].id
-              : undefined,
+            phoneNumber: createdPhones[0]._id,
+            email: createdEmails[0]._id,
+            addresses: createdAddresses.map((a) => a._id || a.id),
           };
 
           return httpRequests.post("/api/user", payload);
