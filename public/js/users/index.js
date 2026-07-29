@@ -3,12 +3,14 @@ window.usersListApp = (dataList = []) =>
     sortBy = "name";
 
     get searchResult() {
-      return this.dataList.filter(({ name, lastname, email, phoneNumber }) => {
+      const list = Array.isArray(this.dataList) ? this.dataList : [];
+
+      return list.filter(({ name, lastname, email, phoneNumber }) => {
         const q = this.search.toLowerCase();
-        const nameMatch = name.toLowerCase().includes(q);
-        const lastnameMatch = lastname.toLowerCase().includes(q);
-        const emailMatch = email.email.toLowerCase().includes(q);
-        const phoneMatch = phoneNumber.phone.includes(q);
+        const nameMatch = String(name || "").toLowerCase().includes(q);
+        const lastnameMatch = String(lastname || "").toLowerCase().includes(q);
+        const emailMatch = String(email?.email || "").toLowerCase().includes(q);
+        const phoneMatch = String(phoneNumber?.phone || "").includes(q);
 
         return nameMatch || lastnameMatch || emailMatch || phoneMatch;
       });

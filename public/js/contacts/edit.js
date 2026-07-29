@@ -2,9 +2,11 @@ window.editContactApp = (initialData = {}) =>
   new (class {
     countryCodes = [];
     loading = false;
+    backUrl = "/contact";
 
     constructor(initialData) {
       this.id = initialData._id;
+      this.backUrl = initialData.backUrl || this.backUrl;
       this.name = initialData.name || "";
       this.addresses =
         initialData.addresses && initialData.addresses.length
@@ -89,7 +91,7 @@ window.editContactApp = (initialData = {}) =>
 
           return httpRequests.put(`/api/contact/${this.id}`, payload);
         },
-        redirectUrl: "/contact",
+        redirectUrl: this.backUrl,
       });
     }
 
@@ -115,7 +117,7 @@ window.editContactApp = (initialData = {}) =>
       if (event && typeof event.preventDefault === "function") {
         event.preventDefault();
       }
-      window.location.href = "/contact";
+      window.location.href = this.backUrl;
     }
 
     removeAddress(index) {

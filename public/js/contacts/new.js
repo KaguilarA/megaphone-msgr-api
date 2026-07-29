@@ -1,14 +1,16 @@
-window.createContactApp = () =>
+window.createContactApp = (options = {}) =>
   new (class {
     name = "";
     countryCodes = [];
     loading = false;
+    backUrl = "/contact";
 
     phones = [{ countryNumber: "+506", phone: "" }];
     emails = [];
     addresses = [];
 
-    constructor() {
+    constructor(options) {
+      this.backUrl = options.backUrl || this.backUrl;
       this.init();
     }
 
@@ -76,7 +78,7 @@ window.createContactApp = () =>
     }
 
     navigateBack() {
-      window.location.href = "/contact";
+      window.location.href = this.backUrl;
     }
 
     removeAddress(index) {

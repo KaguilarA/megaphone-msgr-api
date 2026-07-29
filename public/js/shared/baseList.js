@@ -9,9 +9,11 @@ class APMViewList {
   }
 
   get filteredList() {
-    let result = this.dataList;
+    const list = Array.isArray(this.dataList) ? this.dataList : [];
+    let result = list;
 
     if (this.search.trim()) result = this.searchResult;
+    if (!Array.isArray(result)) result = [];
 
     return result.sort((a, b) => {
       let valA = a[this.sortBy] || "";

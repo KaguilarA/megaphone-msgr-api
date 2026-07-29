@@ -13,7 +13,7 @@ window.loginApp = () =>
       await forms.handleSubmit({
         state: this,
         requestFn: async () => {
-          await httpRequests.post("/api/auth", {
+          await httpRequests.post("/api/auth/login", {
             email: this.email.trim(),
             password: this.password,
           });
