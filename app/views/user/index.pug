@@ -1,58 +1,57 @@
 extends ../layout
 
-include ../mixins/dataTable
 include ../mixins/button
+include ../mixins/nav
 
 block content
-  .list-page-wrapper(x-data=`usersListApp(${JSON.stringify(dataList || [])})`)
-    .page-header
-      h1 Lista de Usuarios
-      // Usamos el mixin +button para mantener consistencia semántica y de estilos
-      +button('Registrar Usuario', 'success')(@click="navigateToAdd")
+  +mainNav()
+  main.container
+    .profile-page-wrapper(x-data=`usersListApp(${JSON.stringify(user)})`)
+      .page-header
+        h1 Mi Perfil
+        .header-actions
+          +button('Editar Perfil', 'primary', '', 'button')(onclick="window.location.href='/user/me/edit'")
+          +button('Asignar Token', 'outline-primary', '', 'button')(@click="navigateToToken()")
 
-    if !dataList || dataList.length === 0
-      .alert.alert-info.text-center
-        p.m-0 No hay usuarios registrados. ¡Comienza agregando uno nuevo!
-    else
-      // Barrita de Búsqueda y Paginador
-      .d-flex.justify-content-between.align-items-center.mb-3
-        .search-container.flex-grow-1.me-3
-          input.form-control(
-            type="text"
-            placeholder="Buscar por nombre, correo o teléfono..."
-            x-model="search"
-            @input="currentPage = 1"
-          )
-        .d-flex.align-items-center
-          label.me-2.mb-0.text-nowrap.small Mostrar:
-          select.form-select.form-select-sm(
-            x-model.number="perPage" 
-            @change="currentPage = 1"
-          )
-            option(value="5") 5
-            option(value="10") 10
-            option(value="25") 25
+      .profile-grid
+        .profile-card
+          h2.section-title Datos Personales
+          ul.profile-list
+            li
+              strong Nombre:
+              span #{user.name}
+            li
+              strong Apellido:
+              span #{user.lastname}
+            li
+              strong Correo:
+              span #{(user.email && user.email.email) || 'No disponible'}
+            li
+              strong Teléfono:
+              span #{(user.phoneNumber && user.phoneNumber.phone) || 'No disponible'}
 
-      +dataTable(columns)
-        +button('Editar', 'outline-primary', 'sm')(@click="navigateToEdit(item._id)")
-        +button('Eliminar', 'outline-danger', 'sm')(@click="deleteUser(item._id)")
+        .profile-card
+          h2.section-title Integraciones
+          ul.profile-list
+            li
+              strong Email Token:
+              span #{user.emailToken || 'No asignado'}
+            li
+              strong WhatsApp Token:
+              span #{user.waToken || 'No asignado'}
+            li
+              strong Telegram Token:
+              span #{user.telegramToken || 'No asignado'}
 
-      .d-flex.justify-content-between.align-items-center.mt-3(x-show="totalPages > 1")
-        span.small.text-muted
-          | Mostrando página 
-          strong(x-text="currentPage") 
-          |  de 
-          strong(x-text="totalPages")
-
-        .btn-group
-          +button('Anterior', 'outline-secondary', 'sm')(
-            :disabled="currentPage === 1"
-            @click="setPage(currentPage - 1)"
-          )
-          +button('Siguiente', 'outline-secondary', 'sm')(
-            :disabled="currentPage === totalPages"
-            @click="setPage(currentPage + 1)"
-          )
+        .profile-card
+          h2.section-title Direcciones
+          if user.addresses && user.addresses.length > 0
+            ul.profile-list
+              each address in user.addresses
+                li
+                  span #{address.street}, #{address.city}, #{address.state}, #{address.postalCode}, #{address.country}
+          else
+            p.text-muted No hay direcciones registradas.
 
 block scripts
   script(src="/js/shared/baseList.js")

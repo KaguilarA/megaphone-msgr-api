@@ -10,11 +10,7 @@ html(lang="es")
     script(src="/js/shared/httpRequests.js")
 
   body
-    include ./mixins/nav
-    +mainNav()
-
-    main.container
-      block content
+    block content
 
     block scripts
     script(src="/js/vendor/alpine/cdn.min.js", defer)

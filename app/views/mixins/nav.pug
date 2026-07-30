@@ -8,6 +8,10 @@ mixin mainNav()
             li.nav-item
               span.nav-user Hola #{user.name}
             li.nav-item
+              a.nav-link(href="/user")
+                i.fas.fa-user-edit
+                |  Perfil
+            li.nav-item
               a.nav-link(href="/contact")
                 i.fas.fa-address-book
                 |  Contactos

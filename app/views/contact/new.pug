@@ -6,37 +6,40 @@ include ../mixins/phoneSelect
 include ../mixins/phoneSection
 include ../mixins/emailSection
 include ../mixins/addressSection
+include ../mixins/nav
 
 block content
-  .create-page-wrapper(x-data=`createContactApp(${JSON.stringify({ backUrl: backUrl || "/contact" })})`)
-    .page-header
-      h1 Nuevo Contacto
-      +button('Volver a Contactos', 'outline-secondary')(@click="navigateBack")
+  +mainNav()
+  main.container
+    .create-page-wrapper(x-data=`createContactApp(${JSON.stringify({ backUrl: backUrl || "/contact" })})`)
+      .page-header
+        h1 Nuevo Contacto
+        +button('Volver a Contactos', 'outline-secondary')(@click="navigateBack")
 
-    .form-container
-      form#contactForm(
-        @submit.prevent="submitForm"
-        autocomplete="off"
-      )
-        .form-section
-          h2.section-title Datos Personales
-          +formGroup('Nombre Completo *', 'name', 'text', { xModel: 'name' })(
-            id="name"
-            required
-            placeholder="Ej: Juan Pérez"
-          )
+      .form-container
+        form#contactForm(
+          @submit.prevent="submitForm"
+          autocomplete="off"
+        )
+          .form-section
+            h2.section-title Datos Personales
+            +formGroup('Nombre Completo *', 'name', 'text', { xModel: 'name' })(
+              id="name"
+              required
+              placeholder="Ej: Juan Pérez"
+            )
 
-        // Secciones dinámicas (email y address inician limpias)
-        +phoneSection()
-        +emailSection()
-        +addressSection()
+          // Secciones dinámicas (email y address inician limpias)
+          +phoneSection()
+          +emailSection()
+          +addressSection()
 
-        .form-actions
-          +button('Guardar Contacto', 'success', '', 'submit')(
-            :disabled="loading"
-          )
-          
-          +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
+          .form-actions
+            +button('Guardar Contacto', 'success', '', 'submit')(
+              :disabled="loading"
+            )
+            
+            +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
 
 block scripts
   script(src="/js/shared/parsers.js")

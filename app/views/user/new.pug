@@ -1,70 +1,55 @@
 extends ../layout
 
-include ../mixins/formGroup
 include ../mixins/button
-include ../mixins/phoneSelect
-include ../mixins/phoneSection
-include ../mixins/emailSection
-include ../mixins/addressSection
 
 block content
-  .create-page-wrapper(x-data="createUserApp")
+  .profile-page-wrapper
     .page-header
-      h1 Nuevo Usuario
-      +button('Volver a Usuarios', 'outline-secondary')(@click="navigateBack")
+      h1 Mi Perfil
+      .header-actions
+        +button('Editar Perfil', 'primary', '', 'button')(onclick="window.location.href='/user/me/edit'")
+        +button('Asignar Token', 'outline-primary', '', 'button')(onclick="window.location.href='/user/me/token'")
+        +button('Volver a Usuarios', 'outline-secondary', '', 'button')(onclick="window.location.href='/contact'")
 
-    .form-container
-      form#userForm(
-        @submit.prevent="submitForm"
-        autocomplete="off"
-      )
-        .form-section
-          h2.section-title Datos Personales
-          +formGroup('Nombre *', 'name', 'text', { xModel: 'name' })(
-            id="name"
-            required
-            placeholder="Ej: Juan"
-          )
-          +formGroup('Apellido *', 'lastname', 'text', { xModel: 'lastname' })(
-            id="lastname"
-            required
-            placeholder="Ej: Pérez"
-          )
-          +formGroup('Contraseña *', 'password', 'password', { xModel: 'password' })(
-            id="password"
-            required
-            placeholder="••••••••"
-          )
+    .profile-grid
+      .profile-card
+        h2.section-title Datos Personales
+        ul.profile-list
+          li
+            strong Nombre:
+            span #{user.name}
+          li
+            strong Apellido:
+            span #{user.lastname}
+          li
+            strong Correo:
+            span #{(user.email && user.email.email) || 'No disponible'}
+          li
+            strong Teléfono:
+            span #{(user.phoneNumber && user.phoneNumber.phone) || 'No disponible'}
 
-        .form-section
-          h2.section-title Tokens e Integraciones
-          +formGroup('Token de Correo (emailToken)', 'emailToken', 'text', { xModel: 'emailToken' })(
-            id="emailToken"
-            placeholder="Opcional"
-          )
-          +formGroup('Token de WhatsApp (waToken)', 'waToken', 'text', { xModel: 'waToken' })(
-            id="waToken"
-            placeholder="Opcional"
-          )
-          +formGroup('Token de Telegram (telegramToken)', 'telegramToken', 'text', { xModel: 'telegramToken' })(
-            id="telegramToken"
-            placeholder="Opcional"
-          )
+      .profile-card
+        h2.section-title Integraciones
+        ul.profile-list
+          li
+            strong Email Token:
+            span #{user.emailToken || 'No asignado'}
+          li
+            strong WhatsApp Token:
+            span #{user.waToken || 'No asignado'}
+          li
+            strong Telegram Token:
+            span #{user.telegramToken || 'No asignado'}
 
-        // Secciones dinámicas para Teléfono (requerido), Email (requerido) y Dirección (opcional)
-        +phoneSection(true)
-        +emailSection(true)
-        +addressSection()
-
-        .form-actions
-          +button('Guardar Usuario', 'success', '', 'submit')(
-            :disabled="loading"
-          )
-          
-          +button('Cancelar', 'outline-secondary')(@click="navigateBack($event)")
+      .profile-card
+        h2.section-title Direcciones
+        if user.addresses && user.addresses.length > 0
+          ul.profile-list
+            each address in user.addresses
+              li
+                span #{address.street}, #{address.city}, #{address.state}, #{address.postalCode}, #{address.country}
+        else
+          p.text-muted No hay direcciones registradas.
 
 block scripts
-  script(src="/js/shared/parsers.js")
-  script(src="/js/shared/countries.js")
-  script(src="/js/shared/forms.js")
-  script(src="/js/users/new.js")
+  // You can add page-specific JS here if needed
