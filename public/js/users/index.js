@@ -7,9 +7,15 @@ window.usersListApp = (dataList = []) =>
 
       return list.filter(({ name, lastname, email, phoneNumber }) => {
         const q = this.search.toLowerCase();
-        const nameMatch = String(name || "").toLowerCase().includes(q);
-        const lastnameMatch = String(lastname || "").toLowerCase().includes(q);
-        const emailMatch = String(email?.email || "").toLowerCase().includes(q);
+        const nameMatch = String(name || "")
+          .toLowerCase()
+          .includes(q);
+        const lastnameMatch = String(lastname || "")
+          .toLowerCase()
+          .includes(q);
+        const emailMatch = String(email?.email || "")
+          .toLowerCase()
+          .includes(q);
         const phoneMatch = String(phoneNumber?.phone || "").includes(q);
 
         return nameMatch || lastnameMatch || emailMatch || phoneMatch;
@@ -36,7 +42,8 @@ window.usersListApp = (dataList = []) =>
     }
 
     async deleteContact(id) {
-      if (!confirm("¿Estás seguro de que deseas eliminar este contacto?")) return;
+      if (!confirm("¿Estás seguro de que deseas eliminar este contacto?"))
+        return;
 
       try {
         await httpRequests.delete(`/api/contact/${id}`);
@@ -57,4 +64,13 @@ window.usersListApp = (dataList = []) =>
         );
       }
     }
+  
+    navigateToEdit() {
+      this.navigateToUrl(`/${this.id}/new`);
+    }
+
+    navigateToToken() { 
+      this.navigateToUrl(`/user/me/token`);
+    }
+    
   })(dataList, "user");

@@ -3,9 +3,6 @@ window.editUserApp = (initialData = {}) =>
     name = initialData.name || "";
     lastname = initialData.lastname || "";
     password = "";
-    emailToken = initialData.emailToken || "";
-    waToken = initialData.waToken || "";
-    telegramToken = initialData.telegramToken || "";
     countryCodes = [];
     loading = false;
 
