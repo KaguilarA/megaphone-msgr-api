@@ -5,7 +5,7 @@ import DBModel from "../utils/model.js";
  * Handles structural properties for communication tokens and enables field-level encryption.
  */
 export default DBModel(
-  "UserToken",
+  "Token",
   {
     emailToken: {
       type: String,

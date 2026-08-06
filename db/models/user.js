@@ -45,9 +45,9 @@ export default DBModel(
         ref: "Address",
       },
     ],
-    userTokens: {
+    tokens: {
       type: Schema.Types.ObjectId,
-      ref: "UserToken",
+      ref: "Token",
     },
     state: {
       type: Schema.Types.ObjectId,
