@@ -1,13 +1,12 @@
 /**
  * Controller factory for handling HTTP requests and responses for a given model.
  * @param {Object} config - Configuration object.
- * @param {string} config.id - Identifier or name of the model.
+ * @param {string} config.entityId - Identifier or name of the entity.
  * @param {Object} config.model - Data access model instance containing CRUD operations.
  * @param {string|string[]|Object} [config.populatedFields=[]] - Default fields to populate on queries.
  * @returns {Object} An object containing Express controller functions.
  */
-export default ({ id: modelId, model, populatedFields = [] }) => {
-
+export default ({ entityId, model, populatedFields = [] }) => {
   /**
    * Deletes a document by its ID from request parameters.
    * @param {import("express").Request} req - Express request object.
@@ -20,14 +19,14 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       const deletedData = await model.delete(id);
 
       if (!deletedData) {
-        res.status(404).json({ message: `${modelId} not found.` });
+        res.status(404).json({ message: `${entityId} not found.` });
         return;
       }
 
-      res.json({ message: `${modelId} removed.` });
+      res.json({ message: `${entityId} removed.` });
     } catch (error) {
       res.status(500).json({
-        message: `${modelId} remove error.`,
+        message: `${entityId} remove error.`,
         error: error.message || error,
       });
     }
@@ -48,7 +47,7 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       res.json(allData);
     } catch (error) {
       res.status(500).json({
-        message: `${modelId} list error.`,
+        message: `${entityId} list error.`,
         error: error.message || error,
       });
     }
@@ -68,14 +67,14 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       });
 
       if (!coincidence) {
-        res.status(404).json({ message: `${modelId} not found.` });
+        res.status(404).json({ message: `${entityId} not found.` });
         return;
       }
 
       res.json(coincidence);
     } catch (error) {
       res.status(500).json({
-        message: `${modelId} search error.`,
+        message: `${entityId} search error.`,
         error: error.message || error,
       });
     }
@@ -95,14 +94,14 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       });
 
       if (!coincidence) {
-        res.status(404).json({ message: `${modelId} not found.` });
+        res.status(404).json({ message: `${entityId} not found.` });
         return;
       }
 
       res.json(coincidence);
     } catch (error) {
       res.status(500).json({
-        message: `${modelId} search error.`,
+        message: `${entityId} search error.`,
         error: error.message || error,
       });
     }
@@ -120,7 +119,7 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       res.status(201).json(newData);
     } catch (error) {
       res.status(400).json({
-        message: `${modelId} register error.`,
+        message: `${entityId} register error.`,
         error: error.message,
       });
     }
@@ -140,14 +139,14 @@ export default ({ id: modelId, model, populatedFields = [] }) => {
       });
 
       if (!updatedData) {
-        res.status(404).json({ message: `${modelId} not found.` });
+        res.status(404).json({ message: `${entityId} not found.` });
         return;
       }
 
       res.json(updatedData);
     } catch (error) {
       res.status(500).json({
-        message: `${modelId} error update.`,
+        message: `${entityId} error update.`,
         error: error.message || error,
       });
     }

@@ -35,20 +35,6 @@ export const attachActiveUser = async (req, res, next) => {
   }
 };
 
-export const ensureAuthenticated = (req, res, next) => {
-  console.log(req.session);
-  
-
-  if (req.user) {
-    return next();
-  }
-
-  return res.status(401).json({
-    authenticated: false,
-    error: "No autorizado",
-  });
-};
-
 export const ensureAppAuthenticated = (req, res, next) => {
   if (req.user) {
     return next();

@@ -4,8 +4,8 @@ import ApiConfig from "./index.js";
 export default () => {
   const router = Router();
 
-  ApiConfig.forEach(({ url, config, controller }) =>
-    router.use(url, controller(config)),
+  ApiConfig.forEach(({ url, config, router }) =>
+    router.use(url, router(config)),
   );
 
   return router;

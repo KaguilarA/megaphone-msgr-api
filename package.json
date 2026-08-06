@@ -12,9 +12,10 @@
   },
   "type": "module",
   "main": "index.js",
-  "license": "ISC",
+  "license": "UNLICENSED",
+  "private": true,
   "author": {
-    "name": "KaguilarA",
+    "name": "Kevin Aguilar",
     "email": "kevin.231@hotmail.com",
     "url": "https://github.com/KaguilarA"
   },

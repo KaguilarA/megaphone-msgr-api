@@ -17,18 +17,18 @@ export default [
   {
     url: "/address",
     config: {
-      id: "Address",
+      entityId: "Address",
       model: address,
     },
-    controller: AddressRouter,
+    router: AddressRouter,
   },
   {
     url: "/auth",
     config: {
-      id: "Auth",
+      entityId: "Auth",
       models: [
         {
-          id: "User",
+          entityId: "User",
           model: user,
           populatedFields: [
             "addresses",
@@ -42,42 +42,42 @@ export default [
           ],
         },
         {
-          id: "Email",
+          entityId: "Email",
           model: email,
         },
       ],
     },
-    controller: AuthRouter,
+    router: AuthRouter,
   },
   {
     url: "/contact",
     config: {
-      id: "Contact",
+      entityId: "Contact",
       model: contact,
       populatedFields: ["addresses", "emails", "phoneNumbers"],
     },
-    controller: ContactRouter,
+    router: ContactRouter,
   },
   {
     url: "/email",
     config: {
-      id: "Email",
+      entityId: "Email",
       model: email,
     },
-    controller: EmailRouter,
+    router: EmailRouter,
   },
   {
     url: "/phone-number",
     config: {
-      id: "Phone Number",
+      entityId: "Phone Number",
       model: phoneNumber,
     },
-    controller: PhoneNumberRouter,
+    router: PhoneNumberRouter,
   },
   {
     url: "/user",
     config: {
-      id: "User",
+      entityId: "User",
       model: user,
       populatedFields: [
         "addresses",
@@ -90,14 +90,14 @@ export default [
         "userTokens",
       ],
     },
-    controller: UserRouter,
+    router: UserRouter,
   },
   {
     url: "/tokens",
     config: {
-      id: "UserToken",
+      entityId: "UserToken",
       model: userTokens,
     },
-    controller: UserTokensRouter,
+    router: UserTokensRouter,
   },
 ];
