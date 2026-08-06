@@ -16,7 +16,7 @@ export const attachActiveUser = async (req, res, next) => {
         "contacts.addresses",
         "email",
         "phoneNumber",
-        "userTokens",
+        "tokens",
       ],
     });
 

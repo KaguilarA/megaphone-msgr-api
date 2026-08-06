@@ -1,14 +1,16 @@
 import address from "./db/models/address.js";
 import contact from "./db/models/contact.js";
 import email from "./db/models/email.js";
+import message from "./db/models/message.js";
 import phoneNumber from "./db/models/phoneNumber.js";
 import user from "./db/models/user.js";
-import userTokens from "./db/models/userTokens.js";
+import tokens from "./db/models/tokens.js";
 
 import AddressRouter from "./routes/address.routes.js";
 import AuthRouter from "./routes/auth.routes.js";
 import ContactRouter from "./routes/contact.routes.js";
 import EmailRouter from "./routes/email.routes.js";
+import MessageRouter from "./routes/message.routes.js";
 import PhoneNumberRouter from "./routes/phoneNumber.routes.js";
 import UserRouter from "./routes/user.routes.js";
 import UserTokensRouter from "./routes/userTokens.routes.js";
@@ -38,7 +40,7 @@ export default [
             "contacts.addresses",
             "email",
             "phoneNumber",
-            "userTokens",
+            "tokens",
           ],
         },
         {
@@ -57,6 +59,15 @@ export default [
       populatedFields: ["addresses", "emails", "phoneNumbers"],
     },
     router: ContactRouter,
+  },
+  {
+    url: "/message",
+    config: {
+      entityId: "Message",
+      model: message,
+      populatedFields: ["sender", "receiver", "state"],
+    },
+    router: MessageRouter,
   },
   {
     url: "/email",
@@ -87,7 +98,7 @@ export default [
         "contacts.addresses",
         "email",
         "phoneNumber",
-        "userTokens",
+        "tokens",
       ],
     },
     router: UserRouter,
@@ -95,8 +106,8 @@ export default [
   {
     url: "/tokens",
     config: {
-      entityId: "UserToken",
-      model: userTokens,
+      entityId: "Token",
+      model: tokens,
     },
     router: UserTokensRouter,
   },
