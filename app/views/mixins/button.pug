@@ -1,6 +1,0 @@
-mixin button(text, variant = 'primary', size = '', type = 'button', icon = '')
-  - const btnClass = `btn btn-${variant}` + (size ? ` btn-${size}` : '')
-  button(
-    class=btnClass,
-    type=type
-  )&attributes(attributes)= text

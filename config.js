@@ -1,9 +1,9 @@
-import address from "../db/models/address.js";
-import contact from "../db/models/contact.js";
-import email from "../db/models/email.js";
-import phoneNumber from "../db/models/phoneNumber.js";
-import user from "../db/models/user.js";
-import userTokens from "../db/models/userTokens.js";
+import address from "./db/models/address.js";
+import contact from "./db/models/contact.js";
+import email from "./db/models/email.js";
+import phoneNumber from "./db/models/phoneNumber.js";
+import user from "./db/models/user.js";
+import userTokens from "./db/models/userTokens.js";
 
 import AddressRouter from "./routes/address.routes.js";
 import AuthRouter from "./routes/auth.routes.js";

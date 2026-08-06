@@ -1,5 +1,5 @@
 import { Router } from "express";
-import UserController from "../controllers/user.controller.js";
+import UserController from "../controllers/user.js";
 import isAuth from "../middlewares/isAuth.js";
 
 export default (data) => {
