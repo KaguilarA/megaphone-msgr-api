@@ -1,27 +1,8 @@
 export default ({ entityId, model, populatedFields }) => {
 
-  async function remove(req, res) {
+  async function getInfo(req, res) {
     try {
-      const { id } = req.params;
-      const deletedData = await model.delete(id);
-
-      if (!deletedData) {
-        res.status(404).json({ message: `${entityId} not found.` });
-        return;
-      }
-
-      res.json({ message: `${entityId} removed.` });
-    } catch (error) {
-      res.status(500).json({
-        message: `${entityId} remove error.`,
-        error: error.message || error,
-      });
-    }
-  }
-
-  async function getAll(req, res) {
-    try {
-      const allData = await model.getAll({
+      const allData = await model.getById(req.session.userId, {
         populate: populatedFields,
       });
 
@@ -29,48 +10,6 @@ export default ({ entityId, model, populatedFields }) => {
     } catch (error) {
       res.status(500).json({
         message: `${entityId} list error.`,
-        error: error.message || error,
-      });
-    }
-  }
-
-  async function getById(req, res) {
-    try {
-      const { id } = req.params;
-      const coincidence = await model.getById(id, {
-        populate: populatedFields,
-      });
-
-      if (!coincidence) {
-        res.status(404).json({ message: `${entityId} not found.` });
-        return;
-      }
-
-      res.json(coincidence);
-    } catch (error) {
-      res.status(500).json({
-        message: `${entityId} search error.`,
-        error: error.message || error,
-      });
-    }
-  }
-
-  async function getOne(req, res) {
-    try {
-      const filter = req.query.filter ? JSON.parse(req.query.filter) : req.body;
-      const coincidence = await model.getOne(filter, {
-        populate: populatedFields,
-      });
-
-      if (!coincidence) {
-        res.status(404).json({ message: `${entityId} not found.` });
-        return;
-      }
-
-      res.json(coincidence);
-    } catch (error) {
-      res.status(500).json({
-        message: `${entityId} search error.`,
         error: error.message || error,
       });
     }
@@ -90,8 +29,7 @@ export default ({ entityId, model, populatedFields }) => {
 
   async function update(req, res) {
     try {
-      const { id } = req.params;
-      const updatedData = await model.update(id, req.body, {
+      const updatedData = await model.update(req.session.userId, req.body, {
         populate: populatedFields,
       });
 
@@ -110,10 +48,7 @@ export default ({ entityId, model, populatedFields }) => {
   }
 
   return {
-    delete: remove,
-    getAll,
-    getById,
-    getOne,
+    getInfo,
     register,
     update,
   };

@@ -1,17 +1,15 @@
 import { Router } from "express";
-import DBController from "../utils/controller.js";
+import UserController from "../utils/user.controller.js";
 import isAuth from "../middlewares/isAuth.js";
 
 export default (data) => {
   const router = Router();
-  const controller = DBController(data);
+  const controller = UserController(data);
 
   router.post("/", controller.register.bind(controller));
   router.use(isAuth);
-  router.get("/", controller.getAll.bind(controller));
-  router.get("/:id", controller.getById.bind(controller));
-  router.put("/:id", controller.update.bind(controller));
-  router.delete("/:id", controller.delete.bind(controller));
+  router.get("/", controller.getInfo.bind(controller));
+  router.put("/", controller.update.bind(controller));
 
   return router;
 };
