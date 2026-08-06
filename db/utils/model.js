@@ -17,11 +17,11 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
 
   /**
    * Processes a document after a query to decrypt its protected fields.
-   *
-   * @param {import("mongoose").Document} doc - Mongoose document retrieved from the database.
+   * @param {import("mongoose").Document} doc Mongoose document retrieved from the database.
    */
   function processDocumentAfterQuery(doc) {
     if (!doc) return;
+
     encryptedFields.forEach((field) => {
       if (doc[field] && AmpApiCripto.isEncrypted(doc[field])) {
         try {
@@ -35,8 +35,7 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
 
   /**
    * Validates whether a string corresponds to a valid bcrypt-generated hash.
-   *
-   * @param {any} val - Value to evaluate.
+   * @param {any} val Value to evaluate.
    * @returns {boolean} True if it is a valid bcrypt hash, false otherwise.
    */
   function isBcryptHash(val) {
@@ -46,8 +45,7 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
 
   /**
    * Parses dot-notation strings to transform them into nested population objects.
-   *
-   * @param {string} str - Population string (e.g. "field1.subfield1").
+   * @param {string} str Population string (e.g. "field1.subfield1").
    * @returns {string|Object} Nested population object or the original string if it contains no dots.
    */
   function parsePopulateString(str) {
@@ -67,10 +65,9 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
 
   /**
    * Configures Mongoose hooks for encryption and hashing during save and update operations.
-   *
-   * @param {import("mongoose").Schema} schema - Mongoose schema to configure.
-   * @param {string[]} encFields - Fields to encrypt.
-   * @param {string[]} hashFields - Fields to hash.
+   * @param {import("mongoose").Schema} schema Mongoose schema to configure.
+   * @param {string[]} encFields Fields to encrypt.
+   * @param {string[]} hashFields Fields to hash.
    */
   function setupSecurityHooks(schema, encFields, hashFields) {
     schema.pre("save", async function (next) {
@@ -147,9 +144,8 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
 
   /**
    * Applies population logic to a Mongoose query flexibly (supports strings and arrays).
-   *
-   * @param {import("mongoose").Query} query - Current Mongoose query.
-   * @param {string|string[]|Object|Object[]} populateOption - Population options.
+   * @param {import("mongoose").Query} query Current Mongoose query.
+   * @param {string|string[]|Object|Object[]} populateOption Population options.
    * @returns {import("mongoose").Query} Query with population applied.
    */
   function applyPopulate(query, populateOption) {
@@ -266,7 +262,7 @@ export default (id, schemaConfig, encryptedFields = [], hashedFields = []) => {
     const newData = new Model(data);
     return await newData.save();
   };
-
+  
   /**
    * Updates an existing document by its ID.
    *

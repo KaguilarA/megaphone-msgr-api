@@ -5,6 +5,14 @@ import phoneNumber from "../db/models/phoneNumber.js";
 import user from "../db/models/user.js";
 import userTokens from "../db/models/userTokens.js";
 
+import AddressRouter from "./routes/address.routes.js";
+import AuthRouter from "./routes/auth.routes.js";
+import ContactRouter from "./routes/contact.routes.js";
+import EmailRouter from "./routes/email.routes.js";
+import PhoneNumberRouter from "./routes/phoneNumber.routes.js";
+import UserRouter from "./routes/user.routes.js";
+import UserTokensRouter from "./routes/userTokens.routes.js";
+
 export default [
   {
     url: "/address",
@@ -12,6 +20,7 @@ export default [
       id: "Address",
       model: address,
     },
+    controller: AddressRouter,
   },
   {
     url: "/auth",
@@ -38,6 +47,7 @@ export default [
         },
       ],
     },
+    controller: AuthRouter,
   },
   {
     url: "/contact",
@@ -46,6 +56,7 @@ export default [
       model: contact,
       populatedFields: ["addresses", "emails", "phoneNumbers"],
     },
+    controller: ContactRouter,
   },
   {
     url: "/email",
@@ -53,6 +64,7 @@ export default [
       id: "Email",
       model: email,
     },
+    controller: EmailRouter,
   },
   {
     url: "/phone-number",
@@ -60,6 +72,7 @@ export default [
       id: "Phone Number",
       model: phoneNumber,
     },
+    controller: PhoneNumberRouter,
   },
   {
     url: "/user",
@@ -77,6 +90,7 @@ export default [
         "userTokens",
       ],
     },
+    controller: UserRouter,
   },
   {
     url: "/tokens",
@@ -84,5 +98,6 @@ export default [
       id: "UserToken",
       model: userTokens,
     },
+    controller: UserTokensRouter,
   },
 ];
