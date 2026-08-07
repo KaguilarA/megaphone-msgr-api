@@ -6,14 +6,14 @@ import phoneNumber from "./db/models/phoneNumber.js";
 import user from "./db/models/user.js";
 import tokens from "./db/models/tokens.js";
 
-import AddressRouter from "./routes/address.routes.js";
-import AuthRouter from "./routes/auth.routes.js";
-import ContactRouter from "./routes/contact.routes.js";
-import EmailRouter from "./routes/email.routes.js";
-import MessageRouter from "./routes/message.routes.js";
-import PhoneNumberRouter from "./routes/phoneNumber.routes.js";
-import UserRouter from "./routes/user.routes.js";
-import UserTokensRouter from "./routes/userTokens.routes.js";
+import AddressRouter from "./routes/address.js";
+import AuthRouter from "./routes/auth.js";
+import ContactRouter from "./routes/contact.js";
+import EmailRouter from "./routes/email.js";
+import MessageRouter from "./routes/message.js";
+import PhoneNumberRouter from "./routes/phoneNumber.js";
+import UserRouter from "./routes/user.js";
+import UserTokensRouter from "./routes/userTokens.js";
 
 export default [
   {
