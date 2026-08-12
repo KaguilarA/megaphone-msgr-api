@@ -24,8 +24,7 @@ export default ({ id, models: [userConfig, emailConfig] }) =>
         }
 
         const user = await this.userModel.getOne(
-          { email: emailDoc._id },
-          { populate: [] },
+          { email: emailDoc._id }
         );
 
         if (!user) {
@@ -73,11 +72,8 @@ export default ({ id, models: [userConfig, emailConfig] }) =>
     }
 
     status(req, res) {
-      if (req.user) {
-        return res.status(200).json({
-          authenticated: true,
-          user: req.user.toJSON ? req.user.toJSON() : req.user,
-        });
+      if (req.session.userId) {
+        return res.status(200).json({ authenticated: true });
       }
 
       return res.status(200).json({ authenticated: false });

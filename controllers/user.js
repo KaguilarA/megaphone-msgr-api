@@ -2,11 +2,18 @@ export default ({ entityId, model, populatedFields }) => {
 
   async function getInfo(req, res) {
     try {
-      const allData = await model.getById(req.session.userId, {
-        populate: populatedFields,
+      if (req.session.userId) {
+        const userData = await model.getById(req.session.userId, {
+          populate: populatedFields,
+        });
+
+        return res.json(userData);
+      }
+
+      return res.status(404).json({
+        message: `${entityId} not found.`
       });
 
-      res.json(allData);
     } catch (error) {
       res.status(500).json({
         message: `${entityId} list error.`,
