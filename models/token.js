@@ -1,10 +1,10 @@
-import DBModel from "../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 /**
- * UserToken model definition using the DBModel factory.
+ * Token model definition using the OwlModel factory.
  * Handles structural properties for communication tokens and enables field-level encryption.
  */
-export default DBModel(
+export default OwlModel(
   "Token",
   {
     emailToken: {

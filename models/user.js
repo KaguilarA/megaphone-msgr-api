@@ -1,11 +1,11 @@
 import { Schema } from "mongoose";
-import DBModel from "../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 /**
- * User model definition using the DBModel factory.
+ * User model definition using the OwlModel factory.
  * Handles structural properties for user accounts, relationships, and secure password hashing.
  */
-export default DBModel(
+export default OwlModel(
   "User",
   {
     name: {

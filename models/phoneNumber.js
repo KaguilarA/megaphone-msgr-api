@@ -1,11 +1,11 @@
 import { Schema } from "mongoose";
-import DBModel from "../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 /**
- * PhoneNumber model definition using the DBModel factory.
+ * PhoneNumber model definition using the OwlModel factory.
  * Handles structural properties for phone numbers, country codes, and relational state references.
  */
-export default DBModel("PhoneNumber", {
+export default OwlModel("PhoneNumber", {
   phone: {
     type: String,
     required: [true, "El número de teléfono es obligatorio."],

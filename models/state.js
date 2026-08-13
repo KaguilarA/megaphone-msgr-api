@@ -1,10 +1,10 @@
-import AmpApiModel from "./../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 /**
- * State model definition using the AmpApiModel factory.
+ * State model definition using the OwlModel factory.
  * Handles structural properties for categorical state tracking across different entities.
  */
-export default AmpApiModel("State", {
+export default OwlModel("State", {
   name: {
     type: String,
     required: true,

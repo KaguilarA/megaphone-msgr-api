@@ -1,31 +1,38 @@
 import cluster from "node:cluster";
 import { availableParallelism } from "node:os";
 import express from "express";
-import mongoose from "mongoose";
-import connectDB from "./db/config/database.js";
-import corsMiddleware from "./config/cors.js";
-import sessionMiddleware from "./config/session.js";
+import {
+  OwlMongoConnect,
+  OwlMongoClose,
+  OwlCors,
+  OwlSession,
+} from "owl-expressjs-utils";
+
 import ApiConfig from "./config.js";
 
 process.loadEnvFile();
 
-const PORT = Number(process.env.PORT) || 3000;
-const DB_HOST = process.env.DB_HOST;
 const CLUSTER_ENABLED = process.env.CLUSTER_ENABLED === "true";
 const CLUSTER_WORKERS = Number(process.env.CLUSTER_WORKERS) || 1;
+const PORT = Number(process.env.PORT) || 3000;
+const DB_HOST = process.env.DB_HOST;
+const DB_NAME = process.env.DB_NAME;
+const FRONTEND_URL = process.env.FRONTEND_URL;
+const NODE_ENV = process.env.NODE_ENV;
+const SESSION_SECRET = process.env.SESSION_SECRET || "1234567890";
+
 const cpuCount = availableParallelism();
 
 function getWorkerCount() {
   if (!CLUSTER_ENABLED) return 1;
 
-  const desiredWorkers =
-    Number.isInteger(CLUSTER_WORKERS) && CLUSTER_WORKERS > 0 ? CLUSTER_WORKERS : 1;
+  const desiredWorkers = Number.isInteger(CLUSTER_WORKERS) && CLUSTER_WORKERS > 0 ? CLUSTER_WORKERS : 1;
 
   return Math.min(desiredWorkers, Math.max(cpuCount, 1));
 }
 
 async function initRoutes(app) {
-  app.use(sessionMiddleware());
+  app.use(OwlSession(SESSION_SECRET, NODE_ENV, DB_NAME, DB_HOST));
 
   ApiConfig.forEach(({ url, config, router: childRouter }) =>
     app.use(url, childRouter(config)),
@@ -37,11 +44,11 @@ async function startServer() {
 
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
-  app.use(corsMiddleware);
+  app.use(OwlCors([FRONTEND_URL]));
   app.use(express.json({ limit: "1mb" }));
 
   try {
-    await connectDB(DB_HOST);
+    await OwlMongoConnect(DB_HOST);
     await initRoutes(app);
 
     const server = app.listen(PORT, () => {
@@ -55,7 +62,7 @@ async function startServer() {
 
       server.close(async () => {
         try {
-          await mongoose.disconnect();
+          await OwlMongoClose();
           console.log("MongoDB desconectado correctamente.");
           process.exit(0);
         } catch (err) {

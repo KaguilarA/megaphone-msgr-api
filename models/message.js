@@ -1,8 +1,8 @@
 import { Schema } from "mongoose";
-import AmpApiModel from "../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 
-export default AmpApiModel("Message", {
+export default OwlModel("Message", {
   content: {
     type: String,
     required: [true, "El contenido del mensaje es obligatorio."],

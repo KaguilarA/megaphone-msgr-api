@@ -1,11 +1,11 @@
 import { Schema } from "mongoose";
-import DBModel from "../utils/model.js";
+import { OwlModel } from "owl-expressjs-utils";
 
 /**
- * Contact model definition using the DBModel factory.
+ * Contact model definition using the OwlModel factory.
  * Handles structural properties for contact entries, including relational references to phone numbers, emails, addresses, and states.
  */
-export default DBModel("Contact", {
+export default OwlModel("Contact", {
   name: {
     type: String,
     required: [true, "El nombre del contacto es obligatorio."],
