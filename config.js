@@ -1,12 +1,12 @@
 import { countries } from "country-codes-flags-phone-codes";
 
-import address from "./db/models/address.js";
-import contact from "./db/models/contact.js";
-import email from "./db/models/email.js";
-import message from "./db/models/message.js";
-import phoneNumber from "./db/models/phoneNumber.js";
-import user from "./db/models/user.js";
-import tokens from "./db/models/tokens.js";
+import address from "./models/address.js";
+import contact from "./models/contact.js";
+import email from "./models/email.js";
+import message from "./models/message.js";
+import phoneNumber from "./models/phoneNumber.js";
+import user from "./models/user.js";
+import tokens from "./models/tokens.js";
 
 import AddressRouter from "./routes/address.js";
 import AuthRouter from "./routes/auth.js";

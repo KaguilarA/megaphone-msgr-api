@@ -1,4 +1,4 @@
-import BaseController from "./controller.js";
+import { OwlController } from "owl-expressjs-utils";
 
 export const buildMetaPayload = ({ recipientPhone, content }) => ({
   messaging_product: "whatsapp",
@@ -12,11 +12,8 @@ export const buildMetaPayload = ({ recipientPhone, content }) => ({
 export const resolveMetaSettings = (body = {}, user = null) => {
   const recipientPhone = body.to || body.recipientPhoneNumber;
   const content = body.content || body.message || body.text;
-  const token =
-    user?.tokens?.whatsappToken ||
-    body.whatsappToken;
-  const phoneNumberId =
-    body.phoneNumberId;
+  const token = user?.tokens?.whatsappToken || body.whatsappToken;
+  const phoneNumberId = body.phoneNumberId;
   return {
     recipientPhone,
     content,
@@ -26,14 +23,16 @@ export const resolveMetaSettings = (body = {}, user = null) => {
 };
 
 export default ({ entityId = "Message", model, populatedFields = [] }) => {
-  const genericController = BaseController({ entityId, model, populatedFields });
+  const genericController = OwlController({
+    entityId,
+    model,
+    populatedFields,
+  });
 
   async function send(req, res) {
     try {
-      const { recipientPhone, content, token, phoneNumberId } = resolveMetaSettings(
-        req.body,
-        req.user,
-      );
+      const { recipientPhone, content, token, phoneNumberId } =
+        resolveMetaSettings(req.body, req.user);
 
       if (!recipientPhone) {
         return res.status(400).json({
@@ -49,7 +48,8 @@ export default ({ entityId = "Message", model, populatedFields = [] }) => {
 
       if (!token || !phoneNumberId) {
         return res.status(400).json({
-          message: "No se encontró el token de WhatsApp o el ID del número de teléfono.",
+          message:
+            "No se encontró el token de WhatsApp o el ID del número de teléfono.",
         });
       }
 
@@ -79,7 +79,9 @@ export default ({ entityId = "Message", model, populatedFields = [] }) => {
 
       let savedMessage = null;
       const receiver = req.body.receiver
-        ? (Array.isArray(req.body.receiver) ? req.body.receiver : [req.body.receiver])
+        ? Array.isArray(req.body.receiver)
+          ? req.body.receiver
+          : [req.body.receiver]
         : [];
 
       if (receiver.length > 0) {

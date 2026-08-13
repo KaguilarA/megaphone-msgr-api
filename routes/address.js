@@ -1,10 +1,10 @@
 import { Router } from "express";
-import DBController from "../controllers/controller.js";
+import { OwlController } from "owl-expressjs-utils";
 import isAuth from "../middlewares/isAuth.js";
 
 export default (data) => {
   const router = Router();
-  const controller = DBController(data);
+  const controller = OwlController(data);
 
   router.use(isAuth);
   router.post("/", controller.register.bind(controller));
