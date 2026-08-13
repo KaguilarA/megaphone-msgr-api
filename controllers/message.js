@@ -85,7 +85,7 @@ export default ({ entityId = "Message", model, populatedFields = [] }) => {
       if (receiver.length > 0) {
         savedMessage = await model.save({
           content,
-          sender: req.user?._id || req.body.sender,
+          sender: req.session?._id || req.body.sender,
           receiver,
           state: req.body.state,
         });
