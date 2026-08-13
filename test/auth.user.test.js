@@ -58,6 +58,7 @@ test('auth status returns authenticated when req.user exists', async () => {
   });
 
   const req = {
+    session: { userId: '123' },
     user: { _id: '123', toJSON: () => ({ _id: '123' }) },
   };
   const res = createRes();

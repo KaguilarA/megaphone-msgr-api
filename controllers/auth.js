@@ -72,8 +72,13 @@ export default ({ id, models: [userConfig, emailConfig] }) =>
     }
 
     status(req, res) {
-      if (req.session.userId) {
-        return res.status(200).json({ authenticated: true });
+      const user = req.user || null;
+
+      if (req.session?.userId || user) {
+        return res.status(200).json({
+          authenticated: true,
+          user: user ? user.toJSON ? user.toJSON() : user : undefined,
+        });
       }
 
       return res.status(200).json({ authenticated: false });

@@ -46,6 +46,9 @@ test('send returns 201 and saves the message when Meta responds successfully', a
         phoneNumberId: 'phone-123',
         receiver: ['contact-1'],
       },
+      session: {
+        userId: 'user-1',
+      },
       user: {
         _id: 'user-1',
         tokens: {

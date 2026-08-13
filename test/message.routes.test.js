@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import MessageRouter from '../routes/message.routes.js';
+import MessageRouter from '../routes/message.js';
 
 function createApp() {
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
+    req.session = { userId: 'user-1' };
     req.user = {
       _id: 'user-1',
       tokens: { whatsappToken: 'route-token' },

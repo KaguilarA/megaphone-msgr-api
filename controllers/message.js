@@ -84,10 +84,12 @@ export default ({ entityId = "Message", model, populatedFields = [] }) => {
           : [req.body.receiver]
         : [];
 
+      const senderId = req.user?._id || req.session?.userId || req.body.sender;
+
       if (receiver.length > 0) {
         savedMessage = await model.save({
           content,
-          sender: req.session?._id || req.body.sender,
+          sender: senderId,
           receiver,
           state: req.body.state,
         });
