@@ -11,6 +11,12 @@ export default OwlModel("Contact", {
     required: [true, "El nombre del contacto es obligatorio."],
     trim: true,
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true,
+  },
   phoneNumbers: [
     {
       type: Schema.Types.ObjectId,

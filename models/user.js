@@ -33,12 +33,6 @@ export default OwlModel(
       ref: "PhoneNumber",
       required: true,
     },
-    contacts: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Contact",
-      },
-    ],
     addresses: [
       {
         type: Schema.Types.ObjectId,

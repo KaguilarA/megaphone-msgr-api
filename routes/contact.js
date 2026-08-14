@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { OwlController } from "owl-expressjs-utils";
-import isAuth from "../middlewares/isAuth.js";
+import { OwlIsAuth } from "owl-expressjs-utils";
+import ContactController from "../controllers/contact.js";
 
 export default (data) => {
   const router = Router();
-  const controller = OwlController(data);
+  const controller = ContactController(data);
 
-  router.use(isAuth);
+  router.use(OwlIsAuth);
   router.post("/", controller.register.bind(controller));
   router.get("/", controller.getAll.bind(controller));
   router.get("/:id", controller.getById.bind(controller));
