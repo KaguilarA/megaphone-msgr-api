@@ -37,10 +37,6 @@ export default [
           model: user,
           populatedFields: [
             "addresses",
-            "contacts",
-            "contacts.phoneNumbers",
-            "contacts.emails",
-            "contacts.addresses",
             "email",
             "phoneNumber"
           ]
@@ -102,10 +98,6 @@ export default [
       model: user,
       populatedFields: [
         "addresses",
-        "contacts",
-        "contacts.phoneNumbers",
-        "contacts.emails",
-        "contacts.addresses",
         "email",
         "phoneNumber"
       ]
