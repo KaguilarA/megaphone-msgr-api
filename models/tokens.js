@@ -1,3 +1,4 @@
+import { Schema } from "mongoose";
 import { OwlModel } from "owl-expressjs-utils";
 
 /**
@@ -18,6 +19,12 @@ export default OwlModel(
     telegramToken: {
       type: String,
       trim: true,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
   },
   ["emailToken", "whatsappToken", "telegramToken"],

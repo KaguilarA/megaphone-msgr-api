@@ -17,6 +17,17 @@ export default OwlModel("Email", {
       "El formato del correo electrónico no es válido.",
     ],
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    refPath: "ownerType",
+    index: true,
+  },
+  ownerType: {
+    type: String,
+    required: true,
+    enum: ["User", "Contact"],
+  },
   state: {
     type: Schema.Types.ObjectId,
     ref: "State",

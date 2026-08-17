@@ -23,26 +23,6 @@ export default OwlModel(
       required: [true, "La contraseña es obligatoria."],
       trim: true,
     },
-    email: {
-      type: Schema.Types.ObjectId,
-      ref: "Email",
-      required: true,
-    },
-    phoneNumber: {
-      type: Schema.Types.ObjectId,
-      ref: "PhoneNumber",
-      required: true,
-    },
-    addresses: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Address",
-      },
-    ],
-    tokens: {
-      type: Schema.Types.ObjectId,
-      ref: "Token",
-    },
     state: {
       type: Schema.Types.ObjectId,
       ref: "State",

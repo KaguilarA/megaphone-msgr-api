@@ -16,6 +16,17 @@ export default OwlModel("PhoneNumber", {
     required: [true, "El código de país es obligatorio."],
     trim: true,
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    refPath: "ownerType",
+    index: true,
+  },
+  ownerType: {
+    type: String,
+    required: true,
+    enum: ["User", "Contact"],
+  },
   state: [
     {
       type: Schema.Types.ObjectId,

@@ -8,13 +8,14 @@ export default OwlModel("State", {
   name: {
     type: String,
     required: true,
-    unique: true,
   },
-  type: [
-    {
-      type: String,
-      enum: ["address", "user", "contact", "email", "phoneNumber"],
-      required: true,
-    },
-  ],
+  description: {
+    type: String,
+    default: "",
+  },
+  type: {
+    type: String,
+    enum: ["address", "user", "contact", "email", "phoneNumber"],
+    required: true,
+  },
 });
