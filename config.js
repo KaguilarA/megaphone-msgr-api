@@ -1,12 +1,13 @@
 import { countries } from "country-codes-flags-phone-codes";
 
-import address from "./models/address.js";
-import contact from "./models/contact.js";
-import email from "./models/email.js";
+import address from "./models/address/address.js";
+import contact from "./models/contact/contact.js";
+import email from "./models/email/email.js";
 import message from "./models/message.js";
-import phoneNumber from "./models/phoneNumber.js";
-import user from "./models/user.js";
-import tokens from "./models/tokens.js";
+import phoneNumber from "./models/phone/phone.js";
+import state from "./models/state/state.js";
+import user from "./models/user/user.js";
+import tokens from "./models/tokens/tokens.js";
 
 import AddressRouter from "./routes/address.js";
 import AuthRouter from "./routes/auth.js";
@@ -15,6 +16,7 @@ import CountriesRouter from "./routes/countries.js";
 import EmailRouter from "./routes/email.js";
 import MessageRouter from "./routes/message.js";
 import PhoneNumberRouter from "./routes/phoneNumber.js";
+import StateRouter from "./routes/state.js";
 import UserRouter from "./routes/user.js";
 import UserTokensRouter from "./routes/userTokens.js";
 
@@ -23,9 +25,9 @@ export default [
     url: "/address",
     config: {
       entityId: "Address",
-      model: address
+      model: address,
     },
-    router: AddressRouter
+    router: AddressRouter,
   },
   {
     url: "/auth",
@@ -35,26 +37,23 @@ export default [
         {
           entityId: "User",
           model: user,
-          populatedFields: [
-            "addresses",
-            "email",
-            "phoneNumber"
-          ]
         },
         {
           entityId: "Email",
-          model: email
-        }
-      ]
+          model: email,
+        },
+      ],
     },
-    router: AuthRouter
+    router: AuthRouter,
   },
   {
     url: "/contact",
     config: {
       entityId: "Contact",
       model: contact,
-      populatedFields: ["addresses", "emails", "phoneNumbers"],
+      emailModel: email,
+      phoneNumberModel: phoneNumber,
+      addressModel: address,
     },
     router: ContactRouter,
   },
@@ -62,54 +61,60 @@ export default [
     url: "/countries",
     config: {
       entityId: "Countries",
-      model: countries
+      model: countries,
     },
-    router: CountriesRouter
+    router: CountriesRouter,
   },
   {
     url: "/message",
     config: {
       entityId: "Message",
       model: message,
-      populatedFields: ["sender", "receiver", "state"]
+      populatedFields: ["sender", "receiver", "state"],
     },
-    router: MessageRouter
+    router: MessageRouter,
   },
   {
     url: "/email",
     config: {
       entityId: "Email",
-      model: email
+      model: email,
     },
-    router: EmailRouter
+    router: EmailRouter,
   },
   {
     url: "/phone-number",
     config: {
       entityId: "Phone Number",
-      model: phoneNumber
+      model: phoneNumber,
     },
-    router: PhoneNumberRouter
+    router: PhoneNumberRouter,
+  },
+  {
+    url: "/state",
+    config: {
+      entityId: "State",
+      model: state,
+    },
+    router: StateRouter,
   },
   {
     url: "/user",
     config: {
       entityId: "User",
       model: user,
-      populatedFields: [
-        "addresses",
-        "email",
-        "phoneNumber"
-      ]
+      emailModel: email,
+      phoneNumberModel: phoneNumber,
+      addressModel: address,
     },
-    router: UserRouter
+    router: UserRouter,
   },
   {
     url: "/tokens",
     config: {
       entityId: "Token",
-      model: tokens
+      model: tokens,
     },
-    router: UserTokensRouter
-  }
+    router: UserTokensRouter,
+  },
 ];
