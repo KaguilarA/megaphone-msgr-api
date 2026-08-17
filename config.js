@@ -3,11 +3,12 @@ import { countries } from "country-codes-flags-phone-codes";
 import address from "./models/address/address.js";
 import contact from "./models/contact/contact.js";
 import email from "./models/email/email.js";
-import message from "./models/message.js";
+import message from "./models/message/message.js";
 import phoneNumber from "./models/phone/phone.js";
 import state from "./models/state/state.js";
 import user from "./models/user/user.js";
 import tokens from "./models/tokens/tokens.js";
+import messageReceptor from "./models/messageReceptor/messageReceptor.js";
 
 import AddressRouter from "./routes/address.js";
 import AuthRouter from "./routes/auth.js";
