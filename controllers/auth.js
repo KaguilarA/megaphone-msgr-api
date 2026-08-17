@@ -17,15 +17,15 @@ export default ({ id, models: [userConfig, emailConfig] }) =>
         }
         const emailDoc = await this.emailModel.getOne({
           email: emailInput.trim().toLowerCase(),
+          ownerType: "User",
         });
 
         if (!emailDoc) {
           return res.status(401).json({ error: "Credenciales inválidas." });
         }
 
-        const user = await this.userModel.getOne(
-          { email: emailDoc._id }
-        );
+        // owner is the User's primary key, so this is an indexed point lookup
+        const user = await this.userModel.getById(emailDoc.owner);
 
         if (!user) {
           return res.status(401).json({ error: "Credenciales inválidas." });
