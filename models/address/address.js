@@ -32,6 +32,17 @@ export default OwlModel("Address", {
     min: -180,
     max: 180,
   },
+  owner: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    refPath: "ownerType",
+    index: true,
+  },
+  ownerType: {
+    type: String,
+    required: true,
+    enum: ["User", "Contact"],
+  },
   state: {
     type: Schema.Types.ObjectId,
     ref: "State",

@@ -77,11 +77,23 @@ test('user getInfo returns the current user profile', async () => {
   const model = {
     getById: async () => user,
   };
+  const emailModel = {
+    getOne: async () => null,
+  };
+  const phoneNumberModel = {
+    getOne: async () => null,
+  };
+  const addressModel = {
+    getByCoincidence: async () => [],
+  };
 
   const controller = UserController({
     entityId: 'User',
     model,
     populatedFields: ['tokens'],
+    emailModel,
+    phoneNumberModel,
+    addressModel,
   });
 
   const req = {
@@ -92,7 +104,7 @@ test('user getInfo returns the current user profile', async () => {
   await controller.getInfo(req, res);
 
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.body, user);
+  assert.deepEqual(res.body, { ...user, email: null, phoneNumber: null, addresses: [] });
 });
 
 test('user update returns 404 when the user cannot be found', async () => {

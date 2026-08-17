@@ -17,25 +17,6 @@ export default OwlModel("Contact", {
     required: true,
     index: true,
   },
-  phoneNumbers: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "PhoneNumber",
-      required: true,
-    },
-  ],
-  emails: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Email",
-    },
-  ],
-  addresses: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Address",
-    },
-  ],
   state: {
     type: Schema.Types.ObjectId,
     ref: "State",
