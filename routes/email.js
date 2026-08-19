@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
+import { OwlIsAuth } from "owl-expressjs-utils";
+import EmailController from "../controllers/email.js";
 
 export default (data) => {
   const router = Router();
-  const controller = OwlController(data);
+  const controller = EmailController(data);
 
   router.post("/", controller.register.bind(controller));
   router.use(OwlIsAuth);

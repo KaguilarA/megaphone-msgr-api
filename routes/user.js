@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
-import UserController from "../controllers/user.js";
+import UserController from "../controllers/user/user.js";
 
 export default (data) => {
   const router = Router();

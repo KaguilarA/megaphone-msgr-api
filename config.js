@@ -1,8 +1,8 @@
 import { countries } from "country-codes-flags-phone-codes";
 
-import address from "./models/address/address.js";
-import contact from "./models/contact/contact.js";
-import email from "./models/email/email.js";
+import address from "./models/address/model.js";
+import contact from "./models/contact/model.js";
+import email from "./models/email/model.js";
 import message from "./models/message/message.js";
 import phoneNumber from "./models/phone/phone.js";
 import state from "./models/state/state.js";
@@ -27,6 +27,7 @@ export default [
     config: {
       entityId: "Address",
       model: address,
+      contactModel: contact,
     },
     router: AddressRouter,
   },
@@ -52,9 +53,6 @@ export default [
     config: {
       entityId: "Contact",
       model: contact,
-      emailModel: email,
-      phoneNumberModel: phoneNumber,
-      addressModel: address,
     },
     router: ContactRouter,
   },
@@ -80,6 +78,7 @@ export default [
     config: {
       entityId: "Email",
       model: email,
+      contactModel: contact,
     },
     router: EmailRouter,
   },
@@ -88,6 +87,7 @@ export default [
     config: {
       entityId: "Phone Number",
       model: phoneNumber,
+      contactModel: contact,
     },
     router: PhoneNumberRouter,
   },
@@ -104,9 +104,6 @@ export default [
     config: {
       entityId: "User",
       model: user,
-      emailModel: email,
-      phoneNumberModel: phoneNumber,
-      addressModel: address,
     },
     router: UserRouter,
   },
