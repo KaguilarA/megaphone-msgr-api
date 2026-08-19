@@ -55,9 +55,5 @@ export default ({ entityId, model, populatedFields }) => {
     }
   }
 
-  return {
-    getInfo,
-    register,
-    update,
-  };
+  return { getInfo, register, update, };
 };
