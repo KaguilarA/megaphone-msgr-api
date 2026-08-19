@@ -51,7 +51,7 @@ classDiagram
 | `email` | `String` | Yes | Email value. It is trimmed, converted to lowercase, validated by regex, and marked unique. |
 | `owner` | `ObjectId` | Yes | Identifier of the owning `User` or `Contact`. It has an index for owner lookups. |
 | `ownerType` | `String` | Yes | Dynamic reference discriminator; only `User` or `Contact` is accepted. |
-| `state` | `ObjectId` | No | Optional reference to a `State` document. |
+| `state` | `ObjectId` | Yes | Reference to a `State` document. |
 
 ## Email normalization and validation
 
@@ -130,94 +130,6 @@ state: {
 The `Email` model does not define which state names are valid. That policy is owned by the
 `State` model and the feature assigning the state.
 
-## API usage
-
-The model is registered at `/email`. Its router allows registration before authentication is
-applied, then protects listing, reading, updating, and deleting:
-
-| Method | Endpoint | Authentication in router | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/email` | Not enforced by this router | Create an email document. |
-| `GET` | `/email` | Required | List email documents. |
-| `GET` | `/email/:id` | Required | Retrieve one email. |
-| `PUT` | `/email/:id` | Required | Update one email. |
-| `DELETE` | `/email/:id` | Required | Delete one email. |
-
-The route-level authentication behavior is distinct from model validation. A request can still
-fail because `email`, `owner`, or `ownerType` is invalid or missing.
-
-### Standalone creation
-
-```json
-{
-	"email": "ana@example.com",
-	"owner": "665f1a000000000000000001",
-	"ownerType": "Contact",
-	"state": "665f1a000000000000000010"
-}
-```
-
-### Nested creation through a contact
-
-The contact controller accepts email strings in the `emails` array and assigns ownership on
-the server:
-
-```json
-{
-	"name": "Ana Lopez",
-	"emails": [
-		"ana@example.com"
-	]
-}
-```
-
-The resulting email document receives:
-
-```js
-{
-	email: "ana@example.com",
-	owner: contact._id,
-	ownerType: "Contact",
-}
-```
-
-### Nested creation through a user
-
-When a user is registered, the optional `email` object is saved with the new user's identifier
-and `ownerType: "User"`:
-
-```json
-{
-	"name": "Ana",
-	"lastname": "Lopez",
-	"email": {
-		"email": "ana@example.com"
-	}
-}
-```
-
-## Relationship lifecycle
-
-Emails created as children of a contact are deleted when that contact is deleted. This cascade
-is implemented by `controllers/contact.js`, which finds child emails by `owner` and
-`ownerType: "Contact"` before deleting them. It is not implemented by the `Email` schema.
-
-```mermaid
-sequenceDiagram
-		participant Client
-		participant ContactController
-		participant EmailModel
-		participant MongoDB
-
-		Client->>ContactController: DELETE /contact/:id
-		ContactController->>EmailModel: Find emails by owner and ownerType
-		EmailModel->>MongoDB: Query child emails
-		MongoDB-->>EmailModel: Matching emails
-		ContactController->>EmailModel: Delete each child email
-		EmailModel->>MongoDB: Delete email documents
-		ContactController-->>Client: Contact deletion response
-```
-
 ## Validation and limitations
 
 - `email`, `owner`, and `ownerType` are required.
@@ -230,9 +142,9 @@ sequenceDiagram
 
 ## Related files
 
-- `models/email/email.js`: schema and model definition.
+- `models/email/model.js`: schema and model definition.
 - `routes/email.js`: email CRUD routes and authentication boundary.
 - `config.js`: registers the model at `/email`.
 - `controllers/contact.js`: creates, loads, and removes contact-owned emails.
 - `controllers/user.js`: creates user-owned emails during registration.
-- `models/state.js`: referenced state model.
+- `models/state/model.js`: referenced state model.

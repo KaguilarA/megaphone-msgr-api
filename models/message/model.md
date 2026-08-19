@@ -48,45 +48,6 @@ classDiagram
 | `sender` | `ObjectId` | Yes | Reference to the sending `User`. |
 | `state` | `ObjectId` | No | Optional reference to a `State` document. |
 
-## API usage
-
-All message routes require authentication:
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `POST` | `/message/send` | Send text through the Meta WhatsApp API and optionally persist it. |
-| `POST` | `/message` | Create a message through generic model operations. |
-| `GET` | `/message` | List messages. |
-| `GET` | `/message/:id` | Retrieve one message. |
-| `PUT` | `/message/:id` | Update one message. |
-| `DELETE` | `/message/:id` | Delete one message. |
-
-### Sending through WhatsApp
-
-`POST /message/send` accepts the destination as `to` or `recipientPhoneNumber` and the body as
-`content`, `message`, or `text`. It requires a `phoneNumberId` and a WhatsApp token. The token
-is preferred from the authenticated user and falls back to `body.whatsappToken`.
-
-```json
-{
-	"to": "15551234567",
-	"content": "Hola",
-	"phoneNumberId": "meta-phone-number-id",
-	"receiver": ["665f1a000000000000000001"]
-}
-```
-
-The controller sends a text payload to Meta. When `receiver` is present, it also calls
-`Message.save` with the authenticated user as `sender`.
-
-## Receiver limitation
-
-The current schema does not declare a `receiver` field, although the send controller passes a
-`receiver` array to `model.save` and `config.js` lists `receiver` as a populated field. The
-`MessageReceptor` model exists with explicit `message` and `contact` references, but it is not
-registered in `config.js` and is not used by the current send controller. This documentation
-therefore describes `receiver` as controller input, not as a declared `Message` schema field.
-
 ## Validation and limitations
 
 - `content`, `header`, and `sender` are required by the schema.
@@ -98,9 +59,6 @@ therefore describes `receiver` as controller input, not as a declared `Message` 
 
 ## Related files
 
-- `models/message/message.js`: schema and model definition.
+- `models/message/model.js`: schema and model definition.
 - `routes/message.js`: authenticated CRUD and send routes.
 - `controllers/message.js`: Meta WhatsApp integration and optional persistence.
-- `models/messageReceptor/messageReceptor.js`: separate message/contact relationship model.
-- `models/tokens/tokens.js`: provider token source.
-- `models/user/user.js`: sender reference.

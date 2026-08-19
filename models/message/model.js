@@ -1,7 +1,7 @@
 import { Schema } from "mongoose";
 import { OwlModel } from "owl-expressjs-utils";
 
-export default OwlModel("Message", {
+const MessageData = {
   content: {
     type: String,
     required: [true, "El contenido del mensaje es obligatorio."],
@@ -20,5 +20,7 @@ export default OwlModel("Message", {
   state: {
     type: Schema.Types.ObjectId,
     ref: "State",
-  }
-});
+  },
+};
+
+export default OwlModel("Message", MessageData);

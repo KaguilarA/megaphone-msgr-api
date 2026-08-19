@@ -48,15 +48,6 @@ classDiagram
 | `description` | `String` | No | Optional description; defaults to an empty string. |
 | `type` | `String` | Yes | Entity category. Allowed values are `address`, `user`, `contact`, `email`, and `phoneNumber`. |
 
-## API usage
-
-The state router requires authentication for both operations:
-
-| Method | Endpoint | Purpose |
-| --- | --- | --- |
-| `GET` | `/state` | List states. |
-| `POST` | `/state` | Create a state. |
-
 Example:
 
 ```json

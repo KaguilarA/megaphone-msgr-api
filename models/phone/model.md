@@ -65,19 +65,6 @@ classDiagram
 The `refPath: "ownerType"` setting resolves the owner against `User` or `Contact`. The
 referenced owner is not verified by the schema.
 
-## API usage
-
-| Method | Endpoint | Authentication | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/phone-number` | No | Create a phone number. |
-| `GET` | `/phone-number` | Required | List phone numbers. |
-| `GET` | `/phone-number/:id` | Required | Retrieve one phone number. |
-| `PUT` | `/phone-number/:id` | Required | Update one phone number. |
-| `DELETE` | `/phone-number/:id` | Required | Delete one phone number. |
-
-When created inside a user or contact registration request, the controller assigns `owner` and
-`ownerType` on the server.
-
 ## Validation and limitations
 
 - `phone`, `countryNumber`, `owner`, and `ownerType` are required.

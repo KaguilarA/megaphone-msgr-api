@@ -1,10 +1,8 @@
 import { OwlModel } from "owl-expressjs-utils";
 
-/**
- * State model definition using the OwlModel factory.
- * Handles structural properties for categorical state tracking across different entities.
- */
-export default OwlModel("State", {
+const stateSupported = ["address", "user", "contact", "email", "phoneNumber"];
+
+const StateData = {
   name: {
     type: String,
     required: true,
@@ -15,7 +13,13 @@ export default OwlModel("State", {
   },
   type: {
     type: String,
-    enum: ["address", "user", "contact", "email", "phoneNumber"],
+    enum: stateSupported,
     required: true,
   },
-});
+};
+
+/**
+ * State model definition using the OwlModel factory.
+ * Handles structural properties for categorical state tracking across different entities.
+ */
+export default OwlModel("State", StateData);

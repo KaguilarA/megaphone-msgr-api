@@ -37,32 +37,12 @@ classDiagram
 
 ## Fields
 
+
 | Field | Mongo/Mongoose type | Required | Rules and meaning |
 | --- | --- | --- | --- |
 | `_id` | `ObjectId` | Generated | MongoDB identifier generated for the relationship. |
 | `message` | `ObjectId` | Yes | Reference to the related `Message`. |
 | `contact` | `ObjectId` | Yes | Reference to the recipient `Contact`. |
-
-## Relationship semantics
-
-One message can be linked to many contacts by creating one document per recipient:
-
-```json
-{
-	"message": "665f1a000000000000000001",
-	"contact": "665f1a000000000000000002"
-}
-```
-
-The schema does not define a compound unique index, so duplicate message/contact pairs are not
-prevented at the model level.
-
-## Current integration status
-
-`config.js` imports this model but does not include it in the exported route configuration. The
-current `POST /message/send` flow passes a `receiver` array directly to `Message.save` instead
-of creating `MessageReceptor` documents. As a result, this model is currently a declared data
-model without an active API workflow.
 
 ## Validation and limitations
 
