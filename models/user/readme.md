@@ -71,48 +71,6 @@ During registration, the user is saved first. Related email, phone number, and a
 documents are then saved in parallel. If a related save fails, the controller deletes the new
 user to avoid an orphaned account.
 
-## Authentication
-
-Login is handled through the email resource. The authentication controller finds an email with
-`ownerType: "User"`, loads its `owner`, and compares the submitted password through the model
-utility. On success, the user's identifier is stored in the session.
-
-| Method | Endpoint | Authentication | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/auth/login` | No | Authenticate with email and password. |
-| `POST` | `/auth/logout` | No | Destroy the current session. |
-| `GET` | `/auth/status` | No | Return the current authentication status. |
-| `POST` | `/user` | No | Register a user and optional related resources. |
-| `GET` | `/user` | Required | Retrieve the authenticated user's information. |
-| `PUT` | `/user` | Required | Update the authenticated user's fields. |
-
-## Example registration
-
-```json
-{
-	"name": "Ana",
-	"lastname": "Lopez",
-	"password": "secret-password",
-	"email": {
-		"email": "ana@example.com"
-	},
-	"phoneNumber": {
-		"phone": "+15125550123",
-		"countryNumber": "+1"
-	},
-	"addresses": [
-		{
-			"street": "123 Main St",
-			"city": "Austin",
-			"country": "US"
-		}
-	]
-}
-```
-
-The response combines the user document with the related `email`, `phoneNumber`, and
-`addresses` values. The password must not be exposed in that response.
-
 ## Validation and limitations
 
 - `name`, `lastname`, and `password` are required.

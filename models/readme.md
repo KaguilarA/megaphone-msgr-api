@@ -216,12 +216,12 @@ flowchart TD
 
 ## Detailed documentation
 
-- [Address](address/address.md)
-- [Contact](contact/contact.md)
-- [Email](email/email.md)
-- [Message](message/message.md)
-- [MessageReceptor](messageReceptor/messageReceptor.md)
-- [PhoneNumber](phone/phone.md)
-- [State](state/state.md)
-- [Token](tokens/tokens.md)
-- [User](user/user.md)
+- [Address](address/readme.md)
+- [Contact](contact/readme.md)
+- [Email](email/readme.md)
+- [Message](message/readme.md)
+- [MessageReceptor](messageReceptor/readme.md)
+- [PhoneNumber](phone/readme.md)
+- [State](state/readme.md)
+- [Token](tokens/readme.md)
+- [User](user/readme.md)
