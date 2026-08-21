@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
-import PhoneNumberController from "../controllers/phoneNumber.js";
+import PhoneNumberController from "../controllers/phone/controller.js";
 
 export default (data) => {
   const router = Router();
