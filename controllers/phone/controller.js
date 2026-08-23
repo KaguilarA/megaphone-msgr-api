@@ -137,7 +137,7 @@ class PhoneController {
    * @param {import('express').Response} res - Express response.
    * @returns {Promise<void>} Sends the updated phone number or an error response.
    */
-  async updatePhoneNumber(req, res) {
+  async update(req, res) {
     try {
       const phoneNumberId = req.params.id;
       const updatedPhoneNumber = await this.model.update(phoneNumberId, req.body);

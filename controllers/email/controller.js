@@ -138,7 +138,7 @@ class EmailController {
    * @param {import('express').Response} res - Express response.
    * @returns {Promise<void>} Sends the updated email or an error response.
    */
-  async updateEmail(req, res) {
+  async update(req, res) {
     try {
       const emailId = req.params.id;
       const updatedEmail = await this.model.update(emailId, req.body);
