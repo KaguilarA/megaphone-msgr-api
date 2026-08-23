@@ -1,5 +1,19 @@
+/**
+ * Create the user controller for registration and authenticated account operations.
+ * @param {Object} config - Controller configuration.
+ * @param {string} config.entityId - Entity name used in response messages.
+ * @param {import('owl-expressjs-utils').OwlModel} config.model - User data-access model.
+ * @param {string[]} config.populatedFields - User reference fields to populate on read.
+ * @returns {{getInfo: Function, register: Function, update: Function}} Bound controller handlers.
+ */
 export default ({ entityId, model, populatedFields }) => {
 
+  /**
+   * Return the authenticated user's own account, populated with `populatedFields`.
+   * @param {import('express').Request} req - Express request containing the user session.
+   * @param {import('express').Response} res - Express response.
+   * @returns {Promise<void>} Sends the user document or an error response.
+   */
   async function getInfo(req, res) {
     try {
       if (!req.session.userId) {
@@ -23,6 +37,12 @@ export default ({ entityId, model, populatedFields }) => {
     }
   }
 
+  /**
+   * Create a new user document.
+   * @param {import('express').Request} req - Express request containing the new user data.
+   * @param {import('express').Response} res - Express response.
+   * @returns {Promise<void>} Sends the created user or an error response.
+   */
   async function register(req, res) {
     try {
       const newUser = await model.save(req.body);
@@ -35,6 +55,12 @@ export default ({ entityId, model, populatedFields }) => {
     }
   }
 
+  /**
+   * Update the authenticated user's own account.
+   * @param {import('express').Request} req - Express request containing the user session and updated data.
+   * @param {import('express').Response} res - Express response.
+   * @returns {Promise<void>} Sends the updated user or an error response.
+   */
   async function update(req, res) {
     try {
       const updatedData = await model.update(req.session.userId, req.body, {

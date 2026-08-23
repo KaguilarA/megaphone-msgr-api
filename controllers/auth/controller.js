@@ -1,10 +1,29 @@
+/**
+ * Controller for credential-based login, logout, and session status.
+ *
+ * @class AuthController
+ * @param {string} id - Controller identifier.
+ * @property {import('owl-expressjs-utils').OwlModel} userModel - User data-access model.
+ * @property {import('owl-expressjs-utils').OwlModel} emailModel - Email data-access model.
+ */
 class AuthController {
+  /**
+   * @param {string} id - Controller identifier.
+   * @param {import('owl-expressjs-utils').OwlModel} userModel - User data-access model.
+   * @param {import('owl-expressjs-utils').OwlModel} emailModel - Email data-access model.
+   */
   constructor(id, userModel, emailModel) {
     this.id = id;
     this.emailModel = emailModel;
     this.userModel = userModel;
   }
 
+  /**
+   * Validate credentials and start a session for the matching user.
+   * @param {import('express').Request} req - Express request containing `email` and `password`.
+   * @param {import('express').Response} res - Express response.
+   * @returns {Promise<void>} Sends the authenticated user or an error response.
+   */
   async logIn(req, res) {
     try {
       const { email: emailInput, password } = req.body;
@@ -57,6 +76,12 @@ class AuthController {
     }
   }
 
+  /**
+   * Destroy the current session and clear the session cookie.
+   * @param {import('express').Request} req - Express request holding the session to destroy.
+   * @param {import('express').Response} res - Express response.
+   * @returns {void}
+   */
   logout(req, res) {
     req.session.destroy((err) => {
       if (err) {
@@ -67,6 +92,12 @@ class AuthController {
     });
   }
 
+  /**
+   * Report whether the current request is authenticated.
+   * @param {import('express').Request} req - Express request holding the session and/or authenticated user.
+   * @param {import('express').Response} res - Express response.
+   * @returns {void}
+   */
   status(req, res) {
     const user = req.user || null;
 
@@ -81,6 +112,13 @@ class AuthController {
   }
 }
 
+/**
+ * Create an AuthController from the configured dependency models.
+ * @param {Object} config - Controller configuration.
+ * @param {string} config.id - Controller identifier.
+ * @param {Array<{model: import('owl-expressjs-utils').OwlModel}>} config.models - Models in user and email order.
+ * @returns {AuthController} Configured auth controller.
+ */
 export default ({
   id,
   models: [{ model: userModel }, { model: emailModel }],
