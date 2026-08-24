@@ -3,10 +3,12 @@
  * @param {Object} config - Controller configuration.
  * @param {string} config.entityId - Entity name used in response messages.
  * @param {import('owl-expressjs-utils').OwlModel} config.model - User data-access model.
+ * @param {import('owl-expressjs-utils').OwlModel} [config.permissionModel] - Permission lookup model.
+ * @param {import('owl-expressjs-utils').OwlModel} [config.userPermissionModel] - User-permission assignment model.
  * @param {string[]} config.populatedFields - User reference fields to populate on read.
  * @returns {{getInfo: Function, register: Function, update: Function}} Bound controller handlers.
  */
-export default ({ entityId, model, populatedFields }) => {
+export default ({ entityId, model, permissionModel, userPermissionModel, populatedFields }) => {
 
   /**
    * Return the authenticated user's own account, populated with `populatedFields`.
@@ -46,6 +48,25 @@ export default ({ entityId, model, populatedFields }) => {
   async function register(req, res) {
     try {
       const newUser = await model.save(req.body);
+
+      if (permissionModel && userPermissionModel) {
+        const allPermissions = await permissionModel.getAll();
+        const permissions = (Array.isArray(allPermissions) ? allPermissions : []).filter(
+          ({ name }) => !/^user:/.test(name),
+        );
+
+        if (permissions.length > 0) {
+          await Promise.all(
+            permissions.map(({ _id }) =>
+              userPermissionModel.save({
+                user: newUser._id,
+                permission: _id,
+              }),
+            ),
+          );
+        }
+      }
+
       res.status(201).json(newUser);
     } catch (error) {
       res.status(400).json({

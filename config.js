@@ -9,17 +9,23 @@ import state from "./models/state/model.js";
 import user from "./models/user/model.js";
 import tokens from "./models/tokens/model.js";
 import messageReceptor from "./models/messageReceptor/model.js";
+import permission from "./models/permission/model.js";
+import userPermission from "./models/userPermission/model.js";
+import actionLog from "./models/actionLog/model.js";
 
 import AddressRouter from "./routes/address/routes.js";
 import AuthRouter from "./routes/auth/routes.js";
 import ContactRouter from "./routes/contact/routes.js";
 import CountriesRouter from "./routes/countries/routes.js";
 import EmailRouter from "./routes/email/routes.js";
-import MessageRouter from "./routes/message.js";
+import MessageRouter from "./routes/message/routes.js";
 import PhoneNumberRouter from "./routes/phone/routes.js";
-import StateRouter from "./routes/state.js";
-import UserRouter from "./routes/user.js";
-import UserTokensRouter from "./routes/userTokens.js";
+import StateRouter from "./routes/state/routes.js";
+import UserRouter from "./routes/user/routes.js";
+import UserTokensRouter from "./routes/userTokens/routes.js";
+import PermissionRouter from "./routes/permissions/routes.js";
+import UserPermissionRouter from "./routes/userPermission/routes.js";
+import ActionLogRouter from "./routes/actionLog/routes.js";
 
 export default [
   {
@@ -104,6 +110,8 @@ export default [
     config: {
       entityId: "User",
       model: user,
+      permissionModel: permission,
+      userPermissionModel: userPermission,
     },
     router: UserRouter,
   },
@@ -114,5 +122,38 @@ export default [
       model: tokens,
     },
     router: UserTokensRouter,
+  },
+  {
+    url: "/permission",
+    config: {
+      entityId: "Permission",
+      model: permission,
+      permissionModel: permission,
+      userPermissionModel: userPermission,
+      actionLogModel: actionLog,
+    },
+    router: PermissionRouter,
+  },
+  {
+    url: "/user-permission",
+    config: {
+      entityId: "UserPermission",
+      model: userPermission,
+      permissionModel: permission,
+      userPermissionModel: userPermission,
+      actionLogModel: actionLog,
+    },
+    router: UserPermissionRouter,
+  },
+  {
+    url: "/action-log",
+    config: {
+      entityId: "ActionLog",
+      model: actionLog,
+      permissionModel: permission,
+      userPermissionModel: userPermission,
+      actionLogModel: actionLog,
+    },
+    router: ActionLogRouter,
   },
 ];
