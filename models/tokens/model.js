@@ -10,6 +10,11 @@ const TokenData = {
     type: String,
     trim: true,
   },
+  whatsappVersion: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   telegramToken: {
     type: String,
     trim: true,

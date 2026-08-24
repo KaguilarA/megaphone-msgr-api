@@ -3,20 +3,20 @@ import { countries } from "country-codes-flags-phone-codes";
 import address from "./models/address/model.js";
 import contact from "./models/contact/model.js";
 import email from "./models/email/model.js";
-import message from "./models/message/message.js";
-import phoneNumber from "./models/phone/phone.js";
-import state from "./models/state/state.js";
-import user from "./models/user/user.js";
-import tokens from "./models/tokens/tokens.js";
-import messageReceptor from "./models/messageReceptor/messageReceptor.js";
+import message from "./models/message/model.js";
+import phoneNumber from "./models/phone/model.js";
+import state from "./models/state/model.js";
+import user from "./models/user/model.js";
+import tokens from "./models/tokens/model.js";
+import messageReceptor from "./models/messageReceptor/model.js";
 
-import AddressRouter from "./routes/address.js";
-import AuthRouter from "./routes/auth.js";
-import ContactRouter from "./routes/contact.js";
-import CountriesRouter from "./routes/countries.js";
-import EmailRouter from "./routes/email.js";
+import AddressRouter from "./routes/address/routes.js";
+import AuthRouter from "./routes/auth/routes.js";
+import ContactRouter from "./routes/contact/routes.js";
+import CountriesRouter from "./routes/countries/routes.js";
+import EmailRouter from "./routes/email/routes.js";
 import MessageRouter from "./routes/message.js";
-import PhoneNumberRouter from "./routes/phoneNumber.js";
+import PhoneNumberRouter from "./routes/phone/routes.js";
 import StateRouter from "./routes/state.js";
 import UserRouter from "./routes/user.js";
 import UserTokensRouter from "./routes/userTokens.js";
@@ -27,7 +27,6 @@ export default [
     config: {
       entityId: "Address",
       model: address,
-      contactModel: contact,
     },
     router: AddressRouter,
   },
@@ -69,7 +68,8 @@ export default [
     config: {
       entityId: "Message",
       model: message,
-      populatedFields: ["sender", "receiver", "state"],
+      receptorModel: messageReceptor,
+      populatedFields: ["sender", "state"],
     },
     router: MessageRouter,
   },
