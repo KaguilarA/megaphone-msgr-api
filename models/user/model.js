@@ -1,7 +1,14 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const UserData = {
+/**
+ * User model definition using the OwlModel factory.
+ * Handles structural properties for user accounts, relationships, and secure password hashing.
+ */
+export const encryptedFields = [];
+export const hashedFields = ["password"];
+export const modelName = "User";
+
+export default {
   name: {
     type: String,
     required: [true, "El nombre es obligatorio."],
@@ -21,15 +28,4 @@ const UserData = {
     type: Schema.Types.ObjectId,
     ref: "State",
   },
-};
-
-/**
- * User model definition using the OwlModel factory.
- * Handles structural properties for user accounts, relationships, and secure password hashing.
- */
-export default OwlModel(
-  "User",
-  UserData,
-  [],
-  ["password"],
-);
+};;

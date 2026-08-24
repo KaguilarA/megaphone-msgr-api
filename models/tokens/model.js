@@ -1,7 +1,15 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const TokenData = {
+const encryptedFields = ["emailToken", "whatsappToken", "telegramToken"];
+
+/**
+ * UserToken model definition using the OwlModel factory.
+ * Handles structural properties for communication tokens and enables field-level encryption.
+ */
+export { encryptedFields };
+export const modelName = "Token";
+
+export default {
   emailToken: {
     type: String,
     trim: true,
@@ -25,12 +33,4 @@ const TokenData = {
     required: true,
     index: true,
   },
-};
-
-const encryptedFields = ["emailToken", "whatsappToken", "telegramToken"];
-
-/**
- * UserToken model definition using the OwlModel factory.
- * Handles structural properties for communication tokens and enables field-level encryption.
- */
-export default OwlModel("Token", TokenData, encryptedFields);
+};;

@@ -1,9 +1,14 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
 const OwnerTypes = ["User", "Contact"];
 
-const EmailData = {
+export const modelName = "Email";
+
+/**
+ * Email model definition using the OwlModel factory.
+ * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
+ */
+export default {
   email: {
     type: String,
     required: [true, "El correo electrónico es obligatorio."],
@@ -31,10 +36,5 @@ const EmailData = {
     ref: "State",
     required: true
   },
-};
+};;
 
-/**
- * Email model definition using the OwlModel factory.
- * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
- */
-export default OwlModel("Email", EmailData);

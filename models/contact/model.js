@@ -1,7 +1,12 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const ContactData = {
+export const modelName = "Contact";
+
+/**
+ * Contact model definition using the OwlModel factory.
+ * Handles structural properties for contact entries, including relational references to phone numbers, emails, addresses, and states.
+ */
+export default {
   name: {
     type: String,
     required: [true, "El nombre del contacto es obligatorio."],
@@ -17,10 +22,5 @@ const ContactData = {
     type: Schema.Types.ObjectId,
     ref: "State",
   },
-};
+};;
 
-/**
- * Contact model definition using the OwlModel factory.
- * Handles structural properties for contact entries, including relational references to phone numbers, emails, addresses, and states.
- */
-export default OwlModel("Contact", ContactData);

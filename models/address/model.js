@@ -1,7 +1,12 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const AddressData = {
+export const modelName = "Address";
+
+/**
+ * Address model definition using the OwlModel factory.
+ * Handles structural properties for geographical and location data, including relational state reference.
+ */
+export default {
   street: {
     type: String,
     trim: true,
@@ -45,8 +50,3 @@ const AddressData = {
   },
 };
 
-/**
- * Address model definition using the OwlModel factory.
- * Handles structural properties for geographical and location data, including relational state reference.
- */
-export default OwlModel("Address", AddressData);

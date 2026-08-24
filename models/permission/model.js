@@ -1,6 +1,6 @@
-import { OwlModel } from "owl-expressjs-utils";
+export const modelName = "Permission";
 
-const PermissionData = {
+export default {
   name: {
     type: String,
     required: [true, "El nombre del permiso es obligatorio."],
@@ -14,5 +14,3 @@ const PermissionData = {
     trim: true,
   },
 };
-
-export default OwlModel("Permission", PermissionData);

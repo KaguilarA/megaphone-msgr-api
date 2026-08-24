@@ -1,7 +1,6 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const ActionLogData = {
+export default {
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -25,4 +24,4 @@ const ActionLogData = {
   },
 };
 
-export default OwlModel("ActionLog", ActionLogData);
+export const modelName = "ActionLog";

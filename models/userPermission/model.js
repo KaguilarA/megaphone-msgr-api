@@ -1,7 +1,8 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const UserPermissionData = {
+export const modelName = "UserPermission";
+
+export default {
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -15,5 +16,3 @@ const UserPermissionData = {
     index: true,
   },
 };
-
-export default OwlModel("UserPermission", UserPermissionData);

@@ -1,8 +1,12 @@
-import { OwlModel } from "owl-expressjs-utils";
+const Supported = ["address", "user", "contact", "email", "phoneNumber"];
 
-const stateSupported = ["address", "user", "contact", "email", "phoneNumber"];
+export const modelName = "State";
 
-const StateData = {
+/**
+ * State model definition using the OwlModel factory.
+ * Handles structural properties for categorical state tracking across different entities.
+ */
+export default {
   name: {
     type: String,
     required: true,
@@ -13,13 +17,7 @@ const StateData = {
   },
   type: {
     type: String,
-    enum: stateSupported,
+    enum: Supported,
     required: true,
   },
-};
-
-/**
- * State model definition using the OwlModel factory.
- * Handles structural properties for categorical state tracking across different entities.
- */
-export default OwlModel("State", StateData);
+};;

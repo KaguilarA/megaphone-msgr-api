@@ -1,7 +1,8 @@
 import { Schema } from "mongoose";
-import { OwlModel } from "owl-expressjs-utils";
 
-const MessageReceptorData = {
+export const modelName = "MessageReceptor";
+
+export default {
   message: {
     type: Schema.Types.ObjectId,
     ref: "Message",
@@ -12,6 +13,4 @@ const MessageReceptorData = {
     ref: "Contact",
     required: true,
   },
-};
-
-export default OwlModel("MessageReceptor", MessageReceptorData);
+};;
