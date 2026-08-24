@@ -1,0 +1,5 @@
+{
+  "name": "Disponible",
+  "description": "El numero puede enviar y recibir mensajes.",
+  "type": "phoneNumber"
+}

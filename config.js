@@ -1,17 +1,19 @@
 import { countries } from "country-codes-flags-phone-codes";
 
-import address from "./models/address/model.js";
-import contact from "./models/contact/model.js";
-import email from "./models/email/model.js";
-import message from "./models/message/model.js";
-import phoneNumber from "./models/phone/model.js";
-import state from "./models/state/model.js";
-import user from "./models/user/model.js";
-import tokens from "./models/tokens/model.js";
-import messageReceptor from "./models/messageReceptor/model.js";
-import permission from "./models/permission/model.js";
-import userPermission from "./models/userPermission/model.js";
-import actionLog from "./models/actionLog/model.js";
+import {
+  ActionLogModel,
+  AddressModel,
+  ContactModel,
+  EmailModel,
+  MessageModel,
+  MessageReceptorModel,
+  PermissionModel,
+  PhoneNumberModel,
+  StateModel,
+  TokenModel,
+  UserModel,
+  UserPermissionModel,
+} from "./models/models.js";
 
 import AddressRouter from "./routes/address/routes.js";
 import AuthRouter from "./routes/auth/routes.js";
@@ -32,7 +34,7 @@ export default [
     url: "/address",
     config: {
       entityId: "Address",
-      model: address,
+      model: AddressModel,
     },
     router: AddressRouter,
   },
@@ -43,11 +45,11 @@ export default [
       models: [
         {
           entityId: "User",
-          model: user,
+          model: UserModel,
         },
         {
           entityId: "Email",
-          model: email,
+          model: EmailModel,
         },
       ],
     },
@@ -57,7 +59,7 @@ export default [
     url: "/contact",
     config: {
       entityId: "Contact",
-      model: contact,
+      model: ContactModel,
     },
     router: ContactRouter,
   },
@@ -73,8 +75,8 @@ export default [
     url: "/message",
     config: {
       entityId: "Message",
-      model: message,
-      receptorModel: messageReceptor,
+      model: MessageModel,
+      receptorModel: MessageReceptorModel,
       populatedFields: ["sender", "state"],
     },
     router: MessageRouter,
@@ -83,8 +85,8 @@ export default [
     url: "/email",
     config: {
       entityId: "Email",
-      model: email,
-      contactModel: contact,
+      model: EmailModel,
+      contactModel: ContactModel,
     },
     router: EmailRouter,
   },
@@ -92,8 +94,8 @@ export default [
     url: "/phone-number",
     config: {
       entityId: "Phone Number",
-      model: phoneNumber,
-      contactModel: contact,
+      model: PhoneNumberModel,
+      contactModel: ContactModel,
     },
     router: PhoneNumberRouter,
   },
@@ -101,7 +103,7 @@ export default [
     url: "/state",
     config: {
       entityId: "State",
-      model: state,
+      model: StateModel,
     },
     router: StateRouter,
   },
@@ -109,9 +111,9 @@ export default [
     url: "/user",
     config: {
       entityId: "User",
-      model: user,
-      permissionModel: permission,
-      userPermissionModel: userPermission,
+      model: UserModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
     },
     router: UserRouter,
   },
@@ -119,7 +121,7 @@ export default [
     url: "/tokens",
     config: {
       entityId: "Token",
-      model: tokens,
+      model: TokenModel,
     },
     router: UserTokensRouter,
   },
@@ -127,10 +129,10 @@ export default [
     url: "/permission",
     config: {
       entityId: "Permission",
-      model: permission,
-      permissionModel: permission,
-      userPermissionModel: userPermission,
-      actionLogModel: actionLog,
+      model: PermissionModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
     },
     router: PermissionRouter,
   },
@@ -138,10 +140,10 @@ export default [
     url: "/user-permission",
     config: {
       entityId: "UserPermission",
-      model: userPermission,
-      permissionModel: permission,
-      userPermissionModel: userPermission,
-      actionLogModel: actionLog,
+      model: UserPermissionModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
     },
     router: UserPermissionRouter,
   },
@@ -149,10 +151,10 @@ export default [
     url: "/action-log",
     config: {
       entityId: "ActionLog",
-      model: actionLog,
-      permissionModel: permission,
-      userPermissionModel: userPermission,
-      actionLogModel: actionLog,
+      model: ActionLogModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
     },
     router: ActionLogRouter,
   },
