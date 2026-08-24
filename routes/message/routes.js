@@ -1,13 +1,12 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
-import MessageController from "../controllers/message.js";
+import MessageController from "../../controllers/message/controller.js";
 
 export default (data) => {
   const router = Router();
   const controller = MessageController(data);
 
   router.use(OwlIsAuth);
-  router.post("/send", controller.send.bind(controller));
   router.post("/", controller.register.bind(controller));
   router.get("/", controller.getAll.bind(controller));
   router.get("/:id", controller.getById.bind(controller));
