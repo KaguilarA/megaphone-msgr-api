@@ -65,6 +65,10 @@ test('actionLogMiddleware records the action after a successful json response', 
       this.body = body;
       return this;
     },
+    end(body) {
+      this.body = body;
+      return this;
+    },
     status(code) {
       this.statusCode = code;
       return this;
@@ -86,4 +90,41 @@ test('actionLogMiddleware records the action after a successful json response', 
   assert.equal(savedLogs[0].permission, permissionDocs[1]._id);
   assert.equal(savedLogs[0].action, 'create_permission');
   assert.equal(savedLogs[0].metadata.statusCode, 201);
+});
+
+test('actionLogMiddleware records the action after an end response', async () => {
+  const savedLogs = [];
+  const req = {
+    method: 'DELETE',
+    originalUrl: '/contact/665f1a2b3c4d5e6f708192c1',
+    session: { userId: user._id },
+    permission: { _id: permissionDocs[0]._id },
+    permissionAction: 'contact:delete',
+    permissionName: 'contact:delete',
+    body: {},
+    params: { id: '665f1a2b3c4d5e6f708192c1' },
+    query: {},
+  };
+  const res = {
+    statusCode: 204,
+    json() { return this; },
+    send() { return this; },
+    end() {
+      this.ended = true;
+      return this;
+    },
+  };
+
+  const middleware = actionLogMiddleware({
+    actionLogModel: { save: async (entry) => savedLogs.push(entry) },
+    action: 'contact:delete',
+  });
+
+  middleware(req, res, () => {});
+  await res.end();
+
+  assert.equal(res.ended, true);
+  assert.equal(savedLogs.length, 1);
+  assert.equal(savedLogs[0].action, 'contact:delete');
+  assert.equal(savedLogs[0].metadata.statusCode, 204);
 });

@@ -22,6 +22,7 @@ function createRes() {
 
 test('registerUserEmail associates the email with the authenticated user', async () => {
   let savedEmail;
+  const activeState = { _id: '665f1a2b3c4d5e6f70819601', name: 'active', type: 'email' };
   const controller = EmailController({
     id: 'Email',
     model: {
@@ -30,19 +31,23 @@ test('registerUserEmail associates the email with the authenticated user', async
         return { _id: '665f1a2b3c4d5e6f70819410', ...payload };
       },
     },
+    stateModel: {
+      getOne: async () => activeState,
+    },
   });
   const res = createRes();
 
   await controller.registerUserEmail({
     session: { userId: user._id },
-    body: emailPayload,
+    body: { email: emailPayload.email },
   }, res);
 
   assert.equal(res.statusCode, 201);
   assert.deepEqual(savedEmail, {
-    ...emailPayload,
+    email: emailPayload.email,
     ownerType: 'User',
     owner: user._id,
+    state: activeState._id,
   });
   assert.equal(res.body.owner, user._id);
 });

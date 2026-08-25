@@ -2,16 +2,16 @@
   {
     "_id": "665f1a2b3c4d5e6f708192b1",
     "name": "contact:getList",
-    "description": "List contacts"
+    "desc": "Obtener lista de contactos"
   },
   {
     "_id": "665f1a2b3c4d5e6f708192b2",
     "name": "message:create",
-    "description": "Create messages"
+    "desc": "Registrar mensajes"
   },
   {
     "_id": "665f1a2b3c4d5e6f708192b3",
     "name": "user:getOwnData",
-    "description": "Read own user data"
+    "desc": "Obtener datos propios del usuario"
   }
 ]

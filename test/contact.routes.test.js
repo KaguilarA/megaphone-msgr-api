@@ -49,3 +49,37 @@ test('GET /contact returns only the contact documents', async () => {
   assert.deepEqual(body, [{ _id: '665f1a2b3c4d5e6f708192c1', name: 'Sofia Hernandez' }]);
   assert.equal(childLookupCalled, false);
 });
+
+test('POST /contact creates a contact for the authenticated user', async () => {
+  let savedContact;
+  const app = express();
+  app.use(express.json());
+  app.use((req, _res, next) => {
+    req.session = { userId: user._id };
+    next();
+  });
+  app.use('/contact', ContactRouter({
+    model: {
+      save: async (payload) => {
+        savedContact = payload;
+        return { _id: '665f1a2b3c4d5e6f708192c3', ...payload };
+      },
+    },
+  }));
+
+  const server = app.listen(0);
+
+  try {
+    const { port } = await new Promise((resolve) => server.once('listening', () => resolve(server.address())));
+    const response = await fetch(`http://127.0.0.1:${port}/contact`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: 'Sofia Hernandez' }),
+    });
+
+    assert.equal(response.status, 201);
+    assert.deepEqual(savedContact, { name: 'Sofia Hernandez', owner: user._id });
+  } finally {
+    server.close();
+  }
+});

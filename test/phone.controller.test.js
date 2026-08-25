@@ -22,6 +22,7 @@ function createRes() {
 
 test('registerUserPhoneNumber associates the phone with the authenticated user', async () => {
   let savedPhone;
+  const activeState = { _id: '665f1a2b3c4d5e6f70819602', name: 'active', type: 'phoneNumber' };
   const controller = PhoneController({
     id: 'Phone Number',
     model: {
@@ -30,19 +31,27 @@ test('registerUserPhoneNumber associates the phone with the authenticated user',
         return { _id: '665f1a2b3c4d5e6f70819420', ...payload };
       },
     },
+    stateModel: {
+      getOne: async () => activeState,
+    },
   });
   const res = createRes();
 
   await controller.registerUserPhoneNumber({
     session: { userId: user._id },
-    body: phonePayload,
+    body: {
+      phone: phonePayload.phone,
+      countryNumber: phonePayload.countryNumber,
+    },
   }, res);
 
   assert.equal(res.statusCode, 201);
   assert.deepEqual(savedPhone, {
-    ...phonePayload,
+    phone: phonePayload.phone,
+    countryNumber: phonePayload.countryNumber,
     ownerType: 'User',
     owner: user._id,
+    state: [activeState._id],
   });
   assert.equal(res.body.owner, user._id);
 });
