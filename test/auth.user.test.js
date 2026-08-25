@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import AuthController from '../controllers/auth.js';
-import UserController from '../controllers/user.js';
+import AuthController from '../controllers/auth/controller.js';
+import UserController from '../controllers/user/controller.js';
 
 function createRes() {
   const res = {
@@ -77,23 +77,11 @@ test('user getInfo returns the current user profile', async () => {
   const model = {
     getById: async () => user,
   };
-  const emailModel = {
-    getOne: async () => null,
-  };
-  const phoneNumberModel = {
-    getOne: async () => null,
-  };
-  const addressModel = {
-    getByCoincidence: async () => [],
-  };
 
   const controller = UserController({
     entityId: 'User',
     model,
     populatedFields: ['tokens'],
-    emailModel,
-    phoneNumberModel,
-    addressModel,
   });
 
   const req = {
@@ -104,7 +92,7 @@ test('user getInfo returns the current user profile', async () => {
   await controller.getInfo(req, res);
 
   assert.equal(res.statusCode, 200);
-  assert.deepEqual(res.body, { ...user, email: null, phoneNumber: null, addresses: [] });
+  assert.deepEqual(res.body, user);
 });
 
 test('user update returns 404 when the user cannot be found', async () => {

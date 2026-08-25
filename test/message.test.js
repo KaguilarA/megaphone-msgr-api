@@ -1,50 +1,87 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildMetaPayload, resolveMetaSettings } from '../controllers/message.js';
+import MessageController from '../controllers/message/controller.js';
 
-test('buildMetaPayload creates the expected Meta WhatsApp payload', () => {
-  const payload = buildMetaPayload({ recipientPhone: '123456789', content: 'Hola' });
+test('delete removes receptor rows and the message itself', async () => {
+  const cleared = [];
+  const deleted = [];
 
-  assert.deepEqual(payload, {
-    messaging_product: 'whatsapp',
-    to: '123456789',
-    type: 'text',
-    text: {
-      body: 'Hola',
-    },
-  });
-});
-
-test('resolveMetaSettings prefers the authenticated user token and phone id', () => {
-  const settings = resolveMetaSettings(
-    {
-      to: '111111111',
-      content: 'Mensaje',
-      phoneNumberId: 'phone-1',
-    },
-    {
-      tokens: {
-        whatsappToken: 'user-token',
+  const controller = MessageController({
+    id: 'Message',
+    model: {
+      delete: async (messageId) => {
+        deleted.push(messageId);
+        return { _id: messageId };
       },
     },
-  );
-
-  assert.equal(settings.recipientPhone, '111111111');
-  assert.equal(settings.content, 'Mensaje');
-  assert.equal(settings.token, 'user-token');
-  assert.equal(settings.phoneNumberId, 'phone-1');
-});
-
-test('resolveMetaSettings falls back to body values when user token is missing', () => {
-  const settings = resolveMetaSettings({
-    to: '222222222',
-    message: 'Fallback',
-    whatsappToken: 'body-token',
-    phoneNumberId: 'phone-2',
+    receptorModel: {
+      getByCoincidence: async (filter) => {
+        cleared.push(filter);
+        return [{ _id: 'r-1', message: filter.message }];
+      },
+      delete: async (receptorId) => {
+        deleted.push(receptorId);
+        return { _id: receptorId };
+      },
+    },
   });
 
-  assert.equal(settings.recipientPhone, '222222222');
-  assert.equal(settings.content, 'Fallback');
-  assert.equal(settings.token, 'body-token');
-  assert.equal(settings.phoneNumberId, 'phone-2');
+  const req = { params: { id: '665f1a2b3c4d5e6f70819504' } };
+  const res = {
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    end() {
+      this.ended = true;
+      return this;
+    },
+    json(payload) {
+      this.body = payload;
+      return this;
+    },
+  };
+
+  await controller.delete(req, res);
+
+  assert.equal(res.statusCode, 204);
+  assert.equal(res.ended, true);
+  assert.deepEqual(cleared, [{ message: '665f1a2b3c4d5e6f70819504' }]);
+  assert.deepEqual(deleted.includes('665f1a2b3c4d5e6f70819504'), true);
+});
+
+test('getById returns the message and its receptors', async () => {
+  const controller = MessageController({
+    id: 'Message',
+    model: {
+      getById: async () => ({
+        toJSON: () => ({ _id: '665f1a2b3c4d5e6f70819505', content: 'Confirmacion recibida' }),
+      }),
+    },
+    receptorModel: {
+      getByCoincidence: async () => [{ _id: '665f1a2b3c4d5e6f70819515', contact: '665f1a2b3c4d5e6f708192c1' }],
+    },
+    populatedFields: ['sender'],
+  });
+
+  const req = { params: { id: '665f1a2b3c4d5e6f70819505' } };
+  const res = {
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    json(payload) {
+      this.body = payload;
+      return this;
+    },
+  };
+
+  await controller.getById(req, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, {
+    _id: '665f1a2b3c4d5e6f70819505',
+    content: 'Confirmacion recibida',
+    receptors: [{ _id: '665f1a2b3c4d5e6f70819515', contact: '665f1a2b3c4d5e6f708192c1' }],
+  });
 });

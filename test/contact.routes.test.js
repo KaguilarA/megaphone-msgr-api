@@ -1,21 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import express from 'express';
-import ContactRouter from '../routes/contact.js';
+import ContactRouter from '../routes/contact/routes.js';
+import user from './mocks/user.json' with { type: 'json' };
 
 test('GET /contact returns only the contact documents', async () => {
   let childLookupCalled = false;
   const app = express();
 
   app.use((req, _res, next) => {
-    req.session = { userId: 'user-1' };
+    req.session = { userId: user._id };
     next();
   });
   app.use('/contact', ContactRouter({
     model: {
       getByCoincidence: async (query) => {
-        assert.deepEqual(query, { owner: 'user-1' });
-        return [{ _id: 'contact-1', name: 'Ada' }];
+        assert.deepEqual(query, { owner: user._id });
+        return [{ _id: '665f1a2b3c4d5e6f708192c1', name: 'Sofia Hernandez' }];
       },
     },
     emailModel: {
@@ -45,6 +46,6 @@ test('GET /contact returns only the contact documents', async () => {
   server.close();
 
   assert.equal(response.status, 200);
-  assert.deepEqual(body, [{ _id: 'contact-1', name: 'Ada' }]);
+  assert.deepEqual(body, [{ _id: '665f1a2b3c4d5e6f708192c1', name: 'Sofia Hernandez' }]);
   assert.equal(childLookupCalled, false);
 });

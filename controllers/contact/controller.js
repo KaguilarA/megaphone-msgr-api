@@ -59,7 +59,7 @@ class ContactController {
    */
   async getAll(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.session?.userId;
       const contacts = await this.model.getByCoincidence({
         owner: userId
       });

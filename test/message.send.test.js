@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import MessageController from '../controllers/message.js';
+import MessageController from '../controllers/message/controller.js';
+import messagePayload from './mocks/message.json' with { type: 'json' };
+import user from './mocks/user.json' with { type: 'json' };
 
 function createRes() {
   return {
@@ -17,80 +19,61 @@ function createRes() {
   };
 }
 
-test('send returns 201 and saves the message when Meta responds successfully', async () => {
+test('register creates a message and receptor entries', async () => {
   const savedMessages = [];
-  const originalFetch = global.fetch;
-  global.fetch = async (url, options) => ({
-    ok: true,
-    status: 200,
-    url,
-    options,
-    json: async () => ({ success: true, message_id: 'meta-123' }),
-  });
 
-  try {
-    const controller = MessageController({
-      entityId: 'Message',
-      model: {
-        save: async (data) => {
-          savedMessages.push(data);
-          return { ...data, _id: 'msg-1' };
-        },
-      },
-    });
-
-    const req = {
-      body: {
-        to: '123456789',
-        content: 'Hola desde test',
-        phoneNumberId: 'phone-123',
-        receiver: ['contact-1'],
-      },
-      session: {
-        userId: 'user-1',
-      },
-      user: {
-        _id: 'user-1',
-        tokens: {
-          whatsappToken: 'secret-token',
-        },
-      },
-    };
-    const res = createRes();
-
-    await controller.send(req, res);
-
-    assert.equal(res.statusCode, 201);
-    assert.equal(res.body.message, 'Mensaje enviado correctamente.');
-    assert.equal(res.body.meta.success, true);
-    assert.equal(savedMessages.length, 1);
-    assert.equal(savedMessages[0].content, 'Hola desde test');
-    assert.equal(savedMessages[0].receiver[0], 'contact-1');
-    assert.equal(savedMessages[0].sender, 'user-1');
-    assert.match(res.body.meta.message_id, /meta-123/);
-  } finally {
-    global.fetch = originalFetch;
-  }
-});
-
-test('send returns 400 when required fields are missing', async () => {
   const controller = MessageController({
     entityId: 'Message',
-    model: { save: async () => null },
+    model: {
+      save: async (data) => {
+        savedMessages.push(data);
+        return { ...data, _id: '665f1a2b3c4d5e6f70819502', toJSON: () => ({ ...data, _id: '665f1a2b3c4d5e6f70819502' }) };
+      },
+    },
+    receptorModel: {
+      save: async (data) => ({ _id: '665f1a2b3c4d5e6f70819512', ...data }),
+    },
   });
 
   const req = {
-    body: {},
-    user: {
-      tokens: {
-        whatsappToken: 'secret-token',
-      },
+    body: {
+      ...messagePayload,
+    },
+    session: {
+      userId: user._id,
     },
   };
   const res = createRes();
 
-  await controller.send(req, res);
+  await controller.register(req, res);
 
-  assert.equal(res.statusCode, 400);
-  assert.equal(res.body.message, "Se requiere el número de destino en el campo 'to'.");
+  assert.equal(res.statusCode, 201);
+  assert.equal(savedMessages.length, 1);
+  assert.equal(savedMessages[0].content, messagePayload.content);
+  assert.equal(savedMessages[0].sender, user._id);
+  assert.equal(res.body.content, messagePayload.content);
+  assert.equal(res.body.sender, user._id);
+});
+
+test('getAll returns only the authenticated user messages', async () => {
+  const controller = MessageController({
+    entityId: 'Message',
+    model: {
+      getByCoincidence: async (filter) => [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: filter.sender }],
+    },
+    receptorModel: {
+      getByCoincidence: async () => [],
+    },
+    populatedFields: ['sender'],
+  });
+
+  const req = {
+    session: { userId: user._id },
+  };
+  const res = createRes();
+
+  await controller.getAll(req, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(res.body, [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: user._id }]);
 });
