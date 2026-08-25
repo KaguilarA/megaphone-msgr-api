@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import ContactController from "../../controllers/contact/controller.js";
-import { createActionLogMiddleware } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated contact router.

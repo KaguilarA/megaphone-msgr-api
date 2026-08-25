@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
-import { actionLogMiddleware, requirePermission } from "../../middlewares/permissionMiddleware.js";
+import actionLogMiddleware from "./../../middlewares/actionLog/actionLog.js";
+import requirePermission from "../../middlewares/permission/permission.js";
 
 /**
  * Create the authenticated state router.

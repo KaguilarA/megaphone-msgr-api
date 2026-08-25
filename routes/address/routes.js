@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import AddressController from "../../controllers/address/controller.js";
-import { createActionLogMiddleware } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated address router.

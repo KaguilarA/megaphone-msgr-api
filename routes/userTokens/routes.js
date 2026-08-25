@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
-import { createActionLogMiddleware } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated user-token CRUD router.

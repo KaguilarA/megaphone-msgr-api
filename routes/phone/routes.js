@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import PhoneNumberController from "../../controllers/phone/controller.js";
-import { createActionLogMiddleware } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the phone-number router with its public registration and authenticated routes.

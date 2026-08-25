@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import EmailController from "../../controllers/email/controller.js";
-import { createActionLogMiddleware } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the email router with its public registration and authenticated routes.

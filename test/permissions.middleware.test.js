@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { actionLogMiddleware, requirePermission } from '../middlewares/permissionMiddleware.js';
+import actionLogMiddleware from "./../middlewares/actionLog/actionLog.js";
+import requirePermission from "../middlewares/permission/permission.js";
 import user from './mocks/user.json' with { type: 'json' };
 import permissionDocs from './mocks/permissions.json' with { type: 'json' };
 

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import UserController from "../../controllers/user/controller.js";
-import { createActionLogMiddleware, requirePermission } from "../../middlewares/permissionMiddleware.js";
+import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import requirePermission from "../../middlewares/permission/permission.js";
 
 /**
  * Create the user router with public registration and authenticated account routes.
