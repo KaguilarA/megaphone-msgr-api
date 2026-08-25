@@ -1,90 +1,163 @@
+# Megaphone Messenger API
 
+Backend REST API for Megaphone Messenger. The application is built with Node.js, Express,
+MongoDB, Mongoose, and `owl-expressjs-utils`.
 
-# Megaphone Messager — API (Backend)
+## Features
 
-Backend project for Megaphone Messager: a REST API built with Express.js that manages users, contacts and messages.
+- Session-based authentication with MongoDB-backed sessions.
+- User registration, login, logout, and account status.
+- User-owned contacts and messages.
+- User and contact emails, phone numbers, and addresses.
+- Reusable state definitions for application entities.
+- Permission assignments and permission-aware routes.
+- Action logging after permission-aware responses.
+- Encrypted provider tokens and hashed user passwords.
+- Centralized model instantiation through `models/models.js`.
 
-**Features**
+## Requirements
 
-- Authentication and session management.
-- Endpoints for users, contacts, addresses, emails, phone numbers and messages.
-- Models for users, tokens, messages, addresses and contact data.
-- Basic unit and integration tests included.
+- Node.js `>=24.0.0`
+- npm `>=10.0.0`
+- A reachable MongoDB instance
 
-**Project structure**
-
-- `config/` — Configuration files (CORS, session, etc.).
-- `controllers/` — Business logic and route handlers.
-- `db/` — Database configuration and models.
-- `middlewares/` — Middlewares (e.g. `isAuth`).
-- `routes/` — API route definitions.
-- `test/` — Automated tests.
-
-Refer to the source files for implementation details.
-
-**Requirements**
-
-- Node.js (recommended 14+)
-- NPM or Yarn
-- Database (configured in `db/config/database.js`)
-
-**Installation**
-
-1. Install dependencies:
+## Installation
 
 ```bash
 npm install
 ```
 
-2. Configure environment variables (examples):
+Create a `.env` file in the project root. Use `.env.example` as the variable checklist:
 
-- `PORT` — port where the API will run.
-- Database connection variables used in `db/config/database.js`.
+```env
+CLUSTER_ENABLED=false
+CLUSTER_WORKERS=1
+DB_HOST=mongodb://127.0.0.1:27017/megaphone
+DB_NAME=megaphone
+ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+ENCRYPTION_ALGORITHM=aes-256-gcm
+FRONTEND_URL=http://localhost:4200
+NODE_ENV=development
+PORT=3000
+SESSION_SECRET=replace-with-a-long-random-secret
+```
 
-3. Initialize the database (according to your setup) and run migrations/seeders if applicable.
+`DB_HOST`, `DB_NAME`, `FRONTEND_URL`, and `SESSION_SECRET` must be configured for a normal
+local run. Use a unique encryption key and session secret outside development.
 
-**Run**
+## Running
 
-- Development:
+Development mode enables Node's file watcher:
 
 ```bash
 npm run dev
 ```
 
-- Production / start:
+Start the API normally with:
 
 ```bash
 npm start
 ```
 
-**Tests**
+By default, the server listens on `http://localhost:3000`. When clustering is enabled,
+`CLUSTER_WORKERS` controls the requested worker count within the available CPU limit.
+
+## Authentication
+
+Successful login stores the authenticated user ID in `req.session.userId`. Protected routes
+use `OwlIsAuth` from `owl-expressjs-utils` and require that session value.
+
+The login flow resolves a user-owned email, compares the password through the hashed user
+model, and creates the session. Requests from the frontend must send the session cookie.
+
+## Permissions and audit logging
+
+Permission and user-permission routes use this middleware order:
+
+1. `OwlIsAuth`
+2. `requirePermission(...)`
+3. `actionLogMiddleware(...)`
+4. The generic `OwlController` handler
+
+The audit middleware records the authenticated user, permission, action, request metadata,
+and response status after `res.json` or `res.send` is called.
+
+## API route groups
+
+| Prefix | Responsibility | Access |
+| --- | --- | --- |
+| `/auth` | Login, logout, and authentication status | Public |
+| `/user` | Registration and user profile | Registration public; profile authenticated |
+| `/contact` | User-owned contacts | Authenticated |
+| `/address` | User and contact addresses | Authenticated |
+| `/email` | User and contact emails | Root registration public; remaining routes authenticated |
+| `/phone-number` | User and contact phone numbers | Root registration public; remaining routes authenticated |
+| `/message` | Messages and recipient relationships | Authenticated |
+| `/state` | State definitions | Authenticated |
+| `/countries` | Country and calling-code catalog | Public |
+| `/tokens` | User provider credentials | Authenticated |
+| `/permission` | Permission definitions | Authenticated plus permission checks |
+| `/user-permission` | Permission assignments | Authenticated plus permission checks |
+| `/action-log` | Audit records | Authenticated |
+
+See the complete endpoint tables in [routes/readme.md](routes/readme.md) and each feature's
+route README.
+
+## Project structure
+
+```text
+config.js                  Central route and dependency configuration
+index.js                   Express application entry point
+controllers/               Resource-specific request handlers
+models/                    Schema data and centralized OwlModel registry
+middlewares/               Permission validation and action logging
+routes/                    Express router factories
+test/                      Node test suite and JSON fixtures
+.env.example               Environment variable checklist
+```
+
+## Model architecture
+
+Individual model files export schema data and `modelName`. The only file that calls
+`OwlModel` is [models/models.js](models/models.js), which exports the instantiated models used
+by the application.
+
+- User passwords are hashed by `OwlModel`.
+- Email, WhatsApp, and Telegram tokens are encrypted by `OwlModel`.
+- Email, phone number, and address ownership uses `owner` plus `ownerType`.
+- Message recipients are stored in `MessageReceptor` documents.
+
+Read the model-specific documentation in [models/readme.md](models/readme.md).
+
+## Testing
+
+Run the complete automated suite:
 
 ```bash
 npm test
 ```
 
-**Main endpoints**
+The suite covers authentication, contacts, addresses, emails, phone numbers, messages,
+states, permissions, user-permission assignments, action logging, and user registration.
+Tests use realistic JSON fixtures under `test/mocks` and mock data-access boundaries; they do
+not replace a full end-to-end persistence test against MongoDB.
 
-Routes are defined in the `routes/` folder. Some exposed endpoints include:
+## Important limitations
 
-- `/auth` — authentication and token handling.
-- `/user` — user management.
-- `/contact` — contact management.
-- `/message` — sending and retrieving messages.
-- `/address`, `/email`, `/phoneNumber` — related resources.
+- Several ID-based read, update, and delete operations are not consistently owner-scoped.
+- Generic CRUD routes expose behavior supplied by `OwlController`.
+- `MessageReceptor` is an internal model and has no standalone route.
+- State compatibility with the entity that references it is not enforced by the schema.
+- Provider credentials are encrypted, but provider validation and token refresh are outside the API.
 
-See the controllers in `controllers/` for functional documentation of each endpoint.
+## Documentation map
 
-**Contributing**
+- [Models](models/readme.md)
+- [Controllers](controllers/readme.md)
+- [Routes](routes/readme.md)
+- [Middleware](middlewares/permissionMiddleware.js)
+- [Environment template](.env.example)
 
-1. Fork the repository and create a feature branch.
-2. Add tests for relevant changes.
-3. Open a pull request describing the motivation and changes.
+## License
 
-**License**
-
-Project license is available in `LICENSE`.
-
----
-
-If you want, I can also generate a `README` for the Angular frontend or add usage examples with `curl` / Postman.
+See [LICENSE](LICENSE).
