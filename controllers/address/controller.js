@@ -105,9 +105,9 @@ class AddressController {
       const contactId = req.params.id;
 
       const newAddress = await this.model.save({
+        ...req.body,
         ownerType: "Contact",
         owner: contactId,
-        ...req.body,
       });
       res.status(201).json(newAddress);
     } catch (error) {
@@ -127,9 +127,9 @@ class AddressController {
       const userId = req.session.userId;
 
       const newAddress = await this.model.save({
+        ...req.body,
         ownerType: "User",
         owner: userId,
-        ...req.body,
       });
       res.status(201).json(newAddress);
     } catch (error) {

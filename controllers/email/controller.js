@@ -10,9 +10,21 @@ class EmailController {
    * @param {string} id - Controller identifier.
   * @param {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
    */
-  constructor(id, model) {
+  constructor(id, model, stateModel) {
     this.id = id;
     this.model = model;
+    this.stateModel = stateModel;
+  }
+
+  async getActiveState() {
+    if (!this.stateModel) return undefined;
+
+    return await this.stateModel.getOne({ name: "active", type: "email" })
+      || await this.stateModel.save({
+        name: "active",
+        description: "Email is active.",
+        type: "email",
+      });
   }
 
   /**
@@ -100,11 +112,13 @@ class EmailController {
   async registerContactEmail(req, res) {
     try {
       const id = req.params.id;
+      const activeState = await this.getActiveState();
 
       const newEmail = await this.model.save({
+        ...req.body,
         ownerType: "Contact",
         owner: id,
-        ...req.body,
+        ...(activeState ? { state: activeState._id } : {}),
       });
       res.status(201).json(newEmail);
     } catch (error) {
@@ -122,11 +136,13 @@ class EmailController {
   async registerUserEmail(req, res) {
     try {
       const userId = req.session.userId;
+      const activeState = await this.getActiveState();
 
       const newEmail = await this.model.save({
+        ...req.body,
         ownerType: "User",
         owner: userId,
-        ...req.body,
+        ...(activeState ? { state: activeState._id } : {}),
       });
       res.status(201).json(newEmail);
     } catch (error) {
@@ -163,4 +179,4 @@ class EmailController {
  * @param {import('owl-expressjs-utils').OwlModel} config.model - Email model instance.
  * @returns {EmailController} Configured email controller.
  */
-export default ({ id, model }) => new EmailController(id, model);
+export default ({ id, model, stateModel }) => new EmailController(id, model, stateModel);

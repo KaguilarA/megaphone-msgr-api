@@ -77,10 +77,10 @@ class ContactController {
    */
   async register(req, res) {
     try {
-      const userId = req.user.id;
+      const userId = req.session?.userId;
       const contactData = req.body;
       contactData.owner = userId;
-      const newContact = await this.model.create(contactData);
+      const newContact = await this.model.save(contactData);
       res.status(201).json(newContact);
     } catch (error) {
       res.status(500).json({ error: error.message });
