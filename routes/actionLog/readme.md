@@ -2,7 +2,7 @@
 
 Base path: `/action-log`.
 
-All routes use `OwlIsAuth`. They do not currently apply `requirePermission` or create a second audit entry through `actionLogMiddleware`.
+All routes use `OwlIsAuth`. Write operations are audited; read operations are intentionally not logged.
 
 | Method | Path | Responsibility |
 | --- | --- | --- |

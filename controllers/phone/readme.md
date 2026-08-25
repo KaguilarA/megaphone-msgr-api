@@ -18,6 +18,9 @@ Coordinates phone-number operations for users and contacts.
 
 The factory accepts `{ id, model }`, where `model` is `PhoneNumberModel`.
 
+New phone numbers receive the `active` state for type `phoneNumber` automatically. The
+controller reuses that state when it exists and creates it when it is missing.
+
 ## Route boundary
 
 The current root `POST /phone-number` route is public. Other routes are protected by `OwlIsAuth`.

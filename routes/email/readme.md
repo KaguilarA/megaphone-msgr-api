@@ -7,7 +7,7 @@ Base path: `/email`.
 | Method | Path | Auth | Responsibility |
 | --- | --- | --- | --- |
 | POST | `/` | Public | Create a user-owned email. |
-| POST | `/contact` | Authenticated | Create a contact-owned email. |
+| POST | `/:id/contact` | Authenticated | Create an email owned by the contact in `:id`. |
 | GET | `/` | Authenticated | List current-user emails. |
 | GET | `/:id` | Authenticated | Read an email by ID. |
 | GET | `/:id/contact` | Authenticated | List emails for a contact. |

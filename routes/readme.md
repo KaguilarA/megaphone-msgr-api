@@ -38,7 +38,7 @@ The application mounts the generated router under its configured prefix.
 | `/email` | User and contact emails | Root registration public; remaining routes authenticated | Custom `EmailController` |
 | `/message` | Messages and recipient links | All routes authenticated | Custom `MessageController` |
 | `/phone-number` | User and contact phone numbers | Root registration public; remaining routes authenticated | Custom `PhoneController` |
-| `/state` | State definitions | All current routes authenticated | Generic `OwlController` |
+| `/state` | State definitions | Authentication plus `state:getList`/`state:register` checks | Generic `OwlController` |
 | `/user` | Registration and account profile | Registration public; profile routes authenticated | Custom user controller |
 | `/tokens` | Provider credentials | All routes authenticated | Generic `OwlController` |
 | `/permission` | Permission definitions | Authentication plus permission checks | Generic `OwlController` |
@@ -54,11 +54,26 @@ Authenticated routes use `OwlIsAuth` from `owl-expressjs-utils`. The middleware 
 Permission-management and user-permission routes apply middleware in this order:
 
 1. `OwlIsAuth`
-2. `requirePermission(...)`
-3. `actionLogMiddleware(...)`
+2. `requirePermission(...)` when the operation is permission-protected
+3. `createActionLogMiddleware(...)` for write operations
 4. The controller handler
 
-`requirePermission` checks the requested permission and its assignment to the session user. `actionLogMiddleware` records the action after the response is sent.
+`requirePermission` checks the requested permission and its assignment to the session user. For write operations, `createActionLogMiddleware` provides a reusable audit middleware that records the action after `res.json`, `res.send`, or `res.end` completes the response. Read operations are not audited.
+
+```js
+import { createActionLogMiddleware } from "../middlewares/permissionMiddleware.js";
+
+const auditDependencies = {
+  actionLogModel: data.actionLogModel,
+  permissionModel: data.permissionModel,
+};
+
+router.post(
+  "/",
+  createActionLogMiddleware(auditDependencies, "contact:add"),
+  handler,
+);
+```
 
 ## Public registration routes
 

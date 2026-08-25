@@ -51,6 +51,7 @@ export const requirePermission = (permissionName, options = {}) => {
 export const actionLogMiddleware = (options = {}) => {
   const {
     actionLogModel,
+    permissionModel,
     action = "action",
     getActionName,
     getMetadata,
@@ -63,7 +64,7 @@ export const actionLogMiddleware = (options = {}) => {
     }
 
     const userId = req.session?.userId || req.user?._id || req.user?.id;
-    const permissionId = req.permission?._id || null;
+    let permissionId = req.permission?._id || null;
 
     const resolveActionName = () => {
       if (typeof getActionName === "function") return getActionName(req, res);
@@ -84,10 +85,18 @@ export const actionLogMiddleware = (options = {}) => {
 
     const originalJson = res.json.bind(res);
     const originalSend = res.send.bind(res);
+    const originalEnd = res.end.bind(res);
 
     const recordLog = async (statusCode) => {
       try {
         if (!userId) return;
+
+        if (!permissionId && permissionModel) {
+          const permission = await permissionModel.getOne({ name: resolveActionName() });
+          permissionId = permission?._id || null;
+        }
+
+        if (!permissionId) return;
 
         await actionLogModel.save({
           user: userId,
@@ -115,6 +124,24 @@ export const actionLogMiddleware = (options = {}) => {
       return result;
     };
 
+    res.end = async function endWithLog(chunk, encoding) {
+      const result = await originalEnd(chunk, encoding);
+      await recordLog(res.statusCode || 200);
+      return result;
+    };
+
     return next();
   };
 };
+
+/**
+ * Create a reusable action-log middleware for a configured route.
+ * @param {{actionLogModel: Object, permissionModel?: Object}} dependencies - Models used by the middleware.
+ * @param {string} action - Permission/action name recorded in the audit entry.
+ * @returns {import('express').RequestHandler} Configured action-log middleware.
+ */
+export const createActionLogMiddleware = (dependencies, action) =>
+  actionLogMiddleware({
+    ...dependencies,
+    action,
+  });

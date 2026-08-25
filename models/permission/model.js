@@ -9,7 +9,7 @@ export default {
     unique: true,
     index: true,
   },
-  description: {
+  desc: {
     type: String,
     default: "",
     trim: true,

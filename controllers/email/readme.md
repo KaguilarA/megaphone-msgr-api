@@ -18,6 +18,9 @@ Coordinates email operations for users and contacts.
 
 The factory accepts `{ id, model }`, where `model` is `EmailModel`.
 
+New emails receive the `active` state for type `email` automatically. The controller reuses
+that state when it exists and creates it when it is missing.
+
 ## Route boundary
 
 The current root `POST /email` route is public. Other email routes are protected by `OwlIsAuth`.

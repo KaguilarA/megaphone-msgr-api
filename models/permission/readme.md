@@ -9,7 +9,7 @@ Defines a named permission that can be assigned to users through `UserPermission
 | Field | Rules |
 | --- | --- |
 | `name` | Required trimmed unique indexed string. |
-| `description` | Optional trimmed string; defaults to an empty string. |
+| `desc` | Optional trimmed string; defaults to an empty string. |
 
 ## Usage
 

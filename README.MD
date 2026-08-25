@@ -79,8 +79,8 @@ Permission and user-permission routes use this middleware order:
 3. `actionLogMiddleware(...)`
 4. The generic `OwlController` handler
 
-The audit middleware records the authenticated user, permission, action, request metadata,
-and response status after `res.json` or `res.send` is called.
+The audit middleware records write operations only. It stores the authenticated user, permission,
+action, request metadata, and response status after `res.json`, `res.send`, or `res.end` is called.
 
 ## API route groups
 
@@ -93,7 +93,7 @@ and response status after `res.json` or `res.send` is called.
 | `/email` | User and contact emails | Root registration public; remaining routes authenticated |
 | `/phone-number` | User and contact phone numbers | Root registration public; remaining routes authenticated |
 | `/message` | Messages and recipient relationships | Authenticated |
-| `/state` | State definitions | Authenticated |
+| `/state` | State definitions | Authenticated plus state permissions |
 | `/countries` | Country and calling-code catalog | Public |
 | `/tokens` | User provider credentials | Authenticated |
 | `/permission` | Permission definitions | Authenticated plus permission checks |
