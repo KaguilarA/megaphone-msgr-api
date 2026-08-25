@@ -2,6 +2,11 @@ import { Router } from "express";
 import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
 import { actionLogMiddleware, requirePermission } from "../../middlewares/permissionMiddleware.js";
 
+/**
+ * Create the user-permission router with authorization and audit middleware.
+ * @param {Object} data - Configuration data for the router.
+ * @returns {import('express').Router}
+ */
 export default (data) => {
   const router = Router();
   const controller = OwlController(data);

@@ -2,6 +2,11 @@ import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import PhoneNumberController from "../../controllers/phone/controller.js";
 
+/**
+ * Create the phone-number router with its public registration and authenticated routes.
+ * @param {Object} data - Configuration data for the router.
+ * @returns {import('express').Router}
+ */
 export default (data) => {
   const router = Router();
   const controller = PhoneNumberController(data);

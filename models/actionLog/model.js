@@ -1,5 +1,6 @@
 import { Schema } from "mongoose";
 
+/** Schema definition for audit records created by action-log middleware. */
 export default {
   user: {
     type: Schema.Types.ObjectId,
@@ -24,4 +25,5 @@ export default {
   },
 };
 
+/** Registered Mongoose model name. */
 export const modelName = "ActionLog";

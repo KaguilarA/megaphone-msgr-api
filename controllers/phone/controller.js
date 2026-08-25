@@ -3,12 +3,12 @@
  *
  * @class PhoneController
  * @param {string} id - Controller identifier.
- * @property {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
+ * @property {import('owl-expressjs-utils').OwlModel} model - Phone-number data-access model.
  */
 class PhoneController {
   /**
    * @param {string} id - Controller identifier.
-   * @param {import('owl-expressjs-utils').OwlModel} model - Address data-access model.
+  * @param {import('owl-expressjs-utils').OwlModel} model - Phone-number data-access model.
    */
   constructor(id, model) {
     this.id = id;
@@ -17,8 +17,10 @@ class PhoneController {
 
   /**
    * Delete an email by its ID.
-   * @param {import('express').Request} req - Express request containing the email ID.
-   * @param {import('express').Response} res - Express response.
+  * @param {import('express').Request} req - Express request containing the phone-number ID.
+    * @param {Object} config - Controller configuration.
+    * @param {string} config.id - Controller identifier.
+    * @param {import('owl-expressjs-utils').OwlModel} config.model - Phone-number model instance.
    * @returns {Promise<void>} Sends a success response or an error response.
    */
   async delete(req, res) {

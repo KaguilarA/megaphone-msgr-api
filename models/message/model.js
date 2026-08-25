@@ -2,6 +2,7 @@ import { Schema } from "mongoose";
 
 export const modelName = "Message";
 
+/** Schema definition for a message and its sender relationship. */
 export default {
   content: {
     type: String,

@@ -1,5 +1,6 @@
 export const modelName = "Permission";
 
+/** Schema definition for a named application permission. */
 export default {
   name: {
     type: String,

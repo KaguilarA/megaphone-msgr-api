@@ -1,43 +1,21 @@
-# Contact controller
+# Contact Controller
 
-## Overview
+## Responsibility
 
-`ContactController` manages `Contact` documents owned by the authenticated `User`. All reads
-are scoped to `req.user.id`, and every created contact is stamped with the current user as its
-`owner`.
+Manages contacts owned by the authenticated user.
 
-The controller is created through a factory function:
+## Public methods
 
-```js
-export default ({ id, model }) => new ContactController(id, model);
-```
+- `getAll`: lists contacts where `owner` is the authenticated user ID.
+- `getById`: returns a contact by ID.
+- `register`: creates a contact and assigns its owner.
+- `update`: updates a contact by ID.
+- `delete`: deletes a contact by ID.
 
-## Responsibilities
+## Dependencies
 
-- Read a single contact by ID.
-- List every contact owned by the authenticated user.
-- Create a contact for the authenticated user.
-- Update and delete a contact by ID.
+The factory accepts `{ id, model }`, where `model` is `ContactModel`.
 
-## Methods
+## Limitations
 
-| Method | HTTP route | Description |
-| --- | --- | --- |
-| `getAll` | `GET /contact` | Returns all contacts where `owner` is the authenticated user. |
-| `getById` | `GET /contact/:id` | Returns a single contact by ID, or `404` if missing. |
-| `register` | `POST /contact` | Creates a contact owned by the authenticated user. |
-| `update` | `PUT /contact/:id` | Updates a contact by ID, or `404` if missing. |
-| `delete` | `DELETE /contact/:id` | Deletes a contact by ID. |
-
-## Error handling
-
-All methods respond with `500` and `{ error: message }` for unexpected failures. `getById` and
-`update` respond with `404` and `{ message: "Contact not found." }` when the contact does not
-exist.
-
-## Related files
-
-- `controllers/contact/controller.js`: implementation.
-- `routes/contact/routes.js`: route bindings, all protected by `OwlIsAuth`.
-- [Contact model](../../models/contact/readme.md): schema and validation rules.
-- Related child resources: [Address](../address/readme.md), [Email](../email/readme.md), [Phone](../phone/readme.md), each scoped by `ownerType: "Contact"`.
+Only list and create explicitly derive ownership from the session. ID-based reads, updates, and deletes require additional ownership enforcement if cross-user access must be prevented.

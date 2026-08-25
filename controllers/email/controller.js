@@ -8,7 +8,7 @@
 class EmailController {
   /**
    * @param {string} id - Controller identifier.
-   * @param {import('owl-expressjs-utils').OwlModel} model - Address data-access model.
+  * @param {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
    */
   constructor(id, model) {
     this.id = id;
@@ -18,7 +18,9 @@ class EmailController {
   /**
    * Delete an email by its ID.
    * @param {import('express').Request} req - Express request containing the email ID.
-   * @param {import('express').Response} res - Express response.
+    * @param {Object} config - Controller configuration.
+    * @param {string} config.id - Controller identifier.
+    * @param {import('owl-expressjs-utils').OwlModel} config.model - Email model instance.
    * @returns {Promise<void>} Sends a success response or an error response.
    */
   async delete(req, res) {
@@ -91,7 +93,7 @@ class EmailController {
 
   /**
    * Create an email for a specific contact.
-   * @param {import('express').Request} req - Express request containing address data and the contact ID.
+  * @param {import('express').Request} req - Express request containing email data and the contact ID.
    * @param {import('express').Response} res - Express response.
    * @returns {Promise<void>} Sends the created email or an error response.
    */
@@ -156,7 +158,9 @@ class EmailController {
  * Create an EmailController from the configured dependency models.
  * @param {Object} config - Controller configuration.
  * @param {string} config.id - Controller identifier.
- * @param {Array<{model: import('owl-expressjs-utils').OwlModel}>} config.models - Models in email, user, and contact order.
+ * @param {Object} config - Controller configuration.
+ * @param {string} config.id - Controller identifier.
+ * @param {import('owl-expressjs-utils').OwlModel} config.model - Email model instance.
  * @returns {EmailController} Configured email controller.
  */
 export default ({ id, model }) => new EmailController(id, model);

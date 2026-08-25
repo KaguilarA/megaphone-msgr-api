@@ -2,6 +2,7 @@ import { Schema } from "mongoose";
 
 export const modelName = "UserPermission";
 
+/** Schema definition for a user-to-permission assignment. */
 export default {
   user: {
     type: Schema.Types.ObjectId,

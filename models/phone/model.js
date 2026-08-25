@@ -8,6 +8,7 @@ const OwnerTypes = ["User", "Contact"];
  */
 export const modelName = "PhoneNumber";
 
+/** Schema definition for a user-owned or contact-owned phone number. */
 export default {
   phone: {
     type: String,

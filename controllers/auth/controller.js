@@ -116,7 +116,9 @@ class AuthController {
  * Create an AuthController from the configured dependency models.
  * @param {Object} config - Controller configuration.
  * @param {string} config.id - Controller identifier.
- * @param {Array<{model: import('owl-expressjs-utils').OwlModel}>} config.models - Models in user and email order.
+ * @param {Object} config - Controller configuration.
+ * @param {string} config.id - Controller identifier.
+ * @param {[{model: import('owl-expressjs-utils').OwlModel}, {model: import('owl-expressjs-utils').OwlModel}]} config.models - User model followed by Email model.
  * @returns {AuthController} Configured auth controller.
  */
 export default ({

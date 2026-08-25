@@ -162,7 +162,7 @@ class AddressController {
  *
  * @param {Object} config - Controller configuration.
  * @param {string} config.id - Controller identifier.
- * @param {Array<{model: import('owl-expressjs-utils').OwlModel}>} config.models - Models in address, user, and contact order.
+  * @param {import('owl-expressjs-utils').OwlModel} config.model - Address model instance.
  * @returns {AddressController} Configured address controller.
  */
 export default ({ id, model }) => new AddressController(id, model);

@@ -6,6 +6,7 @@ export const modelName = "Address";
  * Address model definition using the OwlModel factory.
  * Handles structural properties for geographical and location data, including relational state reference.
  */
+/** Schema definition for user-owned and contact-owned addresses. */
 export default {
   street: {
     type: String,

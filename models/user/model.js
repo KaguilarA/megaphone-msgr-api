@@ -8,6 +8,7 @@ export const encryptedFields = [];
 export const hashedFields = ["password"];
 export const modelName = "User";
 
+/** Schema definition for an authenticated user account. */
 export default {
   name: {
     type: String,

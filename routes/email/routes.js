@@ -2,6 +2,11 @@ import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import EmailController from "../../controllers/email/controller.js";
 
+/**
+ * Create the email router with its public registration and authenticated routes.
+ * @param {Object} data - Configuration data for the router.
+ * @returns {import('express').Router}
+ */
 export default (data) => {
   const router = Router();
   const controller = EmailController(data);

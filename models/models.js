@@ -29,6 +29,7 @@ import ActionLogData, {
   modelName as ActionLogModelName,
 } from "./actionLog/model.js";
 
+/** Central registry of instantiated application models. */
 export const AddressModel = OwlModel(AddressModelName, AddressData);
 export const ContactModel = OwlModel(ContactModelName, ContactData);
 export const EmailModel = OwlModel(EmailModelName, EmailData);

@@ -8,6 +8,7 @@ export const modelName = "Email";
  * Email model definition using the OwlModel factory.
  * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
  */
+/** Schema definition for a user-owned or contact-owned email address. */
 export default {
   email: {
     type: String,

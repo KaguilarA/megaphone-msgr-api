@@ -1,44 +1,29 @@
 # Controllers
 
-## Overview
+Controllers contain application behavior between HTTP requests and model operations. They receive dependencies through factory functions and return Express responses.
 
-The `controllers` layer implements the request handlers used by the Express routes. Each
-controller receives its dependencies (models, entity identifiers, related models) through a
-factory function invoked from `config.js`, and exposes bound methods consumed by the matching
-router in `routes`.
+## Responsibilities
 
-This file is a general index. Each controller has its own documentation page describing its
-responsibilities, methods, and request/response contract.
+- Validate request-level preconditions and map errors to HTTP responses.
+- Read authenticated identity from `req.session.userId` or the authenticated request context.
+- Delegate persistence to `OwlModel` helpers.
+- Keep resource-specific orchestration out of routes.
 
-## Controller navigation
+## Controllers
 
-| Controller | Purpose | Documentation |
-| --- | --- | --- |
-| `AddressController` | CRUD for addresses owned by a user or a contact. | [Address controller](address/readme.md) |
-| `AuthController` | Login, logout, and session status. | [Auth controller](auth/readme.md) |
-| `ContactController` | CRUD for contacts owned by the authenticated user. | [Contact controller](contact/readme.md) |
-| `CountriesController` | Read-only list of supported countries and dial codes. | [Countries controller](countries/readme.md) |
-| `EmailController` | CRUD for emails owned by a user or a contact. | [Email controller](email/readme.md) |
-| `MessageController` | CRUD for messages and their recipient contacts (MessageReceptor). | [Message controller](message/readme.md) |
-| `PhoneController` | CRUD for phone numbers owned by a user or a contact. | [Phone controller](phone/readme.md) |
-| `UserController` | Authenticated account read/update and registration. | [User controller](user/user.md) |
+| Controller | Responsibility |
+| --- | --- |
+| Address | User/contact address lifecycle and ownership assignment. |
+| Auth | Login, logout, and session status. |
+| Contact | User-owned contact CRUD. |
+| Countries | Read-only country dataset formatting. |
+| Email | User/contact email lifecycle. |
+| Message | Message lifecycle and recipient links. |
+| Phone | User/contact phone lifecycle. |
+| User | Account operations and default permission assignment. |
 
-## Common patterns
+Permission, user-permission, action-log, state, and token CRUD use `OwlController` directly from `owl-expressjs-utils` through their routers.
 
-- Each controller is created by a factory function: `export default (config) => new Controller(...)`.
-- `config.js` supplies the dependencies (`model`, `receptorModel`, `contactModel`, `populatedFields`, etc.) that the factory forwards to the controller instance.
-- Routes call `.bind(controller)` on each handler before registering it.
-- Every handler follows the same error-handling shape: a `try/catch` block that returns `500` with `{ error: message }` on unexpected failures, and a specific `4xx` status for expected not-found or validation cases.
-- Ownership scoping (`req.session.userId` or `req.user`) is enforced in the controller, not in the model.
+## Boundaries
 
-## Out of scope
-
-Sending messages through an external provider (WhatsApp, Telegram, etc.) is intentionally not
-implemented in `MessageController`. That integration will be added later as a separate,
-dedicated module.
-
-## Related files
-
-- `config.js`: wires each controller factory to its route and dependencies.
-- `models/readme.md`: documents the data layer consumed by these controllers.
-- `routes`: Express routers that bind controller methods to HTTP endpoints.
+Routes provide authentication and permission middleware. Controllers do not replace schema validation or database constraints.

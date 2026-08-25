@@ -1,43 +1,23 @@
-# User controller
+# User Controller
 
-## Overview
+## Responsibility
 
-`UserController` exposes registration and authenticated-account operations for `User`
-documents. Unlike other entity controllers, it is created directly by
-[`OwlModel`'s companion factory pattern](../readme.md#common-patterns) as a plain object of
-bound functions rather than a class instance.
+Handles user registration and authenticated account operations.
 
-The controller is created through a factory function:
+## Public methods
 
-```js
-export default ({ entityId, model, populatedFields }) => ({ getInfo, register, update });
-```
+- `register`: creates a user and assigns every permission whose name does not start with `user:`.
+- `getInfo`: returns the current user using `req.session.userId`.
+- `update`: updates the current user's account.
 
-## Responsibilities
+## Dependencies
 
-- Register a new user account.
-- Return the authenticated user's own account information, with optional population of related fields.
-- Update the authenticated user's own account information.
+The factory accepts `{ entityId, model, permissionModel, userPermissionModel, populatedFields }`.
 
-All read/update operations are scoped to `req.session.userId`; a user can never read or modify
-another account through this controller.
+## Registration behavior
 
-## Methods
+The user is saved first. When permission dependencies are configured, non-user permissions are loaded and assigned with `UserPermissionModel`.
 
-| Method | HTTP route | Description |
-| --- | --- | --- |
-| `register` | `POST /user` | Creates a new user document from the request body. |
-| `getInfo` | `GET /user` | Returns the authenticated user's document, populated with `populatedFields`. Responds `404` if there is no session or the user cannot be found. |
-| `update` | `PUT /user` | Updates the authenticated user's document and returns the populated result. Responds `404` if the user cannot be found. |
+## Limitations
 
-## Error handling
-
-- `register` responds `400` with `{ message, error }` when creation fails (e.g. validation errors).
-- `getInfo` and `update` respond `500` with `{ message, error }` on unexpected failures, and `404` with `{ message }` when the user does not exist or is not authenticated.
-
-## Related files
-
-- `controllers/user/user.js`: implementation.
-- `routes/user/routes.js`: route bindings; `register` is public, `getInfo` and `update` are protected by `OwlIsAuth`.
-- [User model](../../models/user/readme.md): schema, password hashing, and related resources.
-- [Auth controller](../auth/readme.md): login, logout, and session status.
+Permission assignment is not transactional. A failure while assigning permissions is returned as a registration error after the user may already exist.

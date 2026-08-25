@@ -9,6 +9,7 @@ const encryptedFields = ["emailToken", "whatsappToken", "telegramToken"];
 export { encryptedFields };
 export const modelName = "Token";
 
+/** Schema definition for encrypted provider credentials. */
 export default {
   emailToken: {
     type: String,
