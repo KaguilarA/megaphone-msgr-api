@@ -6,7 +6,7 @@
  * @param {import('owl-expressjs-utils').OwlModel} [config.permissionModel] - Permission lookup model.
  * @param {import('owl-expressjs-utils').OwlModel} [config.userPermissionModel] - User-permission assignment model.
  * @param {string[]} config.populatedFields - User reference fields to populate on read.
- * @returns {{getInfo: Function, register: Function, update: Function}} Bound controller handlers.
+ * @returns {{getInfo: Function, getAll: Function, getById: Function, getPermissions: Function, updatePermissions: Function, register: Function, update: Function}} Bound controller handlers.
  */
 export default ({ entityId, model, permissionModel, userPermissionModel, populatedFields }) => {
 
@@ -34,6 +34,79 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
     } catch (error) {
       res.status(500).json({
         message: `${entityId} list error.`,
+        error: error.message || error,
+      });
+    }
+  }
+
+  async function getAll(req, res) {
+    try {
+      const users = await model.getAll();
+      return res.json(users);
+    } catch (error) {
+      return res.status(500).json({
+        message: `${entityId} list error.`,
+        error: error.message || error,
+      });
+    }
+  }
+
+  async function getById(req, res) {
+    try {
+      const userData = await model.getById(req.params.id);
+      if (!userData) return res.status(404).json({ message: `${entityId} not found.` });
+
+      return res.json(userData);
+    } catch (error) {
+      return res.status(500).json({
+        message: `${entityId} search error.`,
+        error: error.message || error,
+      });
+    }
+  }
+
+  async function getPermissions(req, res) {
+    try {
+      const assignments = await userPermissionModel.getByCoincidence(
+        { user: req.params.id },
+        { populate: "permission" },
+      );
+
+      return res.json(assignments);
+    } catch (error) {
+      return res.status(500).json({
+        message: "User permissions list error.",
+        error: error.message || error,
+      });
+    }
+  }
+
+  async function updatePermissions(req, res) {
+    try {
+      const permissionIds = Array.isArray(req.body.permissionIds) ? req.body.permissionIds : [];
+      const currentAssignments = await userPermissionModel.getByCoincidence({ user: req.params.id });
+      const currentByPermission = new Map(currentAssignments.map((assignment) => [String(assignment.permission), assignment]));
+      const requestedIds = new Set(permissionIds.map(String));
+
+      await Promise.all(
+        currentAssignments
+          .filter((assignment) => !requestedIds.has(String(assignment.permission)))
+          .map((assignment) => userPermissionModel.delete(assignment._id)),
+      );
+
+      await Promise.all(
+        permissionIds
+          .filter((permissionId) => !currentByPermission.has(String(permissionId)))
+          .map((permissionId) => userPermissionModel.save({
+            user: req.params.id,
+            permission: permissionId,
+          })),
+      );
+
+      return getPermissions(req, res);
+    } catch (error) {
+      return res.status(400).json({
+        message: "User permissions update error.",
         error: error.message || error,
       });
     }
@@ -102,5 +175,5 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
     }
   }
 
-  return { getInfo, register, update, };
+  return { getInfo, getAll, getById, getPermissions, updatePermissions, register, update, };
 };

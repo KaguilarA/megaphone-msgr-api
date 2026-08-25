@@ -2,11 +2,11 @@
 
 Base path: `/user`.
 
-`POST /` is public. `OwlIsAuth` protects routes declared after the router-level middleware.
+All routes use `OwlIsAuth`. User registration additionally requires `user:register`.
 
 | Method | Path | Auth | Responsibility |
 | --- | --- | --- | --- |
-| POST | `/` | Public | Register a user and assign default non-user permissions. |
+| POST | `/` | Authenticated plus `user:register` | Register a user and assign default non-user permissions. |
 | GET | `/` | Authenticated | Return the current user's profile. |
 | PUT | `/` | Authenticated | Update the current user's profile. |
 

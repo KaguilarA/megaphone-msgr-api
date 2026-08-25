@@ -7,7 +7,7 @@ Base path: `/phone-number`.
 | Method | Path | Auth | Responsibility |
 | --- | --- | --- | --- |
 | POST | `/` | Public | Create a user-owned phone number. |
-| POST | `/contact` | Authenticated | Create a contact-owned phone number. |
+| POST | `/:id/contact` | Authenticated | Create a phone number owned by the contact in `:id`. |
 | GET | `/` | Authenticated | List current-user phone numbers. |
 | GET | `/:id` | Authenticated | Read a phone number by ID. |
 | GET | `/:id/contact` | Authenticated | List phone numbers for a contact. |

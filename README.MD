@@ -79,7 +79,7 @@ Permission and user-permission routes use this middleware order:
 3. `actionLogMiddleware(...)`
 4. The generic `OwlController` handler
 
-The audit middleware records write operations only. It stores the authenticated user, permission,
+The reusable `createActionLogMiddleware` factory records write operations only. It stores the authenticated user, permission,
 action, request metadata, and response status after `res.json`, `res.send`, or `res.end` is called.
 
 ## API route groups

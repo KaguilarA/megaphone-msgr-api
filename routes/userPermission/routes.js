@@ -13,15 +13,35 @@ export default (data) => {
 
   router.use(OwlIsAuth);
 
+  router.get("/check/:permission", async (req, res) => {
+    try {
+      const permission = await data.permissionModel.getOne({
+        name: req.params.permission,
+      });
+
+      if (!permission) {
+        return res.json({ allowed: false });
+      }
+
+      const assignment = await data.userPermissionModel.getOne({
+        user: req.session.userId,
+        permission: permission._id,
+      });
+
+      return res.json({ allowed: Boolean(assignment) });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Error validando permisos.",
+        error: error.message || error,
+      });
+    }
+  });
+
   router.get(
     "/",
     requirePermission("read_user_permission", {
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "read_user_permission",
-    }),
-    actionLogMiddleware({
-      actionLogModel: data.actionLogModel,
       action: "read_user_permission",
     }),
     controller.getAll.bind(controller),
@@ -46,10 +66,6 @@ export default (data) => {
     requirePermission("read_user_permission", {
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "read_user_permission",
-    }),
-    actionLogMiddleware({
-      actionLogModel: data.actionLogModel,
       action: "read_user_permission",
     }),
     controller.getById.bind(controller),

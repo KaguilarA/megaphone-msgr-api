@@ -2,12 +2,14 @@
 
 Base path: `/permission`.
 
-Every route uses this middleware order:
+Write routes use this middleware order:
 
 1. `OwlIsAuth`
 2. `requirePermission`
 3. `actionLogMiddleware`
 4. Generic `OwlController` handler
+
+Read routes use `OwlIsAuth`, `requirePermission`, and the generic handler without audit logging.
 
 | Method | Path | Required permission |
 | --- | --- | --- |

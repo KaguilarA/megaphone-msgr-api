@@ -20,10 +20,6 @@ export default (data) => {
       userPermissionModel: data.userPermissionModel,
       action: "read_permission",
     }),
-    actionLogMiddleware({
-      actionLogModel: data.actionLogModel,
-      action: "read_permission",
-    }),
     controller.getAll.bind(controller),
   );
 
@@ -46,10 +42,6 @@ export default (data) => {
     requirePermission("read_permission", {
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "read_permission",
-    }),
-    actionLogMiddleware({
-      actionLogModel: data.actionLogModel,
       action: "read_permission",
     }),
     controller.getById.bind(controller),

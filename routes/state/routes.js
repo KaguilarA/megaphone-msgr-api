@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
+import { actionLogMiddleware, requirePermission } from "../../middlewares/permissionMiddleware.js";
 
 /**
  * Create the authenticated state router.
@@ -11,8 +12,28 @@ export default (data) => {
   const controller = OwlController(data);
 
   router.use(OwlIsAuth);
-  router.get("/", controller.getAll.bind(controller));
-  router.post("/", controller.register.bind(controller));
+  router.get(
+    "/",
+    requirePermission("state:getList", {
+      permissionModel: data.permissionModel,
+      userPermissionModel: data.userPermissionModel,
+      action: "state:getList",
+    }),
+    controller.getAll.bind(controller),
+  );
+  router.post(
+    "/",
+    requirePermission("state:register", {
+      permissionModel: data.permissionModel,
+      userPermissionModel: data.userPermissionModel,
+      action: "state:register",
+    }),
+    actionLogMiddleware({
+      actionLogModel: data.actionLogModel,
+      action: "state:register",
+    }),
+    controller.register.bind(controller),
+  );
 
   return router;
 };
