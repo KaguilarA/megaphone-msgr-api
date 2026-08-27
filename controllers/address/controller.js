@@ -1,31 +1,15 @@
-/**
- * Controller for managing addresses that belong to the authenticated user.
- *
- * @class AddressController
- * @param {string} id - Controller identifier.
- * @property {import('owl-expressjs-utils').OwlModel} model - Address data-access model.
- */
-class AddressController {
-  /**
-   * @param {string} id - Controller identifier.
-   * @param {import('owl-expressjs-utils').OwlModel} model - Address data-access model.
-   */
-  constructor(id, model) {
-    this.id = id;
-    this.model = model;
-  }
+export default function ({ id, model }) {
 
   /**
    * Delete an address by its ID.
-   *
-   * @param {import('express').Request} req - Express request containing the address ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the address ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends a success response or an error response.
    */
-  async deleteAddress(req, res) {
+  async function deleteDataById(req, res) {
     try {
-      const addressId = req.params.id;
-      await this.model.delete(addressId);
+      const id = req.params.id;
+      await model.delete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -34,20 +18,19 @@ class AddressController {
 
   /**
    * Return a specific address by its ID.
-   *
-   * @param {import('express').Request} req - Express request containing the address ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the address ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching address or an error response.
    */
-  async getAddressById(req, res) {
+  async function getDataById(req, res) {
     try {
-      const addressId = req.params.id;
-      const address = await this.model.getById(addressId);
-      if (!address) {
-        return res.status(404).json({ message: "Address not found." });
+      const id = req.params.id;
+      const data = await model.getById(id);
+      if (!data) {
+        return res.status(404).json({ message: "Data not found." });
       }
 
-      res.status(200).json(address);
+      res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -55,19 +38,18 @@ class AddressController {
 
   /**
    * Return all addresses owned by a specific contact.
-   *
-   * @param {import('express').Request} req - Express request containing the contact ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching addresses or an error response.
    */
-  async getContactAddresses(req, res) {
+  async function getDataFromContact(req, res) {
     try {
-      const contactId = req.params.id;
-      const addresses = await this.model.getByCoincidence({
-        owner: contactId,
+      const owner = req.params.id;
+      const data = await model.getByCoincidence({
+        owner,
         ownerType: "Contact",
       });
-      res.json(addresses);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -75,19 +57,18 @@ class AddressController {
 
   /**
    * Return all addresses owned by the authenticated user.
-   *
-   * @param {import('express').Request} req - Express request containing the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching addresses or an error response.
    */
-  async getUserAddresses(req, res) {
+  async function getDataFromUser(req, res) {
     try {
-      const userId = req.session.userId;
-      const addresses = await this.model.getByCoincidence({
-        owner: userId,
+      const owner = req.session.userId;
+      const data = await model.getByCoincidence({
+        owner: owner,
         ownerType: "User",
       });
-      res.json(addresses);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -95,21 +76,19 @@ class AddressController {
 
   /**
    * Create an address for a specific contact.
-   *
-   * @param {import('express').Request} req - Express request containing address data and the contact ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing address data and the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created address or an error response.
    */
-  async registerContactAddress(req, res) {
+  async function registerForContact(req, res) {
     try {
-      const contactId = req.params.id;
-
-      const newAddress = await this.model.save({
+      const owner = req.params.id;
+      const newData = await model.save({
         ...req.body,
         ownerType: "Contact",
-        owner: contactId,
+        owner,
       });
-      res.status(201).json(newAddress);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -117,21 +96,19 @@ class AddressController {
 
   /**
    * Create an address for the authenticated user.
-   *
-   * @param {import('express').Request} req - Express request containing address data and the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing address data and the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created address or an error response.
    */
-  async registerUserAddress(req, res) {
+  async function registerForUser(req, res) {
     try {
-      const userId = req.session.userId;
-
-      const newAddress = await this.model.save({
+      const owner = req.session.userId;
+      const newData = await model.save({
         ...req.body,
         ownerType: "User",
-        owner: userId,
+        owner,
       });
-      res.status(201).json(newAddress);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -139,30 +116,30 @@ class AddressController {
 
   /**
    * Update an address by its ID.
-   * @param {import('express').Request} req - Express request containing the address ID and updated data.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the address ID and updated data.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the updated address or an error response.
    */
-  async updateAddress(req, res) {
+  async function updateDataById(req, res) {
     try {
-      const addressId = req.params.id;
-      const updatedAddress = await this.model.update(addressId, req.body);
-      if (!updatedAddress) {
-        return res.status(404).json({ message: "Address not found." });
+      const id = req.params.id;
+      const updatedData = await model.update(id, req.body);
+      if (!updatedData) {
+        return res.status(404).json({ message: "Data not found." });
       }
-      res.status(200).json(updatedAddress);
+      res.status(200).json(updatedData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
-}
 
-/**
- * Create an AddressController from the configured dependency models.
- *
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
-  * @param {import('owl-expressjs-utils').OwlModel} config.model - Address model instance.
- * @returns {AddressController} Configured address controller.
- */
-export default ({ id, model }) => new AddressController(id, model);
+  return {
+    deleteDataById,
+    getDataById,
+    getDataFromContact,
+    getDataFromUser,
+    registerForContact,
+    registerForUser,
+    updateDataById
+  }
+}

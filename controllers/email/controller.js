@@ -5,22 +5,12 @@
  * @param {string} id - Controller identifier.
  * @property {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
  */
-class EmailController {
-  /**
-   * @param {string} id - Controller identifier.
-  * @param {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
-   */
-  constructor(id, model, stateModel) {
-    this.id = id;
-    this.model = model;
-    this.stateModel = stateModel;
-  }
+export default function ({ id, model, stateModel }) {
+  async function getActiveState() {
+    if (!stateModel) return undefined;
 
-  async getActiveState() {
-    if (!this.stateModel) return undefined;
-
-    return await this.stateModel.getOne({ name: "active", type: "email" })
-      || await this.stateModel.save({
+    return await stateModel.getOne({ name: "active", type: "email" })
+      || await stateModel.save({
         name: "active",
         description: "Email is active.",
         type: "email",
@@ -29,16 +19,16 @@ class EmailController {
 
   /**
    * Delete an email by its ID.
-   * @param {import('express').Request} req - Express request containing the email ID.
-    * @param {Object} config - Controller configuration.
-    * @param {string} config.id - Controller identifier.
+   * @param {import('express').Request} req Express request containing the email ID.
+    * @param {Object} config Controller configuration.
+    * @param {string} config.id Controller identifier.
     * @param {import('owl-expressjs-utils').OwlModel} config.model - Email model instance.
    * @returns {Promise<void>} Sends a success response or an error response.
    */
-  async delete(req, res) {
+  async function deleteDataById(req, res) {
     try {
       const id = req.params.id;
-      await this.model.delete(id);
+      await model.delete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -47,19 +37,19 @@ class EmailController {
 
   /**
    * Return a specific email by its ID.
-   * @param {import('express').Request} req - Express request containing the email ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the email ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching email or an error response.
    */
-  async getById(req, res) {
+  async function getDataById(req, res) {
     try {
-      const emailId = req.params.id;
-      const email = await this.model.getById(emailId);
-      if (!email) {
+      const id = req.params.id;
+      const data = await model.getById(id);
+      if (!data) {
         return res.status(404).json({ message: "Email not found." });
       }
 
-      res.status(200).json(email);
+      res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -67,18 +57,18 @@ class EmailController {
 
   /**
    * Return all emails owned by a specific contact.
-   * @param {import('express').Request} req - Express request containing the contact ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching emails or an error response.
    */
-  async getContactEmail(req, res) {
+  async function getDataFromContact(req, res) {
     try {
-      const contactId = req.params.id;
-      const emails = await this.model.getByCoincidence({
-        owner: contactId,
+      const owner = req.params.id;
+      const data = await model.getByCoincidence({
+        owner,
         ownerType: "Contact",
       });
-      res.json(emails);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -86,18 +76,18 @@ class EmailController {
 
   /**
    * Return all emails owned by the authenticated user.
-   * @param {import('express').Request} req - Express request containing the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching emails or an error response.
    */
-  async getUserEmail(req, res) {
+  async function getDataFromUser(req, res) {
     try {
-      const userId = req.session.userId;
-      const emails = await this.model.getByCoincidence({
-        owner: userId,
+      const owner = req.session.userId;
+      const data = await model.getByCoincidence({
+        owner,
         ownerType: "User",
       });
-      res.json(emails);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -105,22 +95,22 @@ class EmailController {
 
   /**
    * Create an email for a specific contact.
-  * @param {import('express').Request} req - Express request containing email data and the contact ID.
-   * @param {import('express').Response} res - Express response.
+  * @param {import('express').Request} req Express request containing email data and the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created email or an error response.
    */
-  async registerContactEmail(req, res) {
+  async function registerForContact(req, res) {
     try {
-      const id = req.params.id;
-      const activeState = await this.getActiveState();
+      const owner = req.params.id;
+      const activeState = await getActiveState();
 
-      const newEmail = await this.model.save({
+      const newData = await model.save({
         ...req.body,
         ownerType: "Contact",
-        owner: id,
+        owner,
         ...(activeState ? { state: activeState._id } : {}),
       });
-      res.status(201).json(newEmail);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -129,22 +119,22 @@ class EmailController {
   /**
    * Create an email for the authenticated user.
    *
-   * @param {import('express').Request} req - Express request containing email data and the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing email data and the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created email or an error response.
    */
-  async registerUserEmail(req, res) {
+  async function registerForUser(req, res) {
     try {
-      const userId = req.session.userId;
-      const activeState = await this.getActiveState();
+      const owner = req.session.userId;
+      const activeState = await getActiveState();
 
-      const newEmail = await this.model.save({
+      const newData = await model.save({
         ...req.body,
         ownerType: "User",
-        owner: userId,
+        owner,
         ...(activeState ? { state: activeState._id } : {}),
       });
-      res.status(201).json(newEmail);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -152,31 +142,30 @@ class EmailController {
 
   /**
    * Update an email by its ID.
-   * @param {import('express').Request} req - Express request containing the email ID and updated data.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the email ID and updated data.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the updated email or an error response.
    */
-  async update(req, res) {
+  async function updateDataById(req, res) {
     try {
-      const emailId = req.params.id;
-      const updatedEmail = await this.model.update(emailId, req.body);
-      if (!updatedEmail) {
+      const id = req.params.id;
+      const updated = await model.update(id, req.body);
+      if (!updated) {
         return res.status(404).json({ message: "Email not found." });
       }
-      res.status(200).json(updatedEmail);
+      res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
   }
-}
 
-/**
- * Create an EmailController from the configured dependency models.
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
- * @param {import('owl-expressjs-utils').OwlModel} config.model - Email model instance.
- * @returns {EmailController} Configured email controller.
- */
-export default ({ id, model, stateModel }) => new EmailController(id, model, stateModel);
+  return {
+    deleteDataById,
+    getDataById,
+    getDataFromContact,
+    getDataFromUser,
+    registerForContact,
+    registerForUser,
+    updateDataById
+  }
+}

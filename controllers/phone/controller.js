@@ -1,179 +1,171 @@
 /**
- * Controller for managing phone numbers that belong to the authenticated user.
- *
- * @class PhoneController
- * @param {string} id - Controller identifier.
- * @property {import('owl-expressjs-utils').OwlModel} model - Phone-number data-access model.
+ * Create a PhoneController from the configured dependency models.
+ * @param {Object} config Controller configuration.
+ * @param {string} config.id Controller identifier.
+ * @param {import('owl-expressjs-utils').OwlModel} config.model Phone-number data-access model.
+ * @param {import('owl-expressjs-utils').OwlModel} config.stateModel State data-access model.
+ * @returns {PhoneController} Configured phone controller.
  */
-class PhoneController {
-  /**
-   * @param {string} id - Controller identifier.
-  * @param {import('owl-expressjs-utils').OwlModel} model - Phone-number data-access model.
-   */
-  constructor(id, model, stateModel) {
-    this.id = id;
-    this.model = model;
-    this.stateModel = stateModel;
-  }
+export default function ({ id, model, stateModel }) {
+  async function getActiveState() {
+    if (!stateModel) return undefined;
 
-  async getActiveState() {
-    if (!this.stateModel) return undefined;
-
-    return await this.stateModel.getOne({ name: "active", type: "phoneNumber" })
-      || await this.stateModel.save({
+    return (
+      (await stateModel.getOne({ name: "active", type: "phoneNumber" })) ||
+      (await stateModel.save({
         name: "active",
         description: "Phone number is active.",
         type: "phoneNumber",
-      });
+      }))
+    );
   }
 
   /**
-   * Delete an email by its ID.
-  * @param {import('express').Request} req - Express request containing the phone-number ID.
-    * @param {Object} config - Controller configuration.
-    * @param {string} config.id - Controller identifier.
-    * @param {import('owl-expressjs-utils').OwlModel} config.model - Phone-number model instance.
+   * Delete a phone number by its ID.
+   * @param {import('express').Request} req Express request containing the phone-number ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends a success response or an error response.
    */
-  async delete(req, res) {
+  const deleteDataById = async (req, res) => {
     try {
       const id = req.params.id;
-      await this.model.delete(id);
+      await model.delete(id);
       res.status(204).end();
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
-   * Return a specific email by its ID.
-   * @param {import('express').Request} req - Express request containing the email ID.
-   * @param {import('express').Response} res - Express response.
-   * @returns {Promise<void>} Sends the matching email or an error response.
+   * Return a specific phone number by its ID.
+   * @param {import('express').Request} req Express request containing the phone-number ID.
+   * @param {import('express').Response} res Express response.
+   * @returns {Promise<void>} Sends the matching phone number or an error response.
    */
-  async getById(req, res) {
+  const getDataById = async (req, res) => {
     try {
       const id = req.params.id;
-      const phoneNumber = await this.model.getById(id);
-      if (!phoneNumber) {
+      const data = await model.getById(id);
+      if (!data) {
         return res.status(404).json({ message: "Phone number not found." });
       }
 
-      res.status(200).json(phoneNumber);
+      res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
    * Return all phone numbers owned by a specific contact.
-   * @param {import('express').Request} req - Express request containing the contact ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching phone numbers or an error response.
    */
-  async getContactPhoneNumber(req, res) {
+  const getDataFromContact = async (req, res) => {
     try {
-      const id = req.params.id;
-      const phoneNumbers = await this.model.getByCoincidence({
-        owner: id,
+      const owner = req.params.id;
+      const data = await model.getByCoincidence({
         ownerType: "Contact",
+        owner,
       });
-      res.json(phoneNumbers);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
    * Return all phone numbers owned by the authenticated user.
-   * @param {import('express').Request} req - Express request containing the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching phone numbers or an error response.
    */
-  async getUserPhoneNumber(req, res) {
+  const getDataFromUser = async (req, res) => {
     try {
-      const id = req.session.userId;
-      const phoneNumbers = await this.model.getByCoincidence({
-        owner: id,
+      const owner = req.session.userId;
+      const data = await model.getByCoincidence({
         ownerType: "User",
+        owner,
       });
-      res.json(phoneNumbers);
+      res.json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
    * Create a phone number for a specific contact.
-   * @param {import('express').Request} req - Express request containing phone number data and the contact ID.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing phone number data and the contact ID.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created phone number or an error response.
    */
-  async registerContactPhoneNumber(req, res) {
+  const registerForContact = async (req, res) => {
     try {
-      const id = req.params.id;
-      const activeState = await this.getActiveState();
+      const owner = req.params.id;
+      const activeState = await getActiveState();
 
-      const newPhoneNumber = await this.model.save({
+      const newData = await model.save({
         ...req.body,
         ownerType: "Contact",
-        owner: id,
+        owner,
         ...(activeState ? { state: [activeState._id] } : {}),
       });
-      res.status(201).json(newPhoneNumber);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
    * Create a phone number for the authenticated user.
-   * @param {import('express').Request} req - Express request containing phone number data and the user session.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing phone number data and the user session.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the created phone number or an error response.
    */
-  async registerUserPhoneNumber(req, res) {
+  const registerForUser = async (req, res) => {
     try {
-      const userId = req.session.userId;
-      const activeState = await this.getActiveState();
+      const owner = req.session.userId;
+      const activeState = await getActiveState();
 
-      const newPhoneNumber = await this.model.save({
+      const newData = await model.save({
         ...req.body,
         ownerType: "User",
-        owner: userId,
+        owner,
         ...(activeState ? { state: [activeState._id] } : {}),
       });
-      res.status(201).json(newPhoneNumber);
+      res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  };
 
   /**
    * Update a phone number by its ID.
-   * @param {import('express').Request} req - Express request containing the phone number ID and updated data.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing the phone number ID and updated data.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the updated phone number or an error response.
    */
-  async update(req, res) {
+  const updateDataById = async (req, res) => {
     try {
-      const phoneNumberId = req.params.id;
-      const updatedPhoneNumber = await this.model.update(phoneNumberId, req.body);
-      if (!updatedPhoneNumber) {
+      const id = req.params.id;
+      const updated = await model.update(id, req.body);
+      if (!updated) {
         return res.status(404).json({ message: "Phone number not found." });
       }
-      res.status(200).json(updatedPhoneNumber);
+      res.status(200).json(updated);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
-}
+  };
 
-/**
- * Create a PhoneController from the configured dependency models.
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
- * @param {Array<{model: import('owl-expressjs-utils').OwlModel}>} config.models - Models in phone, user, and contact order.
- * @returns {PhoneController} Configured phone controller.
- */
-export default ({ id, model, stateModel }) => new PhoneController(id, model, stateModel);
+  return {
+    deleteDataById,
+    getDataById,
+    getDataFromContact,
+    getDataFromUser,
+    registerForContact,
+    registerForUser,
+    updateDataById,
+  };
+}

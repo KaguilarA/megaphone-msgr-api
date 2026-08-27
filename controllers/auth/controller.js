@@ -6,25 +6,15 @@
  * @property {import('owl-expressjs-utils').OwlModel} userModel - User data-access model.
  * @property {import('owl-expressjs-utils').OwlModel} emailModel - Email data-access model.
  */
-class AuthController {
-  /**
-   * @param {string} id - Controller identifier.
-   * @param {import('owl-expressjs-utils').OwlModel} userModel - User data-access model.
-   * @param {import('owl-expressjs-utils').OwlModel} emailModel - Email data-access model.
-   */
-  constructor(id, userModel, emailModel) {
-    this.id = id;
-    this.emailModel = emailModel;
-    this.userModel = userModel;
-  }
+export default function ({ id, models: [{ model: userModel }, { model: emailModel }] }) {
 
   /**
    * Validate credentials and start a session for the matching user.
-   * @param {import('express').Request} req - Express request containing `email` and `password`.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request containing `email` and `password`.
+   * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the authenticated user or an error response.
    */
-  async logIn(req, res) {
+  async function logIn(req, res) {
     try {
       const { email: emailInput, password } = req.body;
 
@@ -33,7 +23,7 @@ class AuthController {
           .status(400)
           .json({ error: "El correo y la contraseña son obligatorios." });
       }
-      const emailDoc = await this.emailModel.getOne({
+      const emailDoc = await emailModel.getOne({
         email: emailInput.trim().toLowerCase(),
         ownerType: "User",
       });
@@ -42,13 +32,13 @@ class AuthController {
         return res.status(401).json({ error: "Credenciales inválidas." });
       }
 
-      const user = await this.userModel.getById(emailDoc.owner);
+      const user = await userModel.getById(emailDoc.owner);
 
       if (!user) {
         return res.status(401).json({ error: "Credenciales inválidas." });
       }
 
-      const isMatch = await this.userModel.compareHash(
+      const isMatch = await userModel.compareHash(
         user._id,
         "password",
         password,
@@ -78,11 +68,11 @@ class AuthController {
 
   /**
    * Destroy the current session and clear the session cookie.
-   * @param {import('express').Request} req - Express request holding the session to destroy.
-   * @param {import('express').Response} res - Express response.
+   * @param {import('express').Request} req Express request holding the session to destroy.
+   * @param {import('express').Response} res Express response.
    * @returns {void}
    */
-  logout(req, res) {
+  function logout(req, res) {
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ error: "No se pudo cerrar la sesión." });
@@ -98,7 +88,7 @@ class AuthController {
    * @param {import('express').Response} res - Express response.
    * @returns {void}
    */
-  status(req, res) {
+  function status(req, res) {
     const user = req.user || null;
 
     if (req.session?.userId || user) {
@@ -110,18 +100,10 @@ class AuthController {
 
     return res.status(200).json({ authenticated: false });
   }
-}
 
-/**
- * Create an AuthController from the configured dependency models.
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
- * @param {Object} config - Controller configuration.
- * @param {string} config.id - Controller identifier.
- * @param {[{model: import('owl-expressjs-utils').OwlModel}, {model: import('owl-expressjs-utils').OwlModel}]} config.models - User model followed by Email model.
- * @returns {AuthController} Configured auth controller.
- */
-export default ({
-  id,
-  models: [{ model: userModel }, { model: emailModel }],
-}) => new AuthController(id, userModel, emailModel);
+  return {
+    logIn,
+    logout,
+    status
+  };
+}

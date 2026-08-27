@@ -1,14 +1,10 @@
-/**
- * Create the user controller for registration and authenticated account operations.
- * @param {Object} config - Controller configuration.
- * @param {string} config.entityId - Entity name used in response messages.
- * @param {import('owl-expressjs-utils').OwlModel} config.model - User data-access model.
- * @param {import('owl-expressjs-utils').OwlModel} [config.permissionModel] - Permission lookup model.
- * @param {import('owl-expressjs-utils').OwlModel} [config.userPermissionModel] - User-permission assignment model.
- * @param {string[]} config.populatedFields - User reference fields to populate on read.
- * @returns {{getInfo: Function, getAll: Function, getById: Function, getPermissions: Function, updatePermissions: Function, register: Function, update: Function}} Bound controller handlers.
- */
-export default ({ entityId, model, permissionModel, userPermissionModel, populatedFields }) => {
+export default function ({
+  entityId,
+  model,
+  permissionModel,
+  userPermissionModel,
+  populatedFields,
+}) {
 
   /**
    * Return the authenticated user's own account, populated with `populatedFields`.
@@ -20,11 +16,13 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
     try {
       if (!req.session.userId) {
         return res.status(404).json({
-          message: `${entityId} not found.`
+          message: `${entityId} not found.`,
         });
       }
 
-      const userData = await model.getById(req.session.userId, { populate: populatedFields });
+      const userData = await model.getById(req.session.userId, {
+        populate: populatedFields,
+      });
 
       if (!userData) {
         return res.status(404).json({ message: `${entityId} not found.` });
@@ -37,7 +35,7 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
   async function getAll(req, res) {
     try {
@@ -49,12 +47,13 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
   async function getById(req, res) {
     try {
       const userData = await model.getById(req.params.id);
-      if (!userData) return res.status(404).json({ message: `${entityId} not found.` });
+      if (!userData)
+        return res.status(404).json({ message: `${entityId} not found.` });
 
       return res.json(userData);
     } catch (error) {
@@ -63,7 +62,7 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
   async function getPermissions(req, res) {
     try {
@@ -79,28 +78,43 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
   async function updatePermissions(req, res) {
     try {
-      const permissionIds = Array.isArray(req.body.permissionIds) ? req.body.permissionIds : [];
-      const currentAssignments = await userPermissionModel.getByCoincidence({ user: req.params.id });
-      const currentByPermission = new Map(currentAssignments.map((assignment) => [String(assignment.permission), assignment]));
+      const permissionIds = Array.isArray(req.body.permissionIds)
+        ? req.body.permissionIds
+        : [];
+      const currentAssignments = await userPermissionModel.getByCoincidence({
+        user: req.params.id,
+      });
+      const currentByPermission = new Map(
+        currentAssignments.map((assignment) => [
+          String(assignment.permission),
+          assignment,
+        ]),
+      );
       const requestedIds = new Set(permissionIds.map(String));
 
       await Promise.all(
         currentAssignments
-          .filter((assignment) => !requestedIds.has(String(assignment.permission)))
+          .filter(
+            (assignment) => !requestedIds.has(String(assignment.permission)),
+          )
           .map((assignment) => userPermissionModel.delete(assignment._id)),
       );
 
       await Promise.all(
         permissionIds
-          .filter((permissionId) => !currentByPermission.has(String(permissionId)))
-          .map((permissionId) => userPermissionModel.save({
-            user: req.params.id,
-            permission: permissionId,
-          })),
+          .filter(
+            (permissionId) => !currentByPermission.has(String(permissionId)),
+          )
+          .map((permissionId) =>
+            userPermissionModel.save({
+              user: req.params.id,
+              permission: permissionId,
+            }),
+          ),
       );
 
       return getPermissions(req, res);
@@ -110,7 +124,7 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
   /**
    * Create a new user document.
@@ -124,9 +138,9 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
 
       if (permissionModel && userPermissionModel) {
         const allPermissions = await permissionModel.getAll();
-        const permissions = (Array.isArray(allPermissions) ? allPermissions : []).filter(
-          ({ name }) => !/^user:/.test(name),
-        );
+        const permissions = (
+          Array.isArray(allPermissions) ? allPermissions : []
+        ).filter(({ name }) => !/^user:/.test(name));
 
         if (permissions.length > 0) {
           await Promise.all(
@@ -147,7 +161,7 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message,
       });
     }
-  }
+  };
 
   /**
    * Update the authenticated user's own account.
@@ -155,7 +169,7 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
    * @param {import('express').Response} res - Express response.
    * @returns {Promise<void>} Sends the updated user or an error response.
    */
-  async function update(req, res) {
+  const update = async (req, res) => {
     try {
       const updatedData = await model.update(req.session.userId, req.body, {
         populate: populatedFields,
@@ -173,7 +187,15 @@ export default ({ entityId, model, permissionModel, userPermissionModel, populat
         error: error.message || error,
       });
     }
-  }
+  };
 
-  return { getInfo, getAll, getById, getPermissions, updatePermissions, register, update, };
+  return {
+    getInfo,
+    getAll,
+    getById,
+    getPermissions,
+    updatePermissions,
+    register,
+    update,
+  };
 };
