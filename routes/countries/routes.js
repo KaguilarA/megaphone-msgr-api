@@ -1,5 +1,5 @@
 import { Router } from "express";
-import countriesController from "../../controllers/countries/controller.js";
+import CountriesController from "../../controllers/countries/controller.js";
 
 /**
  * Create the public countries router.
@@ -8,9 +8,9 @@ import countriesController from "../../controllers/countries/controller.js";
  */
 export default (data) => {
   const router = Router();
-  const controller = countriesController(data);
+  const { getAll } = CountriesController(data);
 
-  router.get("/", controller.getAll.bind(controller));
+  router.get("/", getAll);
 
   return router;
 }

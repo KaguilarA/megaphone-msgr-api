@@ -21,7 +21,7 @@ export default (data) => {
       userPermissionModel: data.userPermissionModel,
       action: "read_permission",
     }),
-    controller.getAll.bind(controller),
+    controller.getAll,
   );
 
   router.post(
@@ -35,7 +35,7 @@ export default (data) => {
       actionLogModel: data.actionLogModel,
       action: "create_permission",
     }),
-    controller.register.bind(controller),
+    controller.register,
   );
 
   router.get(
@@ -45,7 +45,7 @@ export default (data) => {
       userPermissionModel: data.userPermissionModel,
       action: "read_permission",
     }),
-    controller.getById.bind(controller),
+    controller.getById,
   );
 
   router.put(
@@ -59,7 +59,7 @@ export default (data) => {
       actionLogModel: data.actionLogModel,
       action: "update_permission",
     }),
-    controller.update.bind(controller),
+    controller.update,
   );
 
   router.delete(
@@ -73,7 +73,7 @@ export default (data) => {
       actionLogModel: data.actionLogModel,
       action: "delete_permission",
     }),
-    controller.delete.bind(controller),
+    controller.delete,
   );
 
   return router;

@@ -10,7 +10,10 @@ import requirePermission from "../../middlewares/permission/permission.js";
  */
 export default (data) => {
   const router = Router();
-  const controller = OwlController(data);
+  const {
+    getAll,
+    register,
+  } = OwlController(data);
 
   router.use(OwlIsAuth);
   router.get(
@@ -20,7 +23,7 @@ export default (data) => {
       userPermissionModel: data.userPermissionModel,
       action: "state:getList",
     }),
-    controller.getAll.bind(controller),
+    getAll,
   );
   router.post(
     "/",
@@ -33,7 +36,7 @@ export default (data) => {
       actionLogModel: data.actionLogModel,
       action: "state:register",
     }),
-    controller.register.bind(controller),
+    register,
   );
 
   return router;

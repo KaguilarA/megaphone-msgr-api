@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authController from "../../controllers/auth/controller.js";
+import AuthController from "../../controllers/auth/controller.js";
 
 /**
  * Create the authentication router.
@@ -8,11 +8,11 @@ import authController from "../../controllers/auth/controller.js";
  */
 export default (data) => {
   const router = Router();
-  const controller = authController(data);
+  const { logIn, logout, status } = AuthController(data);
 
-  router.post("/login", controller.logIn.bind(controller));
-  router.post("/logout", controller.logout.bind(controller));
-  router.get("/status", controller.status.bind(controller));
+  router.post("/login", logIn);
+  router.post("/logout", logout);
+  router.get("/status", status);
 
   return router;
 };

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import ContactController from "../../controllers/contact/controller.js";
-import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated contact router.
@@ -10,15 +10,36 @@ import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js"
  */
 export default (data) => {
   const router = Router();
-  const controller = ContactController(data);
+  const {
+    register,
+    getAll,
+    getById,
+    updateById,
+    deleteById
+  } = ContactController(data);
+  const auditDependencies = {
+    actionLogModel: data.actionLogModel,
+    permissionModel: data.permissionModel,
+  };
 
   router.use(OwlIsAuth);
-  const auditDependencies = { actionLogModel: data.actionLogModel, permissionModel: data.permissionModel };
-  router.post("/", createActionLogMiddleware(auditDependencies, "contact:add"), controller.register.bind(controller));
-  router.get("/", controller.getAll.bind(controller));
-  router.get("/:id", controller.getById.bind(controller));
-  router.put("/:id", createActionLogMiddleware(auditDependencies, "contact:edit"), controller.update.bind(controller));
-  router.delete("/:id", createActionLogMiddleware(auditDependencies, "contact:delete"), controller.delete.bind(controller));
+  router.post(
+    "/",
+    ActionLogMiddleware(auditDependencies, "contact:add"),
+    register,
+  );
+  router.get("/", getAll);
+  router.get("/:id", getById);
+  router.put(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, "contact:edit"),
+    updateById,
+  );
+  router.delete(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, "contact:delete"),
+    deleteById,
+  );
 
   return router;
 };

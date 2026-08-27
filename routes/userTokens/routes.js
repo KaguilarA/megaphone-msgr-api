@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
-import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated user-token CRUD router.
@@ -10,14 +10,29 @@ import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js"
 export default (data) => {
   const router = Router();
   const controller = OwlController(data);
+  const auditDependencies = {
+    actionLogModel: data.actionLogModel,
+    permissionModel: data.permissionModel,
+  };
 
   router.use(OwlIsAuth);
-  const auditDependencies = { actionLogModel: data.actionLogModel, permissionModel: data.permissionModel };
-  router.post("/", createActionLogMiddleware(auditDependencies, "token:add"), controller.register.bind(controller));
-  router.get("/", controller.getAll.bind(controller));
-  router.get("/:id", controller.getById.bind(controller));
-  router.put("/:id", createActionLogMiddleware(auditDependencies, "token:edit"), controller.update.bind(controller));
-  router.delete("/:id", createActionLogMiddleware(auditDependencies, "token:delete"), controller.delete.bind(controller));
+  router.post(
+    "/",
+    ActionLogMiddleware(auditDependencies, "token:add"),
+    controller.register,
+  );
+  router.get("/", controller.getAll);
+  router.get("/:id", controller.getById);
+  router.put(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, "token:edit"),
+    controller.update,
+  );
+  router.delete(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, "token:delete"),
+    controller.delete,
+  );
 
   return router;
 };

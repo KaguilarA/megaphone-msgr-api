@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import EmailController from "../../controllers/email/controller.js";
-import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the email router with its public registration and authenticated routes.
@@ -10,17 +10,44 @@ import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js"
  */
 export default (data) => {
   const router = Router();
-  const controller = EmailController(data);
+  const {
+    registerForUser,
+    registerForContact,
+    getDataFromUser,
+    getDataById,
+    getDataFromContact,
+    updateDataById,
+    deleteDataById,
+  } = EmailController(data);
+  const auditDependencies = {
+    actionLogModel: data.actionLogModel,
+    permissionModel: data.permissionModel,
+  };
 
   router.use(OwlIsAuth);
-  const auditDependencies = { actionLogModel: data.actionLogModel, permissionModel: data.permissionModel };
-  router.post("/", createActionLogMiddleware(auditDependencies, "email:addUserEmail"), controller.registerUserEmail.bind(controller));
-  router.post("/:id/contact", createActionLogMiddleware(auditDependencies, "email:addContactEmail"), controller.registerContactEmail.bind(controller));
-  router.get("/", controller.getUserEmail.bind(controller));
-  router.get("/:id", controller.getById.bind(controller));
-  router.get("/:id/contact", controller.getContactEmail.bind(controller));
-  router.put("/:id", createActionLogMiddleware(auditDependencies, "email:edit"), controller.update.bind(controller));
-  router.delete("/:id", createActionLogMiddleware(auditDependencies, "email:delete"), controller.delete.bind(controller));
+  router.post(
+    "/",
+    actionLogMiddleware(auditDependencies, "email:addUserEmail"),
+    registerForUser,
+  );
+  router.post(
+    "/:id/contact",
+    actionLogMiddleware(auditDependencies, "email:addContactEmail"),
+    registerForContact,
+  );
+  router.get("/", getDataFromUser);
+  router.get("/:id", getDataById);
+  router.get("/:id/contact", getDataFromContact);
+  router.put(
+    "/:id",
+    actionLogMiddleware(auditDependencies, "email:edit"),
+    updateDataById,
+  );
+  router.delete(
+    "/:id",
+    actionLogMiddleware(auditDependencies, "email:delete"),
+    deleteDataById,
+  );
 
   return router;
 };

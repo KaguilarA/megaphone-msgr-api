@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import UserController from "../../controllers/user/controller.js";
-import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import requirePermission from "../../middlewares/permission/permission.js";
 
 /**
@@ -11,10 +11,22 @@ import requirePermission from "../../middlewares/permission/permission.js";
  */
 export default (data) => {
   const router = Router();
-  const controller = UserController(data);
+  const {
+    register,
+    getInfo,
+    getAll,
+    getById,
+    getPermissions,
+    updatePermissions,
+    update,
+  } = UserController(data);
+  const auditDependencies = {
+    actionLogModel: data.actionLogModel,
+    permissionModel: data.permissionModel,
+  };
 
   router.use(OwlIsAuth);
-  const auditDependencies = { actionLogModel: data.actionLogModel, permissionModel: data.permissionModel };
+
   router.post(
     "/",
     requirePermission("user:register", {
@@ -22,39 +34,43 @@ export default (data) => {
       userPermissionModel: data.userPermissionModel,
       action: "user:register",
     }),
-    createActionLogMiddleware(auditDependencies, "user:register"),
-    controller.register.bind(controller),
+    ActionLogMiddleware(auditDependencies, "user:register"),
+    register,
   );
-  router.get("/", controller.getInfo.bind(controller));
+  router.get("/", getInfo);
   router.get(
     "/list",
     requirePermission("user:getUserById", {
-      permissionModel: data.permissionModel,
-      userPermissionModel: data.userPermissionModel,
+      ...auditDependencies,
       action: "user:getUserById",
     }),
-    controller.getAll.bind(controller),
+    getAll,
   );
   router.get(
     "/:id/permissions",
     requirePermission("user:getUserPermissionsById", {
-      permissionModel: data.permissionModel,
-      userPermissionModel: data.userPermissionModel,
+      ...auditDependencies,
       action: "user:getUserPermissionsById",
     }),
-    controller.getPermissions.bind(controller),
+    getPermissions,
   );
   router.put(
     "/:id/permissions",
     requirePermission("user:updateUserPermissionsById", {
-      permissionModel: data.permissionModel,
-      userPermissionModel: data.userPermissionModel,
+      ...auditDependencies,
       action: "user:updateUserPermissionsById",
     }),
-    createActionLogMiddleware(auditDependencies, "user:updateUserPermissionsById"),
-    controller.updatePermissions.bind(controller),
+    ActionLogMiddleware(
+      auditDependencies,
+      "user:updateUserPermissionsById",
+    ),
+    updatePermissions,
   );
-  router.put("/", createActionLogMiddleware(auditDependencies, "user:edit"), controller.update.bind(controller));
+  router.put(
+    "/",
+    ActionLogMiddleware(auditDependencies, "user:edit"),
+    update,
+  );
 
   return router;
 };

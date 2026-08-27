@@ -6,13 +6,13 @@ Coordinates address operations for authenticated users and contacts.
 
 ## Public methods
 
-- `getUserAddresses`: lists addresses with `ownerType: "User"` for `req.session.userId`.
-- `getContactAddresses`: lists addresses for the contact ID in `req.params.id`.
-- `getAddressById`: returns one address by ID.
-- `registerUserAddress`: saves an address owned by the current user.
-- `registerContactAddress`: saves an address owned by the route contact ID.
-- `updateAddress`: updates an address by ID.
-- `deleteAddress`: deletes an address by ID.
+- `getDataFromUser`: lists data with `ownerType: "User"` for `req.session.userId`.
+- `getDataFromContact`: lists data for the contact ID in `req.params.id`.
+- `getDataById`: returns data by ID.
+- `registerForUser`: saves data owned by the current user.
+- `registerForContact`: saves data owned by the route contact ID.
+- `updateDataById`: updates data by ID.
+- `deleteDataById`: deletes data by ID.
 
 ## Dependencies
 

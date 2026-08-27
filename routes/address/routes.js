@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
+import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import AddressController from "../../controllers/address/controller.js";
-import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 
 /**
  * Create the authenticated address router.
@@ -10,18 +10,44 @@ import createActionLogMiddleware from "../../middlewares/recordLog/recordLog.js"
  */
 export default (data) => {
   const router = Router();
-  const controller = AddressController(data);
+  const { 
+    getDataFromUser,
+    getDataById,
+    getDataFromContact,
+    registerForUser,
+    registerForContact,
+    updateDataById,
+    deleteDataById
+  } = AddressController(data);
+  const auditDependencies = {
+    actionLogModel: data.actionLogModel,
+    permissionModel: data.permissionModel,
+  };
 
   router.use(OwlIsAuth);
-
-  const auditDependencies = { actionLogModel: data.actionLogModel, permissionModel: data.permissionModel };
-  router.get("/", controller.getUserAddresses.bind(controller));
-  router.get("/:id", controller.getAddressById.bind(controller));
-  router.get("/:id/contact", controller.getContactAddresses.bind(controller));
-  router.post("/", createActionLogMiddleware(auditDependencies, "address:addUserAddress"), controller.registerUserAddress.bind(controller));
-  router.post("/:id/contact", createActionLogMiddleware(auditDependencies, "address:addContactAddress"), controller.registerContactAddress.bind(controller));
-  router.put("/:id", createActionLogMiddleware(auditDependencies, "address:edit"), controller.updateAddress.bind(controller));
-  router.delete("/:id", createActionLogMiddleware(auditDependencies, "address:delete"), controller.deleteAddress.bind(controller));
+  router.get("/", getDataFromUser);
+  router.get("/:id", getDataById);
+  router.get("/:id/contact", getDataFromContact);
+  router.post(
+    "/",
+    ActionLogMiddleware(auditDependencies, data.actions.postUser),
+    registerForUser,
+  );
+  router.post(
+    "/:id/contact",
+    ActionLogMiddleware(auditDependencies, data.actions.postContact),
+    registerForContact,
+  );
+  router.put(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, data.actions.update),
+    updateDataById,
+  );
+  router.delete(
+    "/:id",
+    ActionLogMiddleware(auditDependencies, data.actions.delete),
+    deleteDataById,
+  );
 
   return router;
 };
