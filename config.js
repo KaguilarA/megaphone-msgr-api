@@ -50,16 +50,8 @@ export default [
     url: "/auth",
     config: {
       id: "Auth",
-      models: [
-        {
-          id: "User",
-          model: UserModel,
-        },
-        {
-          id: "Email",
-          model: EmailModel,
-        },
-      ],
+      model: UserModel,
+      emailModel: EmailModel,
     },
     router: AuthRouter,
   },

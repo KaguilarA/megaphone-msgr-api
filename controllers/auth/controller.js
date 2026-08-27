@@ -6,7 +6,7 @@
  * @property {import('owl-expressjs-utils').OwlModel} userModel - User data-access model.
  * @property {import('owl-expressjs-utils').OwlModel} emailModel - Email data-access model.
  */
-export default function ({ id, models: [{ model: userModel }, { model: emailModel }] }) {
+export default function ({ id, model: userModel, emailModel }) {
 
   /**
    * Validate credentials and start a session for the matching user.

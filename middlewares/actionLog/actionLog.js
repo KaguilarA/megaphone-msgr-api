@@ -1,13 +1,11 @@
-export default (options = {}) => {
-  const {
-    actionLogModel,
-    permissionModel,
-    action = "action",
-    getActionName,
-    getMetadata,
-    shouldRun = true,
-  } = options;
-
+export default ({
+  actionLogModel,
+  permissionModel,
+  action = "action",
+  getActionName,
+  getMetadata,
+  shouldRun = true,
+}) => {
   return function actionLogMiddlewareFn(req, res, next) {
     if (!shouldRun || !actionLogModel) {
       return next();
