@@ -11,11 +11,11 @@ import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 export default (data) => {
   const router = Router();
   const {
-    registerForUser,
-    registerForContact,
-    getDataFromUser,
     getDataById,
-    getDataFromContact,
+    getDataForContact,
+    getDataForUser,
+    registerForContact,
+    registerForUser,
     updateDataById,
     deleteDataById,
   } = EmailController(data);
@@ -35,9 +35,9 @@ export default (data) => {
     actionLogMiddleware(auditDependencies, "email:addContactEmail"),
     registerForContact,
   );
-  router.get("/", getDataFromUser);
+  router.get("/", getDataForUser);
   router.get("/:id", getDataById);
-  router.get("/:id/contact", getDataFromContact);
+  router.get("/:id/contact", getDataForContact);
   router.put(
     "/:id",
     actionLogMiddleware(auditDependencies, "email:edit"),

@@ -17,23 +17,17 @@ export default (data) => {
 
   router.use(OwlIsAuth);
 
-  router.get("/", controller.getAll);
-  router.post(
+  router.get(
     "/",
     createActionLogMiddleware(auditDependencies, data.actions.post),
-    controller.register,
+    controller.getAll,
   );
-  router.get("/:id", controller.getById);
-  router.put(
+  router.get(
     "/:id",
-    createActionLogMiddleware(auditDependencies, data.actions.update),
-    controller.update,
+    createActionLogMiddleware(auditDependencies, data.actions.post),
+    controller.getById,
   );
-  router.delete(
-    "/:id",
-    createActionLogMiddleware(auditDependencies, data.actions.delete),
-    controller.delete,
-  );
+
 
   return router;
 };

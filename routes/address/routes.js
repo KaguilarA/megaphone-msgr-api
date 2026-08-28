@@ -11,11 +11,11 @@ import AddressController from "../../controllers/address/controller.js";
 export default (data) => {
   const router = Router();
   const { 
-    getDataFromUser,
     getDataById,
-    getDataFromContact,
-    registerForUser,
+    getDataForContact,
+    getDataForUser,
     registerForContact,
+    registerForUser,
     updateDataById,
     deleteDataById
   } = AddressController(data);
@@ -25,9 +25,9 @@ export default (data) => {
   };
 
   router.use(OwlIsAuth);
-  router.get("/", getDataFromUser);
+  router.get("/", getDataForUser);
   router.get("/:id", getDataById);
-  router.get("/:id/contact", getDataFromContact);
+  router.get("/:id/contact", getDataForContact);
   router.post(
     "/",
     ActionLogMiddleware(auditDependencies, data.actions.postUser),

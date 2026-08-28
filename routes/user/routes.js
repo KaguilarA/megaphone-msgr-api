@@ -12,11 +12,11 @@ import requirePermission from "../../middlewares/permission/permission.js";
 export default (data) => {
   const router = Router();
   const {
-    register,
-    getInfo,
     getAll,
     getById,
+    getInfo,
     getPermissions,
+    register,
     updatePermissions,
     update,
   } = UserController(data);
@@ -38,6 +38,14 @@ export default (data) => {
     register,
   );
   router.get("/", getInfo);
+  router.get(
+    "/:id",
+    requirePermission("user:getUserById", {
+      ...auditDependencies,
+      action: "user:getUserById",
+    }),
+    getById,
+  );
   router.get(
     "/list",
     requirePermission("user:getUserById", {

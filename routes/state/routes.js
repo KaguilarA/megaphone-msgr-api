@@ -10,10 +10,7 @@ import requirePermission from "../../middlewares/permission/permission.js";
  */
 export default (data) => {
   const router = Router();
-  const {
-    getAll,
-    register,
-  } = OwlController(data);
+  const { getAll, getByCoincidence, register } = OwlController(data);
 
   router.use(OwlIsAuth);
   router.get(
@@ -24,6 +21,15 @@ export default (data) => {
       action: "state:getList",
     }),
     getAll,
+  );
+  router.post(
+    "/search",
+    requirePermission("state:getByCoincidence", {
+      permissionModel: data.permissionModel,
+      userPermissionModel: data.userPermissionModel,
+      action: "state:getByCoincidence",
+    }),
+    getByCoincidence,
   );
   router.post(
     "/",

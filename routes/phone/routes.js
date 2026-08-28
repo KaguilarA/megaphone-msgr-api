@@ -11,13 +11,13 @@ import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 export default (data) => {
   const router = Router();
   const { 
-    registerForUser,
-    registerForContact,
-    getDataFromUser,
     getDataById,
-    getDataFromContact,
+    getDataForContact,
+    getDataForUser,
+    registerForContact,
+    registerForUser,
     updateDataById,
-    deleteDataById,
+    deleteDataById
   } = PhoneController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
@@ -35,9 +35,9 @@ export default (data) => {
     ActionLogMiddleware(auditDependencies, "phone:addContactPhoneNumber"),
     registerForContact,
   );
-  router.get("/", getDataFromUser);
+  router.get("/", getDataForUser);
   router.get("/:id", getDataById);
-  router.get("/:id/contact", getDataFromContact);
+  router.get("/:id/contact", getDataForContact);
   router.put(
     "/:id",
     ActionLogMiddleware(auditDependencies, "phone:edit"),

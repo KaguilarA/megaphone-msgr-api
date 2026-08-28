@@ -21,7 +21,6 @@ export default (data) => {
     ActionLogMiddleware(auditDependencies, "token:add"),
     controller.register,
   );
-  router.get("/", controller.getAll);
   router.get("/:id", controller.getById);
   router.put(
     "/:id",

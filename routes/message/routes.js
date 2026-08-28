@@ -10,8 +10,7 @@ import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
  */
 export default (data) => {
   const router = Router();
-  const { register, getAll, getById, update, deleteById } =
-    MessageController(data);
+  const { getAll, getById, register } = MessageController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
@@ -25,16 +24,6 @@ export default (data) => {
   );
   router.get("/", getAll);
   router.get("/:id", getById);
-  router.put(
-    "/:id",
-    actionLogMiddleware(auditDependencies, "message:edit"),
-    update,
-  );
-  router.delete(
-    "/:id",
-    actionLogMiddleware(auditDependencies, "message:delete"),
-    deleteById,
-  );
 
   return router;
 };

@@ -11,9 +11,9 @@ import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 export default (data) => {
   const router = Router();
   const {
-    register,
     getAll,
     getById,
+    register,
     updateById,
     deleteById
   } = ContactController(data);
