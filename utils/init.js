@@ -7,10 +7,14 @@ import {
   NodeEnv,
   DbName,
 } from "../consts/index.js";
-import ApiConfig from "../consts/router.js";
+import ApiConfig from "../consts/config.js";
 import start from "./start.js";
 
-export default async function init() {
+/**
+ * Create and initialize the application.
+ * @returns {Promise<void>} A promise that resolves when the application is initialized.
+ */
+export default async function() {
   const app = createApp([FrontendUrl], Port);
 
   try {
