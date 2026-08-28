@@ -11,11 +11,11 @@ export default function ({ id, model, stateModel }) {
     if (!stateModel) return undefined;
 
     return (
-      (await stateModel.getOne({ name: "active", type: "phoneNumber" })) ||
+      (await stateModel.getOne({ name: "active", type: "phone" })) ||
       (await stateModel.save({
         name: "active",
         description: "Phone number is active.",
-        type: "phoneNumber",
+        type: "phone",
       }))
     );
   }
@@ -62,7 +62,7 @@ export default function ({ id, model, stateModel }) {
    * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching phone numbers or an error response.
    */
-  const getDataFromContact = async (req, res) => {
+  const getDataForContact = async (req, res) => {
     try {
       const owner = req.params.id;
       const data = await model.getByCoincidence({
@@ -81,7 +81,7 @@ export default function ({ id, model, stateModel }) {
    * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching phone numbers or an error response.
    */
-  const getDataFromUser = async (req, res) => {
+  const getDataForUser = async (req, res) => {
     try {
       const owner = req.session.userId;
       const data = await model.getByCoincidence({
@@ -162,8 +162,8 @@ export default function ({ id, model, stateModel }) {
   return {
     deleteDataById,
     getDataById,
-    getDataFromContact,
-    getDataFromUser,
+    getDataForContact,
+    getDataForUser,
     registerForContact,
     registerForUser,
     updateDataById,

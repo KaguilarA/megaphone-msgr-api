@@ -10,7 +10,7 @@ Stores reusable status definitions scoped to an entity category.
 | --- | --- |
 | `name` | Required string. |
 | `description` | Optional string; defaults to an empty string. |
-| `type` | Required enum: `address`, `user`, `contact`, `email`, or `phoneNumber`. |
+| `type` | Required enum: `address`, `user`, `contact`, `email`, or `phone`. |
 
 ## Usage
 

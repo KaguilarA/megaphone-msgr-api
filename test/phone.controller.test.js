@@ -22,7 +22,7 @@ function createRes() {
 
 test('registerUserPhoneNumber associates the phone with the authenticated user', async () => {
   let savedPhone;
-  const activeState = { _id: '665f1a2b3c4d5e6f70819602', name: 'active', type: 'phoneNumber' };
+  const activeState = { _id: '665f1a2b3c4d5e6f70819602', name: 'active', type: 'phone' };
   const controller = PhoneController({
     id: 'Phone Number',
     model: {

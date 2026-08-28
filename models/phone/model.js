@@ -3,10 +3,10 @@ import { Schema } from "mongoose";
 const OwnerTypes = ["User", "Contact"];
 
 /**
- * PhoneNumber model definition using the OwlModel factory.
+ * Phone model definition using the OwlModel factory.
  * Handles structural properties for phone numbers, country codes, and relational state references.
  */
-export const modelName = "PhoneNumber";
+export const modelName = "Phone";
 
 /** Schema definition for a user-owned or contact-owned phone number. */
 export default {

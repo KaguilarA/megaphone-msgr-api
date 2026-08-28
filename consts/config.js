@@ -25,8 +25,6 @@ import PhoneNumberRouter from "../routes/phone/routes.js";
 import StateRouter from "../routes/state/routes.js";
 import UserRouter from "../routes/user/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
-import PermissionRouter from "../routes/permissions/routes.js";
-import UserPermissionRouter from "../routes/userPermission/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
 
 export default [
@@ -140,28 +138,6 @@ export default [
       actionLogModel: ActionLogModel,
     },
     router: UserTokensRouter,
-  },
-  {
-    url: "/permission",
-    config: {
-      id: "Permission",
-      model: PermissionModel,
-      permissionModel: PermissionModel,
-      userPermissionModel: UserPermissionModel,
-      actionLogModel: ActionLogModel,
-    },
-    router: PermissionRouter,
-  },
-  {
-    url: "/user-permission",
-    config: {
-      id: "UserPermission",
-      model: UserPermissionModel,
-      permissionModel: PermissionModel,
-      userPermissionModel: UserPermissionModel,
-      actionLogModel: ActionLogModel,
-    },
-    router: UserPermissionRouter,
   },
   {
     url: "/action-log",

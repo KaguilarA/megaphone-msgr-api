@@ -22,7 +22,7 @@ The `models` layer defines MongoDB document schemas and exposes them through the
 | Message | Message content and sender relationship. |
 | MessageReceptor | Message-to-contact join record. |
 | Permission | Named permission definition. |
-| PhoneNumber | Phone number owned by a user or contact. |
+| Phone | Phone number owned by a user or contact. |
 | State | Reusable status definition by entity type. |
 | Token | Provider credentials owned by a user. |
 | User | Account identity and hashed password. |
@@ -34,7 +34,7 @@ Every instantiated model exposes `save`, `getAll`, `getById`, `getOne`, `getByCo
 
 ## Relationships
 
-`Email`, `PhoneNumber`, and `Address` use `owner` plus `ownerType` for polymorphic ownership. `MessageReceptor` links messages to contacts. `State` is referenced by several entities. `User` owns contacts, credentials, addresses, tokens, and messages.
+`Email`, `Phone`, and `Address` use `owner` plus `ownerType` for polymorphic ownership. `MessageReceptor` links messages to contacts. `State` is referenced by several entities. `User` owns contacts, credentials, addresses, tokens, and messages.
 
 ## Security behavior
 

@@ -42,7 +42,7 @@ export default function ({ id, model }) {
    * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching addresses or an error response.
    */
-  async function getDataFromContact(req, res) {
+  async function getDataForContact(req, res) {
     try {
       const owner = req.params.id;
       const data = await model.getByCoincidence({
@@ -61,7 +61,7 @@ export default function ({ id, model }) {
    * @param {import('express').Response} res Express response.
    * @returns {Promise<void>} Sends the matching addresses or an error response.
    */
-  async function getDataFromUser(req, res) {
+  async function getDataForUser(req, res) {
     try {
       const owner = req.session.userId;
       const data = await model.getByCoincidence({
@@ -136,8 +136,8 @@ export default function ({ id, model }) {
   return {
     deleteDataById,
     getDataById,
-    getDataFromContact,
-    getDataFromUser,
+    getDataForContact,
+    getDataForUser,
     registerForContact,
     registerForUser,
     updateDataById

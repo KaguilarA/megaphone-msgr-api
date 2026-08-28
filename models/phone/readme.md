@@ -1,4 +1,4 @@
-# PhoneNumber Model
+# Phone Model
 
 ## Responsibility
 

@@ -1,4 +1,4 @@
-const Supported = ["address", "user", "contact", "email", "phoneNumber"];
+const Supported = ["address", "user", "contact", "email", "phone"];
 
 export const modelName = "State";
 
