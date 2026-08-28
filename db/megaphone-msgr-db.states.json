@@ -1,0 +1,212 @@
+[
+  {
+    "_id": {
+      "$oid": "6a828287a51d647dd44a9de0"
+    },
+    "name": "active",
+    "description": "La dirección está activa.",
+    "type": "address",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:39:51.971Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:39:51.971Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8283a160d3b793230eb86a"
+    },
+    "name": "disabled",
+    "description": "La dirección está deshabilitada.",
+    "type": "contact",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:44:33.165Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:44:33.165Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a828592ca707435da615b59"
+    },
+    "name": "active",
+    "description": "El contacto está activo.",
+    "type": "contact",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.510Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.510Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a828287a51d647dd44a9de2"
+    },
+    "name": "disabled",
+    "description": "La dirección está deshabilitada.",
+    "type": "contact",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:39:51.976Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:39:51.976Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8281afd3b9c03e62ab0771"
+    },
+    "name": "active",
+    "description": "El correo electrónico está activo.",
+    "type": "email",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:36:15.121Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:36:15.121Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a8281afd3b9c03e62ab076e"
+    },
+    "name": "disabled",
+    "description": "El correo electrónico está deshabilitado.",
+    "type": "email",
+    "createdAt": {
+      "$date": "2026-08-17T03:36:15.110Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:36:15.110Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "4a8f19c3b2e7019d45a0e82f"
+    },
+    "name": "Envío activo",
+    "description": "El correo electrónico tiene envío de mensajes activo.",
+    "type": "email",
+    "createdAt": {
+      "$date": "2026-08-17T03:36:15.110Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:36:15.110Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a8283a160d3b793230eb868"
+    },
+    "name": "active",
+    "description": "La dirección está activa.",
+    "type": "phone",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:44:33.162Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:44:33.162Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a82803e02a4d68e2769ae27"
+    },
+    "name": "disabled",
+    "description": "El número está deshabilitado.",
+    "type": "phone",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.508Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.508Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a82803e02a4d68e2769ae25"
+    },
+    "name": "SMS",
+    "description": "El número puede recibir SMS.",
+    "type": "phone",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.507Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.507Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a82803e02a4d68e2769ae2b"
+    },
+    "name": "Whatsapp",
+    "description": "El número tiene WhatsApp disponible.",
+    "type": "phone",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.512Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.512Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a82803e02a4d68e2769ae23"
+    },
+    "name": "Telegram",
+    "description": "El número tiene Telegram disponible.",
+    "type": "phoneNumber",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.503Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.503Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "8e3b0d2671cf4a95e0129c8d"
+    },
+    "name": "active",
+    "description": "El usuario está activo.",
+    "type": "user",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:30:06.510Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:30:06.510Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "1f90a574e8d23b91c40e671a"
+    },
+    "name": "disabled",
+    "description": "El usuario está deshabilitado.",
+    "type": "user",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-08-17T03:39:51.976Z"
+    },
+    "updatedAt": {
+      "$date": "2026-08-17T03:39:51.976Z"
+    }
+  }
+]
