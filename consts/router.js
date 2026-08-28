@@ -13,21 +13,21 @@ import {
   TokenModel,
   UserModel,
   UserPermissionModel,
-} from "./models/models.js";
+} from "../models/models.js";
 
-import AddressRouter from "./routes/address/routes.js";
-import AuthRouter from "./routes/auth/routes.js";
-import ContactRouter from "./routes/contact/routes.js";
-import CountriesRouter from "./routes/countries/routes.js";
-import EmailRouter from "./routes/email/routes.js";
-import MessageRouter from "./routes/message/routes.js";
-import PhoneNumberRouter from "./routes/phone/routes.js";
-import StateRouter from "./routes/state/routes.js";
-import UserRouter from "./routes/user/routes.js";
-import UserTokensRouter from "./routes/userTokens/routes.js";
-import PermissionRouter from "./routes/permissions/routes.js";
-import UserPermissionRouter from "./routes/userPermission/routes.js";
-import ActionLogRouter from "./routes/actionLog/routes.js";
+import AddressRouter from "../routes/address/routes.js";
+import AuthRouter from "../routes/auth/routes.js";
+import ContactRouter from "../routes/contact/routes.js";
+import CountriesRouter from "../routes/countries/routes.js";
+import EmailRouter from "../routes/email/routes.js";
+import MessageRouter from "../routes/message/routes.js";
+import PhoneNumberRouter from "../routes/phone/routes.js";
+import StateRouter from "../routes/state/routes.js";
+import UserRouter from "../routes/user/routes.js";
+import UserTokensRouter from "../routes/userTokens/routes.js";
+import PermissionRouter from "../routes/permissions/routes.js";
+import UserPermissionRouter from "../routes/userPermission/routes.js";
+import ActionLogRouter from "../routes/actionLog/routes.js";
 
 export default [
   {
