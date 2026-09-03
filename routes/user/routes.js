@@ -29,54 +29,51 @@ export default (data) => {
 
   router.post(
     "/",
-    requirePermission("user:register", {
+    requirePermission(data.actions.post, {
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "user:register",
+      action: data.actions.post,
     }),
-    ActionLogMiddleware(auditDependencies, "user:register"),
+    ActionLogMiddleware(auditDependencies, data.actions.post),
     register,
   );
   router.get("/", getInfo);
   router.get(
     "/:id",
-    requirePermission("user:getUserById", {
+    requirePermission(data.actions.getById, {
       ...auditDependencies,
-      action: "user:getUserById",
+      action: data.actions.getById,
     }),
     getById,
   );
   router.get(
     "/list",
-    requirePermission("user:getUserById", {
+    requirePermission(data.actions.getAll, {
       ...auditDependencies,
-      action: "user:getUserById",
+      action: data.actions.getAll,
     }),
     getAll,
   );
   router.get(
     "/:id/permissions",
-    requirePermission("user:getUserPermissionsById", {
+    requirePermission(data.actions.getPermissions, {
       ...auditDependencies,
-      action: "user:getUserPermissionsById",
+      action: data.actions.getPermissions,
     }),
     getPermissions,
   );
   router.put(
     "/:id/permissions",
-    requirePermission("user:updateUserPermissionsById", {
+    requirePermission(data.actions.updatePermissions, {
       ...auditDependencies,
-      action: "user:updateUserPermissionsById",
+      action: data.actions.updatePermissions,
     }),
-    ActionLogMiddleware(
-      auditDependencies,
-      "user:updateUserPermissionsById",
-    ),
+    ActionLogMiddleware(auditDependencies, data.actions.updatePermissions),
     updatePermissions,
   );
   router.put(
     "/",
-    ActionLogMiddleware(auditDependencies, "user:edit"),
+    ActionLogMiddleware(auditDependencies, data.actions.update),
     update,
   );
 

@@ -1,6 +1,6 @@
 export default function ({
   entityId,
-  model,
+  userModel,
   permissionModel,
   userPermissionModel,
   populatedFields,
@@ -20,7 +20,7 @@ export default function ({
         });
       }
 
-      const userData = await model.getById(req.session.userId, {
+      const userData = await userModel.getById(req.session.userId, {
         populate: populatedFields,
       });
 
@@ -39,7 +39,7 @@ export default function ({
 
   async function getAll(req, res) {
     try {
-      const users = await model.getAll();
+      const users = await userModel.getAll();
       return res.json(users);
     } catch (error) {
       return res.status(500).json({
@@ -51,7 +51,7 @@ export default function ({
 
   async function getById(req, res) {
     try {
-      const userData = await model.getById(req.params.id);
+      const userData = await userModel.getById(req.params.id);
       if (!userData)
         return res.status(404).json({ message: `${entityId} not found.` });
 
@@ -134,7 +134,7 @@ export default function ({
    */
   async function register(req, res) {
     try {
-      const newUser = await model.save(req.body);
+      const newUser = await userModel.save(req.body);
 
       if (permissionModel && userPermissionModel) {
         const allPermissions = await permissionModel.getAll();
@@ -171,7 +171,7 @@ export default function ({
    */
   const update = async (req, res) => {
     try {
-      const updatedData = await model.update(req.session.userId, req.body, {
+      const updatedData = await userModel.update(req.session.userId, req.body, {
         populate: populatedFields,
       });
 

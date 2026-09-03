@@ -3,6 +3,10 @@
 Backend REST API for Megaphone Messenger. The application is built with Node.js, Express,
 MongoDB, Mongoose, and `owl-expressjs-utils`.
 
+## Version
+
+This documentation describes version 1.0.0.
+
 ## Features
 
 - Session-based authentication with MongoDB-backed sessions.
@@ -59,8 +63,9 @@ Start the API normally with:
 npm start
 ```
 
-By default, the server listens on `http://localhost:3000`. When clustering is enabled,
-`CLUSTER_WORKERS` controls the requested worker count within the available CPU limit.
+By default, the server listens on `http://localhost:3000`. Set `CLUSTER_ENABLED=true` to
+start the API through Node.js clustering. The current entry point uses the default worker
+count supplied by `utils/workerCount.js`.
 
 ## Authentication
 
@@ -72,15 +77,16 @@ model, and creates the session. Requests from the frontend must send the session
 
 ## Permissions and audit logging
 
-Permission and user-permission routes use this middleware order:
+Permission-protected routes use this middleware order:
 
 1. `OwlIsAuth`
 2. `requirePermission(...)`
 3. `actionLogMiddleware(...)`
-4. The generic `OwlController` handler
+4. The controller or generic `OwlController` handler
 
-The reusable `createActionLogMiddleware` factory records write operations only. It stores the authenticated user, permission,
-action, request metadata, and response status after `res.json`, `res.send`, or `res.end` is called.
+The reusable `actionLogMiddleware` factory records configured write operations. It stores the authenticated user, permission,
+action, request metadata, and response status after `res.json`, `res.send`, or `res.end` is called. Audit logging is currently
+configured for state registration; other features can opt in through their router middleware chain.
 
 ## API route groups
 
@@ -96,8 +102,6 @@ action, request metadata, and response status after `res.json`, `res.send`, or `
 | `/state` | State definitions | Authenticated plus state permissions |
 | `/countries` | Country and calling-code catalog | Public |
 | `/tokens` | User provider credentials | Authenticated |
-| `/permission` | Permission definitions | Authenticated plus permission checks |
-| `/user-permission` | Permission assignments | Authenticated plus permission checks |
 | `/action-log` | Audit records | Authenticated |
 
 See the complete endpoint tables in [routes/readme.md](routes/readme.md) and each feature's
@@ -106,13 +110,15 @@ route README.
 ## Project structure
 
 ```text
-config.js                  Central route and dependency configuration
 index.js                   Express application entry point
+app/                       Express application factory
+consts/                    Environment settings and route configuration
 controllers/               Resource-specific request handlers
 models/                    Schema data and centralized OwlModel registry
 middlewares/               Permission validation and action logging
 routes/                    Express router factories
 test/                      Node test suite and JSON fixtures
+utils/                     Startup, session, route, and worker helpers
 .env.example               Environment variable checklist
 ```
 
@@ -155,7 +161,9 @@ not replace a full end-to-end persistence test against MongoDB.
 - [Models](models/readme.md)
 - [Controllers](controllers/readme.md)
 - [Routes](routes/readme.md)
-- [Middleware](middlewares/permissionMiddleware.js)
+- [Middleware](middlewares/readme.md)
+- [Startup utilities](utils/readme.md)
+- [Configuration](consts/readme.md)
 - [Environment template](.env.example)
 
 ## License

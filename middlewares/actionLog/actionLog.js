@@ -5,8 +5,8 @@ export default ({
   getActionName,
   getMetadata,
   shouldRun = true,
-}) => {
-  return function actionLogMiddlewareFn(req, res, next) {
+}) =>
+  function actionLogMiddlewareFn(req, res, next) {
     if (!shouldRun || !actionLogModel) {
       return next();
     }
@@ -82,4 +82,3 @@ export default ({
 
     return next();
   };
-};
