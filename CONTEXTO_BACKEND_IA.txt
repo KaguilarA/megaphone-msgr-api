@@ -1,0 +1,69 @@
+Megaphone Messenger API - Prompt de Contexto para IA
+Versión: 1.0.0
+
+Estás trabajando con el backend de Megaphone Messenger, una API REST privada construida con Node.js, Express 5, MongoDB/Mongoose y owl-expressjs-utils. Usa módulos ES y conserva el patrón de inyección de dependencias basado en factories del proyecto. Prioriza los helpers existentes de owl-expressjs-utils sobre infraestructura personalizada.
+
+Arquitectura
+- index.js es el punto de entrada. Puede iniciar la aplicación en modo cluster de Node.js cuando CLUSTER_ENABLED es true; de lo contrario llama a utils/init.js.
+- app/app.js crea la aplicación Express, deshabilita X-Powered-By, confía en un proxy, configura OwlCors, analiza cuerpos JSON de hasta 1 MB, escucha en el puerto configurado y cierra MongoDB de forma ordenada al recibir SIGINT/SIGTERM.
+- utils/init.js crea la aplicación y llama a utils/start.js.
+- utils/start.js se conecta a MongoDB con OwlMongoConnect y después llama a utils/initApiRoutes.js.
+- utils/initApiRoutes.js añade OwlSession y monta cada router listado en consts/config.js.
+- consts/index.js carga los valores de .env. No codifiques ni expongas secretos como SESSION_SECRET o claves de cifrado.
+- consts/config.js es el registro central de rutas y dependencias. Cada entrada de ruta contiene los campos url, config y router. Añade grupos de rutas nuevos mediante este registro.
+
+Capa de modelos
+- Cada directorio de recursos dentro de models/ exporta datos de esquema y modelName.
+- models/models.js es el único lugar que instancia modelos con OwlModel. No instancies OwlModel en ningún otro lugar.
+- Los modelos disponibles son: Address, ActionLog, Contact, Email, Message, MessageReceptor, Permission, PhoneNumber, State, Token, User y UserPermission.
+- OwlModel proporciona operaciones de persistencia compartidas como save, getAll, getById, getOne, getByCoincidence, update y delete.
+- Las contraseñas de usuario se hashean mediante la configuración del modelo User.
+- Los tokens de proveedores Email, WhatsApp y Telegram se cifran mediante la configuración del modelo Token.
+- Address, Email y Phone emplean propiedad polimórfica con owner y ownerType. MessageReceptor enlaza un Message con un Contact.
+
+Patrón de controladores y rutas
+- Los controladores y routers de cada funcionalidad son factories. Reciben modelos y configuración mediante un objeto data suministrado por consts/config.js.
+- Las factories de routers crean un Express Router, construyen su controlador con los datos inyectados y enlazan los métodos del controlador cuando es necesario.
+- Los controladores son responsables de la orquestación de solicitudes y el comportamiento específico del recurso. Las rutas son responsables de paths y composición de middleware. Los modelos son responsables del esquema y configuración de persistencia.
+- Usa OwlController solo cuando la ruta existente ya dependa de su comportamiento CRUD genérico. Conserva los controladores personalizados para operaciones específicas de recursos.
+
+Autenticación y autorización
+- La autenticación está basada en sesiones. Un inicio de sesión correcto guarda el ID del usuario autenticado en req.session.userId.
+- Las rutas protegidas usan OwlIsAuth de owl-expressjs-utils.
+- El middleware local de permisos es middlewares/permission/permission.js. Resuelve el usuario desde req.session.userId, req.user._id o req.user.id; verifica que exista un Permission nombrado; comprueba la asignación UserPermission; y añade req.permission, req.permissionName y req.permissionAction.
+- Los fallos de permisos retornan 401 si falta autenticación, 403 si faltan permisos o asignaciones, y 500 si falta configuración o ante errores inesperados.
+- El orden de una ruta protegida por permiso es: OwlIsAuth, requirePermission(...), middleware opcional de action log y finalmente el handler.
+
+Registro de auditoría
+- middlewares/actionLog/actionLog.js es una factory configurable que envuelve res.json, res.send y res.end. Tras completarse una respuesta, intenta persistir el usuario, permiso, acción, metadata de la solicitud y código de estado en ActionLog.
+- Los errores de persistencia del registro de auditoría deben escribirse en consola, pero no deben alterar la respuesta al cliente.
+- middlewares/recordLog/recordLog.js es un adaptador pequeño para nombres de acción fijos.
+- El registro de State demuestra actualmente el uso de auditoría. Añádela a otras rutas de escritura solo si existe un requisito explícito de auditoría.
+
+Grupos de rutas API montados
+- /auth: comportamiento público de inicio de sesión, cierre de sesión y estado de autenticación.
+- /user: registro público y operaciones autenticadas de cuenta y perfil.
+- /contact: contactos autenticados y propiedad del usuario.
+- /address: direcciones autenticadas para usuarios o contactos.
+- /email: el registro raíz es público; las operaciones restantes requieren autenticación.
+- /phone-number: el registro raíz es público; las operaciones restantes requieren autenticación.
+- /message: mensajes autenticados y relaciones de destinatarios.
+- /state: autenticada; las operaciones de listado, búsqueda y registro requieren permisos nombrados. El registro de estados queda auditado.
+- /countries: catálogo público de países, códigos de llamada y banderas.
+- /tokens: credenciales de proveedores autenticadas.
+- /action-log: acceso autenticado a registros de auditoría.
+
+Restricciones de seguridad y comportamiento
+- Conserva el comportamiento CORS y la autenticación basada en sesiones para que el frontend Angular en la URL FRONTEND_URL configurada pueda enviar credenciales.
+- No reveles ni escribas en logs contraseñas, secretos de sesión, claves de cifrado o tokens de proveedores descifrados.
+- No supongas que las operaciones de recursos por ID están restringidas por propietario. Varias rutas actuales de lectura, actualización y eliminación pueden consultar únicamente por ID de documento. Al modificar operaciones sensibles a autorización, revisa y aplica explícitamente la propiedad cuando corresponda.
+- Los esquemas de State no imponen actualmente compatibilidad entre un estado y la entidad que lo referencia.
+- MessageReceptor es interno y no tiene una ruta independiente.
+- La validación y renovación de tokens de proveedores está fuera del alcance de esta API.
+
+Convenciones de desarrollo
+- Usa inglés para JSDoc y documentación.
+- Mantén los cambios pequeños y enfocados; conserva las APIs públicas y los patrones existentes.
+- Añade pruebas de cambios de comportamiento bajo test/ usando el runner integrado de Node. Ejecuta npm test para la suite completa cuando sea práctico.
+- El paquete tiene los scripts npm run dev, npm start y npm test. No existe un script npm run build.
+- La configuración de entorno pertenece a .env, tomando .env.example como base, y nunca debe incluirse con credenciales reales.

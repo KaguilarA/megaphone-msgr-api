@@ -1,0 +1,69 @@
+Megaphone Messenger API - AI Context Prompt
+Version: 1.0.0
+
+You are working with the Megaphone Messenger backend, a private REST API built with Node.js, Express 5, MongoDB/Mongoose, and owl-expressjs-utils. Use ES modules and preserve the project's factory-based dependency-injection pattern. Prefer existing helpers from owl-expressjs-utils over custom infrastructure.
+
+Architecture
+- index.js is the entry point. It can start the application in Node.js cluster mode when CLUSTER_ENABLED is true; otherwise it calls utils/init.js.
+- app/app.js creates the Express application, disables X-Powered-By, trusts one proxy, configures OwlCors, parses JSON bodies up to 1 MB, listens on the configured port, and gracefully closes MongoDB on SIGINT/SIGTERM.
+- utils/init.js creates the app and calls utils/start.js.
+- utils/start.js connects to MongoDB with OwlMongoConnect, then calls utils/initApiRoutes.js.
+- utils/initApiRoutes.js adds OwlSession and mounts every router listed in consts/config.js.
+- consts/index.js loads .env values. Do not hard-code or expose secrets such as SESSION_SECRET or encryption keys.
+- consts/config.js is the central route and dependency registry. Each route entry has url, config, and router fields. Add new route groups through this registry.
+
+Model layer
+- Each resource directory under models/ exports schema data and modelName.
+- models/models.js is the only place that instantiates models with OwlModel. Do not instantiate OwlModel elsewhere.
+- Available models: Address, ActionLog, Contact, Email, Message, MessageReceptor, Permission, PhoneNumber, State, Token, User, and UserPermission.
+- OwlModel supplies shared persistence operations such as save, getAll, getById, getOne, getByCoincidence, update, and delete.
+- User passwords are hashed through the User model configuration.
+- Email, WhatsApp, and Telegram provider tokens are encrypted through the Token model configuration.
+- Address, Email, and Phone use polymorphic ownership through owner and ownerType. MessageReceptor links a Message to a Contact.
+
+Controller and router pattern
+- Feature controllers and routers are factories. They receive models and configuration through a data object supplied by consts/config.js.
+- Router factories create an Express Router, construct their controller with the injected data, then bind controller methods where necessary.
+- Controllers own request orchestration and resource-specific behavior. Routes own paths and middleware composition. Models own schema and persistence configuration.
+- Use OwlController only where the existing route already relies on its generic CRUD behavior. Preserve custom controllers for resource-specific operations.
+
+Authentication and authorization
+- Authentication is session-based. A successful login stores the authenticated user ID in req.session.userId.
+- Protected routes use OwlIsAuth from owl-expressjs-utils.
+- The local permission middleware is middlewares/permission/permission.js. It resolves the user from req.session.userId, req.user._id, or req.user.id; verifies that a named Permission exists; checks the UserPermission assignment; and adds req.permission, req.permissionName, and req.permissionAction.
+- Permission failures return 401 for missing authentication, 403 for missing permissions or assignments, and 500 for unavailable configuration or unexpected errors.
+- Permission-protected route order is: OwlIsAuth, requirePermission(...), optional action-log middleware, then the handler.
+
+Audit logging
+- middlewares/actionLog/actionLog.js is a configurable factory that wraps res.json, res.send, and res.end. After a response completes, it tries to persist the user, permission, action, request metadata, and status code in ActionLog.
+- Audit-log persistence errors must be logged but must not alter the client response.
+- middlewares/recordLog/recordLog.js is a small adapter for fixed action names.
+- State registration currently demonstrates action logging. Add it to other write routes only when an explicit audit requirement exists.
+
+Mounted API route groups
+- /auth: public login, logout, and authentication-status behavior.
+- /user: public registration plus authenticated account and profile operations.
+- /contact: authenticated, user-owned contacts.
+- /address: authenticated addresses for users or contacts.
+- /email: root registration is public; remaining operations are authenticated.
+- /phone-number: root registration is public; remaining operations are authenticated.
+- /message: authenticated messages and recipient relationships.
+- /state: authenticated; list, search, and registration require named permissions. State registration is audited.
+- /countries: public country, calling-code, and flag catalog.
+- /tokens: authenticated provider credentials.
+- /action-log: authenticated audit-record access.
+
+Security and behavior constraints
+- Preserve CORS and session-based authentication behavior so the Angular frontend at the configured FRONTEND_URL can send credentials.
+- Do not disclose or log passwords, session secrets, encryption keys, or decrypted provider tokens.
+- Do not assume ID-based resource operations are owner-scoped. Several current read, update, and delete paths may query by document ID only. When modifying authorization-sensitive operations, review and explicitly enforce ownership where required.
+- State schemas do not currently enforce compatibility between a state and the entity that references it.
+- MessageReceptor is internal and has no standalone route.
+- Provider-token validation and refresh behavior are out of scope for this API.
+
+Development conventions
+- Use English for JSDoc and documentation.
+- Keep edits small and focused; preserve public APIs and existing patterns.
+- Add tests for behavior changes under test/ using Node's built-in test runner. Run npm test for the full suite when practical.
+- The package has npm scripts: npm run dev, npm start, and npm test. There is no npm run build script.
+- Environment configuration belongs in .env, based on .env.example, and must never be committed with real credentials.
