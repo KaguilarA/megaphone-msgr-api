@@ -1,21 +1,12 @@
 import { Schema } from "mongoose";
 
-/**
- * User model definition using the OwlModel factory.
- * Handles structural properties for user accounts, relationships, and secure password hashing.
- */
-export const encryptedFields = [];
-export const hashedFields = ["password"];
-export const modelName = "User";
-
-/** Schema definition for an authenticated user account. */
-export default {
+const model = {
   name: {
     type: String,
     required: [true, "El nombre es obligatorio."],
     trim: true,
   },
-  lastname: {
+  lastName: {
     type: String,
     required: [true, "El apellido es obligatorio."],
     trim: true,
@@ -29,4 +20,13 @@ export default {
     type: Schema.Types.ObjectId,
     ref: "State",
   },
-};;
+};
+
+const name = "User";
+
+const encryptedFields = [];
+
+const hashedFields = ["password"];
+
+/** Schema definition for an authenticated user account. */
+export default { encryptedFields, hashedFields, model, name };

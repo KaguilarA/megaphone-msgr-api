@@ -1,59 +1,49 @@
 import { OwlModel } from "owl-expressjs-utils";
 
-import AddressData, { modelName as AddressModelName } from "./address/model.js";
-import ContactData, { modelName as ContactModelName } from "./contact/model.js";
-import EmailData, { modelName as EmailModelName } from "./email/model.js";
-import MessageData, { modelName as MessageModelName } from "./message/model.js";
-import MessageReceptorData, {
-  modelName as MessageReceptorModelName,
-} from "./messageReceptor/model.js";
-import PermissionData, {
-  modelName as PermissionModelName,
-} from "./permission/model.js";
-import PhoneNumberData, {
-  modelName as PhoneNumberModelName,
-} from "./phone/model.js";
-import StateData, { modelName as StateModelName } from "./state/model.js";
-import TokenData, {
-  encryptedFields as TokenEncryptedFields,
-  modelName as TokenModelName,
-} from "./tokens/model.js";
-import UserData, {
-  hashedFields as UserHashedFields,
-  modelName as UserModelName,
-} from "./user/model.js";
-import UserPermissionData, {
-  modelName as UserPermissionModelName,
-} from "./userPermission/model.js";
-import ActionLogData, {
-  modelName as ActionLogModelName,
-} from "./actionLog/model.js";
+import ActionLogData from "./actionLog/model.js";
+import AddressData from "./address/model.js";
+import ContactData from "./contact/model.js";
+import EmailData from "./email/model.js";
+import MessageData from "./message/model.js";
+import MessageReceptorData from "./messageReceptor/model.js";
+import PermissionData from "./permission/model.js";
+import PhoneNumberData from "./phone/model.js";
+import StateData from "./state/model.js";
+import TokenData from "./tokens/model.js";
+import UserData from "./user/model.js";
+import UserPermissionData from "./userPermission/model.js";
 
 /** Central registry of instantiated application models. */
-export const AddressModel = OwlModel(AddressModelName, AddressData);
-export const ContactModel = OwlModel(ContactModelName, ContactData);
-export const EmailModel = OwlModel(EmailModelName, EmailData);
-export const MessageModel = OwlModel(MessageModelName, MessageData);
+export const ActionLogModel = OwlModel(ActionLogData.name, ActionLogData.model);
+export const AddressModel = OwlModel(AddressData.name, AddressData.model);
+export const ContactModel = OwlModel(ContactData.name, ContactData.model);
+export const EmailModel = OwlModel(EmailData.name, EmailData.model);
+export const MessageModel = OwlModel(MessageData.name, MessageData.model);
 export const MessageReceptorModel = OwlModel(
-  MessageReceptorModelName,
-  MessageReceptorData,
+  MessageReceptorData.name,
+  MessageReceptorData.model,
 );
-export const PermissionModel = OwlModel(PermissionModelName, PermissionData);
-export const PhoneNumberModel = OwlModel(PhoneNumberModelName, PhoneNumberData);
-export const StateModel = OwlModel(StateModelName, StateData);
+export const PermissionModel = OwlModel(
+  PermissionData.name,
+  PermissionData.model,
+);
+export const PhoneNumberModel = OwlModel(
+  PhoneNumberData.name,
+  PhoneNumberData.model,
+);
+export const StateModel = OwlModel(StateData.name, StateData.model);
 export const TokenModel = OwlModel(
-  TokenModelName,
-  TokenData,
-  TokenEncryptedFields,
+  TokenData.name,
+  TokenData.model,
+  TokenData.encryptedFields,
 );
 export const UserModel = OwlModel(
-  UserModelName,
-  UserData,
-  [],
-  UserHashedFields,
+  UserData.name,
+  UserData.model,
+  UserData.encryptedFields,
+  UserData.hashedFields,
 );
 export const UserPermissionModel = OwlModel(
-  UserPermissionModelName,
-  UserPermissionData,
+  UserPermissionData.name,
+  UserPermissionData.model,
 );
-export const ActionLogModel = OwlModel(ActionLogModelName, ActionLogData);

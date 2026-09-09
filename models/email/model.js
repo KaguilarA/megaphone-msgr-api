@@ -1,19 +1,14 @@
 import { Schema } from "mongoose";
+import ContactData from "../contact/model.js";
+import StateData from "../state/model.js";
+import UserData from "../user/model.js";
 
-const OwnerTypes = ["User", "Contact"];
+const OwnerTypes = [UserData.name, ContactData.name];
 
-export const modelName = "Email";
-
-/**
- * Email model definition using the OwlModel factory.
- * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
- */
-/** Schema definition for a user-owned or contact-owned email address. */
-export default {
+const model = {
   email: {
     type: String,
     required: [true, "El correo electrónico es obligatorio."],
-    unique: true,
     trim: true,
     lowercase: true,
     match: [
@@ -34,8 +29,16 @@ export default {
   },
   state: {
     type: Schema.Types.ObjectId,
-    ref: "State",
-    required: true
+    ref: StateData.name,
+    required: true,
   },
-};;
+};
+
+const name = "Email"
+
+/**
+ * Email model definition using the OwlModel factory.
+ * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
+ */
+export default { model, name };
 

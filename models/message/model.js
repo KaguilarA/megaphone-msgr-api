@@ -1,9 +1,8 @@
 import { Schema } from "mongoose";
+import UserData from "../user/model.js";
+import StateData from "../state/model.js";
 
-export const modelName = "Message";
-
-/** Schema definition for a message and its sender relationship. */
-export default {
+const model = {
   content: {
     type: String,
     required: [true, "El contenido del mensaje es obligatorio."],
@@ -16,11 +15,17 @@ export default {
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: UserData.name,
     required: true,
   },
   state: {
     type: Schema.Types.ObjectId,
-    ref: "State",
+    ref: StateData.name,
+    required: true,
   },
-};;
+};
+
+const name = "Message";
+
+/** Schema definition for a message and its sender relationship. */
+export default { model, name };

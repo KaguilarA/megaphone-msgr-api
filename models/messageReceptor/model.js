@@ -1,9 +1,7 @@
 import { Schema } from "mongoose";
+import ContactData from "../contact/model.js";
 
-export const modelName = "MessageReceptor";
-
-/** Schema definition for a message-to-contact recipient relationship. */
-export default {
+const model = {
   message: {
     type: Schema.Types.ObjectId,
     ref: "Message",
@@ -11,7 +9,12 @@ export default {
   },
   contact: {
     type: Schema.Types.ObjectId,
-    ref: "Contact",
+    ref: ContactData.name,
     required: true,
   },
-};;
+};
+
+const name = "MessageReceptor";
+
+/** Schema definition for a message-to-contact recipient relationship. */
+export default { model, name };

@@ -1,19 +1,15 @@
 import { Schema } from "mongoose";
+import ContactData from "../contact/model.js";
+import StateData from "../state/model.js";
+import UserData from "../user/model.js";
 
-const OwnerTypes = ["User", "Contact"];
-
-/**
- * Phone model definition using the OwlModel factory.
- * Handles structural properties for phone numbers, country codes, and relational state references.
- */
-export const modelName = "Phone";
-
-/** Schema definition for a user-owned or contact-owned phone number. */
-export default {
+const OwnerTypes = [UserData.name, ContactData.name];
+const model = {
   phone: {
     type: String,
     required: [true, "El número de teléfono es obligatorio."],
     trim: true,
+    index: true,
   },
   countryNumber: {
     type: String,
@@ -34,8 +30,12 @@ export default {
   state: [
     {
       type: Schema.Types.ObjectId,
-      ref: "State",
+      ref: StateData.name,
       required: true,
     },
   ],
-};;
+};
+const name = "Phone";
+
+/** Schema definition for a user-owned or contact-owned phone number. */
+export default { model, name};

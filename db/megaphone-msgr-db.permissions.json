@@ -1,632 +1,660 @@
-[
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e4c"
-    },
-    "name": "actionLog:getAll",
-    "description": "Obtener todos los registros de acción.",
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.413Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.413Z"
-    },
-    "__v": 0
+[{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e4c"
   },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e52"
-    },
-    "name": "actionLog:getById",
-    "description": "Obtener un registro de acción por id.",
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.418Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.418Z"
-    },
-    "__v": 0
+  "name": "getAll",
+  "entity": "ActionLog",
+  "description": "Obtener todos los registros de acción.",
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.413Z"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd93"
-    },
-    "name": "address:getDataById",
-    "description": "Obtener dirección por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.413Z"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd94"
-    },
-    "name": "address:getDataForContact",
-    "description": "Obtener lista de direcciones de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e52"
   },
-  {
-    "_id": {
-      "$oid": "6710a9b8c7d6e5f4a3b2c1d0"
-    },
-    "name": "address:getDataForUser",
-    "description": "Obtener lista de direcciones de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "name": "getById",
+  "entity": "ActionLog",
+  "description": "Obtener un registro de acción por id.",
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.418Z"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd95"
-    },
-    "name": "address:registerForContact",
-    "description": "Agregar dirección de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.418Z"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd96"
-    },
-    "name": "address:registerForUser",
-    "description": "Agregar dirección de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd93"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd97"
-    },
-    "name": "address:updateDataById",
-    "description": "Editar dirección.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
+  "name": "getDataById",
+  "entity": "Address",
+  "description": "Obtener dirección por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
   },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd98"
-    },
-    "name": "address:deleteDataById",
-    "description": "Eliminar dirección.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd8e"
-    },
-    "name": "contact:getById",
-    "description": "Obtener contacto por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd8f"
-    },
-    "name": "contact:getAll",
-    "description": "Obtener lista de contactos.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd90"
-    },
-    "name": "contact:register",
-    "description": "Agregar contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd91"
-    },
-    "name": "contact:updateById",
-    "description": "Editar contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd92"
-    },
-    "name": "contact:deleteById",
-    "description": "Eliminar contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd99"
-    },
-    "name": "email:getDataById",
-    "description": "Obtener correo por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9a"
-    },
-    "name": "email:getDataForContact",
-    "description": "Obtener lista de correos de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "64f8e123456789abcdef0123"
-    },
-    "name": "email:getDataForUser",
-    "description": "Obtener lista de correos de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9b"
-    },
-    "name": "email:registerForContact",
-    "description": "Agregar correo de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9c"
-    },
-    "name": "email:registerForUser",
-    "description": "Agregar correo de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9d"
-    },
-    "name": "email:updateDataById",
-    "description": "Editar correo.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9e"
-    },
-    "name": "email:deleteDataById",
-    "description": "Eliminar correo.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0ddab"
-    },
-    "name": "message:getAll",
-    "description": "Obtener lista de mensajes.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e2c"
-    },
-    "name": "message:getById",
-    "description": "Obtener mensaje por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.373Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.373Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0ddac"
-    },
-    "name": "message:register",
-    "description": "Enviar mensaje nuevo.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dd9f"
-    },
-    "name": "phone:getDataById",
-    "description": "Obtener teléfono por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda0"
-    },
-    "name": "phone:getDataForContact",
-    "description": "Obtener lista de teléfonos de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "65a1f2b4c9e8d7a6b5c4b3a2"
-    },
-    "name": "phone:getDataForUser",
-    "description": "Obtener lista de teléfonos de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda1"
-    },
-    "name": "phone:registerForContact",
-    "description": "Agregar teléfono de contacto.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda2"
-    },
-    "name": "phone:registerForUser",
-    "description": "Agregar teléfono de usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda3"
-    },
-    "name": "phone:updateDataById",
-    "description": "Editar teléfono.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda4"
-    },
-    "name": "phone:deleteDataById",
-    "description": "Eliminar teléfono.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf2bcd4df56452805d70a"
-    },
-    "name": "state:getAll",
-    "description": "Obtener todos los estados.",
-    "createdAt": {
-      "$date": "2026-08-25T01:41:16.403Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T01:41:16.403Z"
-    },
-    "__v": 0
-  },
-  {
-    "_id": {
-      "$oid": "507f191e810c19729de860ea"
-    },
-    "name": "state:getByCoincidence",
-    "description": "Obtener estados por coincidencia.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T01:41:16.403Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T01:41:16.403Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf11ec0a7139eab3f0e9f"
-    },
-    "name": "state:register",
-    "description": "Registrar estado.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T01:34:22.095Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T01:34:22.095Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e3d"
-    },
-    "name": "token:register",
-    "description": "Agregar tokens.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.399Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.399Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e43"
-    },
-    "name": "token:getById",
-    "description": "Obtener tokens por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.405Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.405Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e46"
-    },
-    "name": "token:update",
-    "description": "Actualizar tokens.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.408Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.408Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e49"
-    },
-    "name": "token:delete",
-    "description": "Eliminar tokens.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.411Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.411Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e58"
-    },
-    "name": "user:getAll",
-    "description": "Obtener todos los usuarios.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.424Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.424Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda6"
-    },
-    "name": "user:getById",
-    "description": "Obtener datos de un usuario por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda5"
-    },
-    "name": "user:getInfo",
-    "description": "Obtener datos del usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda8"
-    },
-    "name": "user:getPermissions",
-    "description": "Obtener permisos de un usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0ddaa"
-    },
-    "name": "user:updatePermissions",
-    "description": "Modificar permisos de usuario por id.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cc134dfbdda023ff0dda7"
-    },
-    "name": "user:register",
-    "description": "Registrar usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-24T22:09:56.569Z"
-    }
-  },
-  {
-    "_id": {
-      "$oid": "6a8cf861ebf5560ed0891e3a"
-    },
-    "name": "user:update",
-    "description": "Editar usuario.",
-    "__v": 0,
-    "createdAt": {
-      "$date": "2026-08-25T02:05:21.396Z"
-    },
-    "updatedAt": {
-      "$date": "2026-08-25T02:05:21.396Z"
-    }
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
   }
-]
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd94"
+  },
+  "name": "getDataForContact",
+  "entity": "Address",
+  "description": "Obtener lista de direcciones de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6710a9b8c7d6e5f4a3b2c1d0"
+  },
+  "name": "getDataForUser",
+  "entity": "Address",
+  "description": "Obtener lista de direcciones de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd95"
+  },
+  "name": "registerForContact",
+  "entity": "Address",
+  "description": "Agregar dirección de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd96"
+  },
+  "name": "registerForUser",
+  "entity": "Address",
+  "description": "Agregar dirección de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd97"
+  },
+  "name": "updateDataById",
+  "entity": "Address",
+  "description": "Editar dirección.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd98"
+  },
+  "name": "deleteDataById",
+  "entity": "Address",
+  "description": "Eliminar dirección.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd8e"
+  },
+  "name": "getById",
+  "entity": "Contact",
+  "description": "Obtener contacto por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd8f"
+  },
+  "name": "getAll",
+  "entity": "Contact",
+  "description": "Obtener lista de contactos.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd90"
+  },
+  "name": "register",
+  "entity": "Contact",
+  "description": "Agregar contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd91"
+  },
+  "name": "updateById",
+  "entity": "Contact",
+  "description": "Editar contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd92"
+  },
+  "name": "deleteById",
+  "entity": "Contact",
+  "description": "Eliminar contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd99"
+  },
+  "name": "getDataById",
+  "entity": "Email",
+  "description": "Obtener correo por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9a"
+  },
+  "name": "getDataForContact",
+  "entity": "Email",
+  "description": "Obtener lista de correos de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "64f8e123456789abcdef0123"
+  },
+  "name": "getDataForUser",
+  "entity": "Email",
+  "description": "Obtener lista de correos de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9b"
+  },
+  "name": "registerForContact",
+  "entity": "Email",
+  "description": "Agregar correo de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9c"
+  },
+  "name": "registerForUser",
+  "entity": "Email",
+  "description": "Agregar correo de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9d"
+  },
+  "name": "updateDataById",
+  "entity": "Email",
+  "description": "Editar correo.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9e"
+  },
+  "name": "deleteDataById",
+  "entity": "Email",
+  "description": "Eliminar correo.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0ddab"
+  },
+  "name": "getAll",
+  "entity": "Message",
+  "description": "Obtener lista de mensajes.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e2c"
+  },
+  "name": "getById",
+  "entity": "Message",
+  "description": "Obtener mensaje por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.373Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.373Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0ddac"
+  },
+  "name": "register",
+  "entity": "Message",
+  "description": "Enviar mensaje nuevo.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dd9f"
+  },
+  "name": "getDataById",
+  "entity": "Phone",
+  "description": "Obtener teléfono por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda0"
+  },
+  "name": "getDataForContact",
+  "entity": "Phone",
+  "description": "Obtener lista de teléfonos de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "65a1f2b4c9e8d7a6b5c4b3a2"
+  },
+  "name": "getDataForUser",
+  "entity": "Phone",
+  "description": "Obtener lista de teléfonos de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda1"
+  },
+  "name": "registerForContact",
+  "entity": "Phone",
+  "description": "Agregar teléfono de contacto.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda2"
+  },
+  "name": "registerForUser",
+  "entity": "Phone",
+  "description": "Agregar teléfono de usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda3"
+  },
+  "name": "updateDataById",
+  "entity": "Phone",
+  "description": "Editar teléfono.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda4"
+  },
+  "name": "deleteDataById",
+  "entity": "Phone",
+  "description": "Eliminar teléfono.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf2bcd4df56452805d70a"
+  },
+  "name": "getAll",
+  "entity": "State",
+  "description": "Obtener todos los estados.",
+  "createdAt": {
+    "$date": "2026-08-25T01:41:16.403Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T01:41:16.403Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "507f191e810c19729de860ea"
+  },
+  "name": "getByCoincidence",
+  "entity": "State",
+  "description": "Obtener estados por coincidencia.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T01:41:16.403Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T01:41:16.403Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e3d"
+  },
+  "name": "register",
+  "entity": "Token",
+  "description": "Agregar tokens.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.399Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.399Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e43"
+  },
+  "name": "getById",
+  "entity": "Token",
+  "description": "Obtener tokens por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.405Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.405Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e46"
+  },
+  "name": "update",
+  "entity": "Token",
+  "description": "Actualizar tokens.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.408Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.408Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e49"
+  },
+  "name": "delete",
+  "entity": "Token",
+  "description": "Eliminar tokens.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.411Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.411Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e58"
+  },
+  "name": "getAll",
+  "entity": "User",
+  "description": "Obtener todos los usuarios.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.424Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.424Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda6"
+  },
+  "name": "getById",
+  "entity": "User",
+  "description": "Obtener datos de un usuario por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda5"
+  },
+  "name": "getInfo",
+  "entity": "User",
+  "description": "Obtener datos del usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda8"
+  },
+  "name": "getPermissions",
+  "entity": "User",
+  "description": "Obtener permisos de un usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0ddaa"
+  },
+  "name": "updatePermissions",
+  "entity": "User",
+  "description": "Modificar permisos de usuario por id.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cc134dfbdda023ff0dda7"
+  },
+  "name": "register",
+  "entity": "User",
+  "description": "Registrar usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-24T22:09:56.569Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6a8cf861ebf5560ed0891e3a"
+  },
+  "name": "update",
+  "entity": "User",
+  "description": "Editar usuario.",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-08-25T02:05:21.396Z"
+  },
+  "updatedAt": {
+    "$date": "2026-08-25T02:05:21.396Z"
+  }
+}]

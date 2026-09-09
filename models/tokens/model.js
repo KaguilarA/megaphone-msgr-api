@@ -1,16 +1,9 @@
 import { Schema } from "mongoose";
+import UserData from "../user/model.js";
 
 const encryptedFields = ["emailToken", "whatsappToken", "telegramToken"];
 
-/**
- * UserToken model definition using the OwlModel factory.
- * Handles structural properties for communication tokens and enables field-level encryption.
- */
-export { encryptedFields };
-export const modelName = "Token";
-
-/** Schema definition for encrypted provider credentials. */
-export default {
+const model = {
   emailToken: {
     type: String,
     trim: true,
@@ -30,8 +23,16 @@ export default {
   },
   owner: {
     type: Schema.Types.ObjectId,
-    ref: "User",
+    ref: UserData.name,
     required: true,
     index: true,
   },
-};;
+};
+
+const name = "Token";
+
+/**
+ * UserToken model definition using the OwlModel factory.
+ * Handles structural properties for communication tokens and enables field-level encryption.
+ */
+export default { encryptedFields, model, name };
