@@ -16,5 +16,5 @@ const model = {
 
 const name = "MessageReceptor";
 
-/** Schema definition for a message-to-contact recipient relationship. */
+/** Schema data for one message-to-contact recipient relationship. */
 export default { model, name };

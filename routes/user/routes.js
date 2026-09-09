@@ -23,6 +23,7 @@ export default (data) => {
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
+    entity: data.id || data.entityId,
   };
 
   router.use(OwlIsAuth);
@@ -37,7 +38,14 @@ export default (data) => {
     ActionLogMiddleware(auditDependencies, data.actions.post),
     register,
   );
-  router.get("/", getInfo);
+  router.get(
+    "/",
+    requirePermission(data.actions.getInfo, {
+      ...auditDependencies,
+      action: data.actions.getInfo,
+    }),
+    getInfo,
+  );
   router.get(
     "/:id",
     requirePermission(data.actions.getById, {
@@ -64,7 +72,7 @@ export default (data) => {
   );
   router.put(
     "/:id/permissions",
-    requirePermission(data.actions.updatePermissions, {
+    requirePermission(data.actions.update, {
       ...auditDependencies,
       action: data.actions.updatePermissions,
     }),
@@ -73,6 +81,10 @@ export default (data) => {
   );
   router.put(
     "/",
+    requirePermission(data.actions.updatePermissions, {
+      ...auditDependencies,
+      action: data.actions.update,
+    }),
     ActionLogMiddleware(auditDependencies, data.actions.update),
     update,
   );

@@ -495,6 +495,21 @@
 },
 {
   "_id": {
+    "$oid": "6a8cf2bcd4df56452805d71a"
+  },
+  "name": "register",
+  "entity": "State",
+  "description": "Registrar un estado.",
+  "createdAt": {
+    "$date": "2026-09-09T00:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-09-09T00:00:00.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
     "$oid": "6a8cf861ebf5560ed0891e3d"
   },
   "name": "register",

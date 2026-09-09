@@ -1,6 +1,16 @@
+import { parsePermissionReference } from "../permission/permissionKey.js";
+
+/**
+ * Create middleware that records a completed response against a permission.
+ * The permission is read from `req.permission` when validation already ran;
+ * otherwise the configured action is resolved with its separate entity.
+ * @param {{actionLogModel?: Object, permissionModel?: Object, entity?: string, action?: string, getActionName?: Function, getMetadata?: Function, shouldRun?: boolean}} dependencies - Audit configuration.
+ * @returns {import('express').RequestHandler} Action-log middleware.
+ */
 export default ({
   actionLogModel,
   permissionModel,
+  entity,
   action = "action",
   getActionName,
   getMetadata,
@@ -40,9 +50,14 @@ export default ({
         if (!userId) return;
 
         if (!permissionId && permissionModel) {
-          const permission = await permissionModel.getOne({
-            name: resolveActionName(),
-          });
+          const permissionReference = parsePermissionReference(
+            resolveActionName(),
+            req.permissionEntity || entity,
+          );
+          const permissionFilter = permissionReference.entity
+            ? permissionReference
+            : { name: permissionReference.name };
+          const permission = await permissionModel.getOne(permissionFilter);
           permissionId = permission?._id || null;
         }
 

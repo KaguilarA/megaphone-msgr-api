@@ -1,10 +1,14 @@
 export default function ({
   entityId,
-  userModel,
+  id,
+  model,
+  userModel: configuredUserModel,
   permissionModel,
   userPermissionModel,
   populatedFields,
 }) {
+  const userModel = configuredUserModel || model;
+  const entityName = entityId || id || "User";
 
   /**
    * Return the authenticated user's own account, populated with `populatedFields`.
@@ -16,7 +20,7 @@ export default function ({
     try {
       if (!req.session.userId) {
         return res.status(404).json({
-          message: `${entityId} not found.`,
+          message: `${entityName} not found.`,
         });
       }
 
@@ -25,13 +29,13 @@ export default function ({
       });
 
       if (!userData) {
-        return res.status(404).json({ message: `${entityId} not found.` });
+        return res.status(404).json({ message: `${entityName} not found.` });
       }
 
       return res.json(userData);
     } catch (error) {
       res.status(500).json({
-        message: `${entityId} list error.`,
+        message: `${entityName} list error.`,
         error: error.message || error,
       });
     }
@@ -43,7 +47,7 @@ export default function ({
       return res.json(users);
     } catch (error) {
       return res.status(500).json({
-        message: `${entityId} list error.`,
+        message: `${entityName} list error.`,
         error: error.message || error,
       });
     }
@@ -53,12 +57,12 @@ export default function ({
     try {
       const userData = await userModel.getById(req.params.id);
       if (!userData)
-        return res.status(404).json({ message: `${entityId} not found.` });
+        return res.status(404).json({ message: `${entityName} not found.` });
 
       return res.json(userData);
     } catch (error) {
       return res.status(500).json({
-        message: `${entityId} search error.`,
+        message: `${entityName} search error.`,
         error: error.message || error,
       });
     }
@@ -140,7 +144,9 @@ export default function ({
         const allPermissions = await permissionModel.getAll();
         const permissions = (
           Array.isArray(allPermissions) ? allPermissions : []
-        ).filter(({ name }) => !/^user:/.test(name));
+        ).filter(({ entity, name }) =>
+          entity ? entity !== "User" : !/^user:/.test(name),
+        );
 
         if (permissions.length > 0) {
           await Promise.all(
@@ -157,7 +163,7 @@ export default function ({
       res.status(201).json(newUser);
     } catch (error) {
       res.status(400).json({
-        message: `${entityId} register error.`,
+        message: `${entityName} register error.`,
         error: error.message,
       });
     }
@@ -176,14 +182,14 @@ export default function ({
       });
 
       if (!updatedData) {
-        res.status(404).json({ message: `${entityId} not found.` });
+        res.status(404).json({ message: `${entityName} not found.` });
         return;
       }
 
       res.json(updatedData);
     } catch (error) {
       res.status(500).json({
-        message: `${entityId} error update.`,
+        message: `${entityName} error update.`,
         error: error.message || error,
       });
     }

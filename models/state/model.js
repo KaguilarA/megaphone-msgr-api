@@ -19,8 +19,7 @@ const model = {
 const name = "State"
 
 /**
- * State model definition using the OwlModel factory.
- * Handles structural properties for categorical state tracking across different entities.
+ * Schema data for a reusable status value.
+ * `entity` restricts the status to Address, User, Contact, Email, or Phone records.
  */
-/** Schema definition for reusable entity status values. */
 export default { model, name };

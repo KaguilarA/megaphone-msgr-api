@@ -140,6 +140,8 @@ export default function ({ id, model }) {
     getDataForUser,
     registerForContact,
     registerForUser,
-    updateDataById
-  }
+    updateDataById,
+    getContactAddresses: getDataForContact,
+    registerUserAddress: registerForUser,
+  };
 }

@@ -23,4 +23,4 @@ The schema has no compound uniqueness constraint, so duplicate assignments are p
 
 - Schema data: `models/userPermission/model.js`
 - Instantiation: `models/models.js`
-- HTTP routes: `routes/userPermission/routes.js`
+- HTTP routes: There is no standalone user-permission router registered in `consts/config.js`; assignments are managed through user permission operations.

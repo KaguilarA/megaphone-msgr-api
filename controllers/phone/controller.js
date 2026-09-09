@@ -11,11 +11,11 @@ export default function ({ id, model, stateModel }) {
     if (!stateModel) return undefined;
 
     return (
-      (await stateModel.getOne({ name: "active", type: "phone" })) ||
+      (await stateModel.getOne({ name: "active", entity: "Phone" })) ||
       (await stateModel.save({
         name: "active",
         description: "Phone number is active.",
-        type: "phone",
+        entity: "Phone",
       }))
     );
   }
@@ -167,5 +167,7 @@ export default function ({ id, model, stateModel }) {
     registerForContact,
     registerForUser,
     updateDataById,
+    getContactPhoneNumber: getDataForContact,
+    registerUserPhoneNumber: registerForUser,
   };
 }

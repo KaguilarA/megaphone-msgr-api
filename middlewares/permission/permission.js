@@ -1,7 +1,17 @@
+import { parsePermissionReference } from "./permissionKey.js";
+
+/**
+ * Create middleware that validates a user-permission assignment.
+ * Permission identity uses a separate entity and action name.
+ * @param {string|{entity?: string, name: string}} permissionName - Permission action.
+ * @param {{action?: string, actionMessage?: string, entity?: string, permissionModel?: Object, userPermissionModel?: Object}} options - Validation options.
+ * @returns {import('express').RequestHandler} Permission validation middleware.
+ */
 export default (permissionName, options = {}) => {
   const {
     action = "access",
     actionMessage = "No tienes permisos para ejecutar esta acción.",
+    entity,
     permissionModel = null,
     userPermissionModel = null,
   } = options;
@@ -21,7 +31,11 @@ export default (permissionName, options = {}) => {
         return res.status(500).json({ message: "Configuración de permisos no disponible." });
       }
 
-      const permissionDoc = await effectivePermissionModel.getOne({ name: permissionName });
+      const permissionReference = parsePermissionReference(permissionName, entity);
+      const permissionFilter = permissionReference.entity
+        ? permissionReference
+        : { name: permissionReference.name };
+      const permissionDoc = await effectivePermissionModel.getOne(permissionFilter);
 
       if (!permissionDoc) {
         return res.status(403).json({ message: `El permiso '${permissionName}' no existe.` });
@@ -37,8 +51,11 @@ export default (permissionName, options = {}) => {
       }
 
       req.permission = permissionDoc;
-      req.permissionName = permissionName;
-      req.permissionAction = action;
+      req.permissionEntity = permissionReference.entity;
+      req.permissionName = permissionReference.name;
+      req.permissionAction = action === "access"
+        ? permissionReference.name
+        : action;
 
       return next();
     } catch (error) {

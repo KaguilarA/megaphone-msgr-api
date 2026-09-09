@@ -32,7 +32,7 @@ const model = {
 const name = "Token";
 
 /**
- * UserToken model definition using the OwlModel factory.
- * Handles structural properties for communication tokens and enables field-level encryption.
+ * Schema data for provider credentials owned by a user.
+ * `encryptedFields` identifies token values that the OwlModel factory encrypts at persistence time.
  */
 export default { encryptedFields, model, name };

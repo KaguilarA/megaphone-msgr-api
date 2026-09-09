@@ -8,8 +8,9 @@ Defines a named permission that can be assigned to users through `UserPermission
 
 | Field | Rules |
 | --- | --- |
-| `name` | Required trimmed unique indexed string. |
-| `desc` | Optional trimmed string; defaults to an empty string. |
+| `name` | Required trimmed indexed string. The schema does not declare `unique: true`. |
+| `entity` | Required trimmed indexed string identifying the protected entity. |
+| `description` | Optional trimmed string; defaults to an empty string. |
 
 ## Usage
 
@@ -23,4 +24,4 @@ The model does not grant permissions, assign users, or enforce authorization by 
 
 - Schema data: `models/permission/model.js`
 - Instantiation: `models/models.js`
-- HTTP routes: `routes/permissions/routes.js`
+- HTTP routes: There is no permission router registered in `consts/config.js`; permissions are consumed by permission middleware and user-permission assignments.

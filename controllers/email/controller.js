@@ -9,11 +9,11 @@ export default function ({ id, model, stateModel }) {
   async function getActiveState() {
     if (!stateModel) return undefined;
 
-    return await stateModel.getOne({ name: "active", type: "email" })
+    return await stateModel.getOne({ name: "active", entity: "Email" })
       || await stateModel.save({
         name: "active",
         description: "Email is active.",
-        type: "email",
+        entity: "Email",
       });
   }
 
@@ -166,6 +166,8 @@ export default function ({ id, model, stateModel }) {
     getDataForUser,
     registerForContact,
     registerForUser,
-    updateDataById
-  }
+    updateDataById,
+    getContactEmail: getDataForContact,
+    registerUserEmail: registerForUser,
+  };
 }

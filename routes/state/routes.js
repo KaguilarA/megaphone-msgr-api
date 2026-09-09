@@ -15,32 +15,36 @@ export default (data) => {
   router.use(OwlIsAuth);
   router.get(
     "/",
-    requirePermission("state:getList", {
+    requirePermission(data.actions.getAll, {
+      entity: data.id || data.entityId,
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "state:getList",
+      action: data.actions.getAll,
     }),
     getAll,
   );
   router.post(
     "/search",
-    requirePermission("state:getByCoincidence", {
+    requirePermission(data.actions.getByCoincidence, {
+      entity: data.id || data.entityId,
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "state:getByCoincidence",
+      action: data.actions.getByCoincidence,
     }),
     getByCoincidence,
   );
   router.post(
     "/",
-    requirePermission("state:register", {
+    requirePermission(data.actions.post, {
+      entity: data.id || data.entityId,
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
-      action: "state:register",
+      action: data.actions.post,
     }),
     actionLogMiddleware({
       actionLogModel: data.actionLogModel,
-      action: "state:register",
+      entity: data.id || data.entityId,
+      action: data.actions.post,
     }),
     register,
   );

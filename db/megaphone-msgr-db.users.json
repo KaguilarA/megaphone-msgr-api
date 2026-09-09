@@ -1,0 +1,18 @@
+[{
+  "_id": {
+    "$oid": "6a992a075482df2ad1ee4fcb"
+  },
+  "name": "Kevin",
+  "lastName": "Aguilar",
+  "password": "$2b$10$zkyQbz1/BqrxGwxvOGMhMu4U27gcjNF3OSMNfEO3MrjWxpC165s1e",
+  "state": {
+    "$oid": "6a8281afd3b9c03e62ab0771"
+  },
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-07-28T03:45:54.353Z"
+  },
+  "updatedAt": {
+    "$date": "2026-07-29T20:16:44.812Z"
+  }
+}]

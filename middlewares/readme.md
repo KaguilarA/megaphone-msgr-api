@@ -6,7 +6,7 @@ Middleware establishes cross-cutting behavior at the HTTP boundary. Feature rout
 
 | Module | Responsibility |
 | --- | --- |
-| `permission/permission.js` | Validates that the authenticated user has a named permission assignment. |
+| `permission/permission.js` | Validates that the authenticated user has an `{entity, name}` permission assignment. |
 | `actionLog/actionLog.js` | Records a completed response as an action-log entry. |
 | `recordLog/recordLog.js` | Adapts the action-log factory for routes with a fixed action name. |
 
@@ -15,7 +15,7 @@ Middleware establishes cross-cutting behavior at the HTTP boundary. Feature rout
 For a protected write operation, apply middleware in this order:
 
 1. `OwlIsAuth` validates the session.
-2. Permission middleware resolves and validates the requested permission.
+2. Permission middleware resolves and validates the requested action using the separate route entity.
 3. Action-log middleware captures response metadata.
 4. The route handler sends the response.
 
@@ -24,3 +24,5 @@ The order matters: the action log can reuse permission metadata placed on the re
 ## Error behavior
 
 Permission failures respond with `401`, `403`, or `500` and do not call the next handler. Audit-log failures are logged to the server console but never replace an already generated HTTP response.
+
+The current permission data uses separate `entity` and `name` fields. The route passes the action (`register`, `getAll`, and so on) separately from the entity. The `State` action `register` is referenced by the state route but is not present in the checked-in permission constants, so that operation remains unavailable until the permission is added to the data set.

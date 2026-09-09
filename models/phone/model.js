@@ -37,5 +37,8 @@ const model = {
 };
 const name = "Phone";
 
-/** Schema definition for a user-owned or contact-owned phone number. */
+/**
+ * Schema data for a phone number owned by a user or contact.
+ * A phone may reference multiple `State` documents through its state array.
+ */
 export default { model, name};

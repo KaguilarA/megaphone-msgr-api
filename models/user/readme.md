@@ -9,7 +9,7 @@ Stores account identity and the password credential used by session authenticati
 | Field | Rules |
 | --- | --- |
 | `name` | Required trimmed string. |
-| `lastname` | Required trimmed string. |
+| `lastName` | Required trimmed string. |
 | `password` | Required trimmed string; hashed and hidden by `OwlModel`. |
 | `state` | Optional `ObjectId` reference to `State`. |
 
@@ -23,7 +23,7 @@ Users own contacts, emails, phone numbers, addresses, tokens, and messages. User
 
 ## Limitations
 
-Email uniqueness belongs to the `Email` model. The schema does not enforce state existence or authorization.
+Email records are separate `Email` documents. The schema does not enforce state existence or authorization.
 
 ## Implementation
 

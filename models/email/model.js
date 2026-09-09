@@ -37,8 +37,8 @@ const model = {
 const name = "Email"
 
 /**
- * Email model definition using the OwlModel factory.
- * Handles structural properties for electronic mail validation, uniqueness, and relational state reference.
+ * Schema data for a normalized email owned by a user or contact.
+ * The schema validates format and lowercases the value but does not enforce uniqueness.
  */
 export default { model, name };
 

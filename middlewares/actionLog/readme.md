@@ -9,7 +9,8 @@ The factory accepts an object with these fields:
 | Field | Description |
 | --- | --- |
 | `actionLogModel` | Model that persists audit records. Required to write a log. |
-| `permissionModel` | Optional fallback model for resolving a permission by action name. |
+| `permissionModel` | Optional fallback model for resolving a permission by its separate entity and action. |
+| `entity` | Entity used with `action` to resolve the permission. |
 | `action` | Default action name when no request permission action is available. |
 | `getActionName` | Optional callback that derives the action from the request and response. |
 | `getMetadata` | Optional callback that derives custom audit metadata. |
@@ -17,7 +18,7 @@ The factory accepts an object with these fields:
 
 ## Recorded data
 
-After `res.json`, `res.send`, or `res.end` completes, the middleware attempts to save an entry containing the session user, resolved permission, action name, HTTP method, URL, body, route parameters, query parameters, and final status code. Custom metadata replaces the default metadata when `getMetadata` is supplied.
+After `res.json`, `res.send`, or `res.end` completes, the middleware attempts to save an entry containing the session user, resolved permission ID, action name, HTTP method, URL, body, route parameters, query parameters, and final status code. When permission middleware already ran, its `req.permission` value is reused; otherwise `permissionModel` resolves the configured entity and action. Custom metadata replaces the default metadata when `getMetadata` is supplied.
 
 The middleware bypasses logging when no session user, action-log model, or resolvable permission exists. Persistence errors are reported to the server console and do not alter the response sent to the client.
 

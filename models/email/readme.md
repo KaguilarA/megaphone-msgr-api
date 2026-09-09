@@ -8,14 +8,14 @@ Stores one normalized email address owned by a `User` or `Contact`.
 
 | Field | Rules |
 | --- | --- |
-| `email` | Required, trimmed, lowercased, unique string matching `^\S+@\S+\.\S+$`. |
+| `email` | Required, trimmed, lowercased string matching `^\S+@\S+\.\S+$`. |
 | `owner` | Required indexed `ObjectId`; resolves through `ownerType`. |
 | `ownerType` | Required; `User` or `Contact`. |
 | `state` | Required `ObjectId` reference to `State`. |
 
 ## Persistence behavior
 
-Mongoose lowercases and trims the email before persistence. `unique: true` relies on a MongoDB unique index and is not a complete validation guarantee.
+Mongoose lowercases and trims the email before persistence. The schema does not declare a uniqueness constraint; duplicate addresses are therefore not rejected by this model.
 
 ## Limitations
 

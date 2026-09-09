@@ -10,7 +10,7 @@ Stores reusable status definitions scoped to an entity category.
 | --- | --- |
 | `name` | Required string. |
 | `description` | Optional string; defaults to an empty string. |
-| `type` | Required enum: `address`, `user`, `contact`, `email`, or `phone`. |
+| `entity` | Required enum: `Address`, `User`, `Contact`, `Email`, or `Phone`. |
 
 ## Usage
 
@@ -18,7 +18,7 @@ Other models reference state documents through `ObjectId`. The model does not au
 
 ## HTTP surface
 
-The current router exposes authenticated `GET /state` and `POST /state` only.
+The current router exposes authenticated `GET /state` and `POST /state` only. State access is permission-aware.
 
 ## Implementation
 

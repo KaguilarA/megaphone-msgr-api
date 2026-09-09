@@ -2,6 +2,7 @@ import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import MessageController from "../../controllers/message/controller.js";
 import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import routePermission from "../../middlewares/permission/routePermission.js";
 
 /**
  * Create the authenticated message router.
@@ -14,16 +15,18 @@ export default (data) => {
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
+    entity: data.id || data.entityId,
   };
 
   router.use(OwlIsAuth);
   router.post(
     "/",
-    actionLogMiddleware(auditDependencies, "message:create"),
+    routePermission(data, data.actions.post),
+    actionLogMiddleware(auditDependencies, data.actions.post),
     register,
   );
-  router.get("/", getAll);
-  router.get("/:id", getById);
+  router.get("/", routePermission(data, data.actions.getAll), getAll);
+  router.get("/:id", routePermission(data, data.actions.getById), getById);
 
   return router;
 };

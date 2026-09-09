@@ -24,8 +24,9 @@ function createApp(session, hasPermission = true) {
       },
     },
     permissionModel: {
-      getOne: async ({ name }) => ({
-        _id: name === 'state:getList' ? '665f1a2b3c4d5e6f70819801' : '665f1a2b3c4d5e6f70819802',
+      getOne: async ({ entity, name }) => ({
+        _id: name === 'getAll' ? '665f1a2b3c4d5e6f70819801' : '665f1a2b3c4d5e6f70819802',
+        entity,
         name,
       }),
     },
@@ -34,6 +35,11 @@ function createApp(session, hasPermission = true) {
     },
     actionLogModel: {
       save: async () => ({}),
+    },
+    actions: {
+      getAll: 'getAll',
+      getByCoincidence: 'getByCoincidence',
+      post: 'register',
     },
   }));
   app.locals.savedStates = savedStates;
@@ -99,7 +105,7 @@ test('GET /state rejects unauthenticated requests', async () => {
   }
 });
 
-test('GET /state rejects an authenticated request without state:getList permission', async () => {
+test('GET /state rejects an authenticated request without getAll permission', async () => {
   const app = createApp({ userId: user._id }, false);
   const server = app.listen(0);
 

@@ -27,5 +27,8 @@ const model = {
 
 const name = "Message";
 
-/** Schema definition for a message and its sender relationship. */
+/**
+ * Schema data for a message with a required sender and state.
+ * Recipient relationships are stored separately in `MessageReceptor` documents.
+ */
 export default { model, name };

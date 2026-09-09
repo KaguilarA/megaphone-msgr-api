@@ -6,10 +6,9 @@ import UserData from "../user/model.js";
 const OwnerTypes = [UserData.name, ContactData.name];
 
 /**
- * Address model definition using the OwlModel factory.
- * Handles structural properties for geographical and location data, including relational state reference.
+ * Schema data for an address owned by a user or contact.
+ * `ownerType` selects the referenced model through Mongoose `refPath`.
  */
-/** Schema definition for user-owned and contact-owned addresses. */
 export default {
   model: {
     street: {

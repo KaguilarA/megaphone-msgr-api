@@ -1,6 +1,9 @@
 import { Schema } from "mongoose";
 
-/** Schema definition for audit records created by action-log middleware. */
+/**
+ * Schema data for audit records created by permission-aware requests.
+ * The action-log middleware owns record creation; this object only defines persistence fields.
+ */
 export default {
   name: "ActionLog",
   model: {

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { OwlIsAuth } from "owl-expressjs-utils";
 import PhoneController from "../../controllers/phone/controller.js";
 import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
+import routePermission from "../../middlewares/permission/routePermission.js";
 
 /**
  * Create the phone-number router with its public registration and authenticated routes.
@@ -10,42 +11,51 @@ import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
  */
 export default (data) => {
   const router = Router();
-  const { 
+  const {
     getDataById,
     getDataForContact,
     getDataForUser,
     registerForContact,
     registerForUser,
     updateDataById,
-    deleteDataById
+    deleteDataById,
   } = PhoneController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
+    entity: data.id || data.entityId,
   };
 
   router.use(OwlIsAuth);
   router.post(
     "/",
-    ActionLogMiddleware(auditDependencies, "phone:addUserPhoneNumber"),
+    routePermission(data, data.actions.postUser),
+    ActionLogMiddleware(auditDependencies, data.actions.postUser),
     registerForUser,
   );
   router.post(
     "/:id/contact",
-    ActionLogMiddleware(auditDependencies, "phone:addContactPhoneNumber"),
+    routePermission(data, data.actions.postContact),
+    ActionLogMiddleware(auditDependencies, data.actions.postContact),
     registerForContact,
   );
-  router.get("/", getDataForUser);
-  router.get("/:id", getDataById);
-  router.get("/:id/contact", getDataForContact);
+  router.get("/", routePermission(data, data.actions.getUser), getDataForUser);
+  router.get("/:id", routePermission(data, data.actions.getById), getDataById);
+  router.get(
+    "/:id/contact",
+    routePermission(data, data.actions.getContact),
+    getDataForContact,
+  );
   router.put(
     "/:id",
-    ActionLogMiddleware(auditDependencies, "phone:edit"),
+    routePermission(data, data.actions.update),
+    ActionLogMiddleware(auditDependencies, data.actions.update),
     updateDataById,
   );
   router.delete(
     "/:id",
-    ActionLogMiddleware(auditDependencies, "phone:delete"),
+    routePermission(data, data.actions.delete),
+    ActionLogMiddleware(auditDependencies, data.actions.delete),
     deleteDataById,
   );
 

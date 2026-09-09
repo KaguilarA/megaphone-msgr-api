@@ -20,5 +20,8 @@ const model = {
 
 const name = "Permission";
 
-/** Schema definition for a named application permission. */
+/**
+ * Schema data for a named permission and the entity it protects.
+ * Permission assignment and request authorization are handled outside the model.
+ */
 export default { model, name }

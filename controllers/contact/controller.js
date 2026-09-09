@@ -42,7 +42,7 @@ export default function ({ id, model }) {
   async function getById(req, res) {
     try {
       const contactId = req.params.id;
-      const contact = await this.model.getById(contactId);
+      const contact = await model.getById(contactId);
       if (!contact) {
         return res.status(404).json({ message: "Contact not found." });
       }
@@ -80,7 +80,7 @@ export default function ({ id, model }) {
     try {
       const contactId = req.params.id;
       const updatedData = req.body;
-      const updatedContact = await this.model.update(contactId, updatedData);
+      const updatedContact = await model.update(contactId, updatedData);
       if (!updatedContact) {
         return res.status(404).json({ message: "Contact not found." });
       }

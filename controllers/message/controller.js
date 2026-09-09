@@ -1,5 +1,13 @@
 export default function ({ id, model, receptorModel, populatedFields = [] }) {
 
+  async function createReceptors(messageId, contacts) {
+    return Promise.all(
+      contacts.map((contact) =>
+        receptorModel.save({ message: messageId, contact }),
+      ),
+    );
+  }
+
   /**
    * Return all messages sent by the authenticated user.
    * @param {import('express').Request} req Express request containing the user session.
@@ -57,12 +65,12 @@ export default function ({ id, model, receptorModel, populatedFields = [] }) {
       const id = req.session.userId;
       const { contacts = [], ...messageData } = req.body;
 
-      const newMessage = await this.model.save({
+      const newMessage = await model.save({
         ...messageData,
         sender: id,
       });
 
-      const receptors = await this.createReceptors(newMessage._id, contacts);
+      const receptors = await createReceptors(newMessage._id, contacts);
 
       res.status(201).json({ ...newMessage.toJSON(), receptors });
     } catch (error) {
@@ -70,9 +78,25 @@ export default function ({ id, model, receptorModel, populatedFields = [] }) {
     }
   }
 
+  async function remove(req, res) {
+    try {
+      const messageId = req.params.id;
+      const receptors = await receptorModel.getByCoincidence({ message: messageId });
+
+      await Promise.all(
+        receptors.map((receptor) => receptorModel.delete(receptor._id)),
+      );
+      await model.delete(messageId);
+      return res.status(204).end();
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
+  }
+
   return {
     getAll,
     getById,
     register,
+    delete: remove,
   };
 };

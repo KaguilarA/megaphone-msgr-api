@@ -13,6 +13,20 @@ test('GET /contact returns only the contact documents', async () => {
     next();
   });
   app.use('/contact', ContactRouter({
+    id: 'Contact',
+    permissionModel: {
+      getOne: async ({ entity, name }) => ({ _id: `${entity}-${name}`, entity, name }),
+    },
+    userPermissionModel: {
+      getOne: async () => ({ _id: 'assignment-1' }),
+    },
+    actions: {
+      getById: 'getById',
+      getAll: 'getAll',
+      post: 'register',
+      update: 'updateById',
+      delete: 'deleteById',
+    },
     model: {
       getByCoincidence: async (query) => {
         assert.deepEqual(query, { owner: user._id });
@@ -59,6 +73,20 @@ test('POST /contact creates a contact for the authenticated user', async () => {
     next();
   });
   app.use('/contact', ContactRouter({
+    id: 'Contact',
+    permissionModel: {
+      getOne: async ({ entity, name }) => ({ _id: `${entity}-${name}`, entity, name }),
+    },
+    userPermissionModel: {
+      getOne: async () => ({ _id: 'assignment-1' }),
+    },
+    actions: {
+      getById: 'getById',
+      getAll: 'getAll',
+      post: 'register',
+      update: 'updateById',
+      delete: 'deleteById',
+    },
     model: {
       save: async (payload) => {
         savedContact = payload;
@@ -79,6 +107,32 @@ test('POST /contact creates a contact for the authenticated user', async () => {
 
     assert.equal(response.status, 201);
     assert.deepEqual(savedContact, { name: 'Sofia Hernandez', owner: user._id });
+  } finally {
+    server.close();
+  }
+});
+
+test('GET /contact/:id returns the requested contact', async () => {
+  const contact = { _id: '665f1a2b3c4d5e6f708192c1', name: 'Sofia Hernandez' };
+  const app = express();
+  app.use((req, _res, next) => {
+    req.session = { userId: user._id };
+    next();
+  });
+  app.use('/contact', ContactRouter({
+    id: 'Contact',
+    permissionModel: { getOne: async ({ entity, name }) => ({ _id: `${entity}-${name}` }) },
+    userPermissionModel: { getOne: async () => ({ _id: 'assignment-1' }) },
+    actions: { getById: 'getById', getAll: 'getAll', post: 'register', update: 'updateById', delete: 'deleteById' },
+    model: { getById: async () => contact },
+  }));
+
+  const server = app.listen(0);
+  try {
+    const { port } = await new Promise((resolve) => server.once('listening', () => resolve(server.address())));
+    const response = await fetch(`http://127.0.0.1:${port}/contact/${contact._id}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), contact);
   } finally {
     server.close();
   }

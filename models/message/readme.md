@@ -11,7 +11,7 @@ Stores message content created by a user. Recipient links are stored separately 
 | `content` | Required trimmed string. |
 | `header` | Required trimmed string. |
 | `sender` | Required `ObjectId` reference to `User`. |
-| `state` | Optional `ObjectId` reference to `State`. |
+| `state` | Required `ObjectId` reference to `State`. |
 
 ## Relationships
 

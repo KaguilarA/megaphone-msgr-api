@@ -28,5 +28,8 @@ const encryptedFields = [];
 
 const hashedFields = ["password"];
 
-/** Schema definition for an authenticated user account. */
+/**
+ * Schema data for an authenticated user account.
+ * `hashedFields` instructs the OwlModel factory to hash `password` before persistence.
+ */
 export default { encryptedFields, hashedFields, model, name };

@@ -19,5 +19,8 @@ const model = {
 
 const name = "UserPermission";
 
-/** Schema definition for a user-to-permission assignment. */
+/**
+ * Schema data for one assignment between a user and a permission.
+ * Authorization middleware uses both references when resolving permissions.
+ */
 export default { model, name };

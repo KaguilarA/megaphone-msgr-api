@@ -18,6 +18,17 @@ test('POST /message creates a message and stores recipient links for the authent
 
   app.use('/message', MessageRouter({
     entityId: 'Message',
+    permissionModel: {
+      getOne: async ({ entity, name }) => ({ _id: `${entity}-${name}`, entity, name }),
+    },
+    userPermissionModel: {
+      getOne: async () => ({ _id: 'assignment-1' }),
+    },
+    actions: {
+      getAll: 'getAll',
+      getById: 'getById',
+      post: 'register',
+    },
     model: {
       save: async (data) => {
         savedMessages.push(data);
