@@ -126,6 +126,12 @@ export default function ({ id, model, stateModel }) {
   const registerForUser = async (req, res) => {
     try {
       const owner = req.session.userId;
+      const existing = typeof model.getOne === "function"
+        ? await model.getOne({ owner, ownerType: "User" })
+        : null;
+      if (existing) {
+        return res.status(409).json({ message: "User already has a phone number." });
+      }
       const activeState = await getActiveState();
 
       const newData = await model.save({

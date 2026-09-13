@@ -25,6 +25,7 @@ import PhoneNumberRouter from "../routes/phone/routes.js";
 import StateRouter from "../routes/state/routes.js";
 import UserRouter from "../routes/user/routes.js";
 import UserPermissionRouter from "../routes/userPermission/routes.js";
+import PermissionRouter from "../routes/permission/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
 
@@ -57,8 +58,6 @@ export default [
         getAll: "getAll",
         getByCoincidence: "getByCoincidence",
         post: "register",
-      },
-      actions: {
         getById: "getDataById",
         getContact: "getDataForContact",
         getUser: "getDataForUser",
@@ -188,6 +187,8 @@ export default [
     config: {
       id: "User",
       userModel: UserModel,
+      emailModel: EmailModel,
+      stateModel: StateModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,
@@ -211,6 +212,21 @@ export default [
       userPermissionModel: UserPermissionModel,
     },
     router: UserPermissionRouter,
+  },
+  {
+    url: "/permission",
+    config: {
+      // Reuses the User:getPermissions permission since listing the catalog
+      // is only needed while managing a user's permission assignments.
+      id: "User",
+      model: PermissionModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actions: {
+        getAll: "getPermissions",
+      },
+    },
+    router: PermissionRouter,
   },
   {
     url: "/tokens",

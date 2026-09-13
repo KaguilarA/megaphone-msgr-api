@@ -23,6 +23,7 @@ export default (data) => {
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
+    userPermissionModel: data.userPermissionModel,
     entity: data.id || data.entityId,
   };
 
@@ -46,14 +47,7 @@ export default (data) => {
     }),
     getInfo,
   );
-  router.get(
-    "/:id",
-    requirePermission(data.actions.getById, {
-      ...auditDependencies,
-      action: data.actions.getById,
-    }),
-    getById,
-  );
+  // Must precede "/:id" so Express doesn't match "list" as an ObjectId.
   router.get(
     "/list",
     requirePermission(data.actions.getAll, {
@@ -61,6 +55,14 @@ export default (data) => {
       action: data.actions.getAll,
     }),
     getAll,
+  );
+  router.get(
+    "/:id",
+    requirePermission(data.actions.getById, {
+      ...auditDependencies,
+      action: data.actions.getById,
+    }),
+    getById,
   );
   router.get(
     "/:id/permissions",

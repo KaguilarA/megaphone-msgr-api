@@ -3,6 +3,8 @@ export default function ({
   id,
   model,
   userModel: configuredUserModel,
+  emailModel,
+  stateModel,
   permissionModel,
   userPermissionModel,
   populatedFields,
@@ -138,7 +140,25 @@ export default function ({
    */
   async function register(req, res) {
     try {
-      const newUser = await userModel.save(req.body);
+      const { email, ...userData } = req.body;
+      if (emailModel && (!email || !String(email).trim())) {
+        return res.status(400).json({ message: "User email is required." });
+      }
+
+      const newUser = await userModel.save(userData);
+
+      if (emailModel) {
+        const activeState = stateModel
+          ? await stateModel.getOne({ name: "active", entity: "Email" })
+            || await stateModel.save({ name: "active", description: "Email is active.", entity: "Email" })
+          : undefined;
+        await emailModel.save({
+          email: String(email).trim().toLowerCase(),
+          owner: newUser._id,
+          ownerType: "User",
+          ...(activeState?._id ? { state: activeState._id } : {}),
+        });
+      }
 
       if (permissionModel && userPermissionModel) {
         const allPermissions = await permissionModel.getAll();
