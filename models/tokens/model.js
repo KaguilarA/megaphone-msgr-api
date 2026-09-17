@@ -1,10 +1,26 @@
 import { Schema } from "mongoose";
 import UserData from "../user/model.js";
 
-const encryptedFields = ["emailToken", "whatsappToken", "telegramToken"];
+const encryptedFields = [
+  "emailToken",
+  "whatsappToken",
+  "telegramBotToken",
+];
 
 const model = {
   emailToken: {
+    type: String,
+    trim: true,
+  },
+  emailHost: {
+    type: String,
+    trim: true,
+  },
+  emailUser: {
+    type: String,
+    trim: true,
+  },
+  emailPort: {
     type: String,
     trim: true,
   },
@@ -17,7 +33,7 @@ const model = {
     trim: true,
     default: "",
   },
-  telegramToken: {
+  telegramBotToken: {
     type: String,
     trim: true,
   },

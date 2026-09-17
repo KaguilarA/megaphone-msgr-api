@@ -18,11 +18,11 @@ const model = {
     ref: UserData.name,
     required: true,
   },
-  state: {
+  state: [{
     type: Schema.Types.ObjectId,
     ref: StateData.name,
     required: true,
-  },
+  }],
 };
 
 const name = "Message";
