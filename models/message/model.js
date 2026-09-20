@@ -1,6 +1,5 @@
 import { Schema } from "mongoose";
 import UserData from "../user/model.js";
-import StateData from "../state/model.js";
 
 const model = {
   content: {
@@ -18,11 +17,13 @@ const model = {
     ref: UserData.name,
     required: true,
   },
-  state: [{
-    type: Schema.Types.ObjectId,
-    ref: StateData.name,
-    required: true,
-  }],
+  state: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "State",
+      required: true,
+    },
+  ],
 };
 
 const name = "Message";

@@ -8,13 +8,9 @@
  */
 export default function ({
   id,
-  model: configuredUserModel,
-  userModel: injectedUserModel,
-  emailModel: injectedEmailModel,
-  models = [],
+  userModel,
+  emailModel
 }) {
-  const userModel = injectedUserModel || configuredUserModel || models[0]?.model;
-  const emailModel = injectedEmailModel || models[1]?.model;
 
   /**
    * Validate credentials and start a session for the matching user.
@@ -31,6 +27,7 @@ export default function ({
           .status(400)
           .json({ error: "El correo y la contraseña son obligatorios." });
       }
+
       const emailDoc = await emailModel.getOne({
         email: emailInput.trim().toLowerCase(),
         ownerType: "User",
@@ -40,10 +37,16 @@ export default function ({
         return res.status(401).json({ error: "Credenciales inválidas." });
       }
 
-      const user = await userModel.getById(emailDoc.owner);
+      const user = await userModel.getById(emailDoc.owner, {
+        populate: ["state"],
+      });
 
       if (!user) {
         return res.status(401).json({ error: "Credenciales inválidas." });
+      }
+
+      if (!user.state || user.state.name !== "Activo") {
+        return res.status(403).json({ error: "Usuario no activo." });
       }
 
       const isMatch = await userModel.compareHash(
@@ -66,7 +69,7 @@ export default function ({
 
         return res
           .status(200)
-          .json({ message: "Inicio de sesión exitoso", user: user.toJSON() });
+          .json({ message: "Inicio de sesión exitoso", user: user});
       });
     } catch (error) {
       console.error("Error en login:", error);

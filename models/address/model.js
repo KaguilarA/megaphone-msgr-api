@@ -1,6 +1,5 @@
 import { Schema } from "mongoose";
 import ContactData from "../contact/model.js";
-import StateData from "../state/model.js";
 import UserData from "../user/model.js";
 
 const OwnerTypes = [UserData.name, ContactData.name];
@@ -45,7 +44,7 @@ const model = {
   },
   state: {
     type: Schema.Types.ObjectId,
-    ref: StateData.name,
+    ref: "State",
   },
 };
 

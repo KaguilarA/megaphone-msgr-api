@@ -1,4 +1,11 @@
+import { states } from "./../../utils/states.js";
+
 export default function ({ id, model }) {
+  let activeState;
+
+  states
+    .getStateByNameAndEntity("Activo", id)
+    .then((states) => (activeState = states[0]));
 
   /**
    * Delete an address by its ID.
@@ -87,6 +94,7 @@ export default function ({ id, model }) {
         ...req.body,
         ownerType: "Contact",
         owner,
+        state: activeState._id,
       });
       res.status(201).json(newData);
     } catch (error) {
@@ -107,6 +115,7 @@ export default function ({ id, model }) {
         ...req.body,
         ownerType: "User",
         owner,
+        state: activeState._id,
       });
       res.status(201).json(newData);
     } catch (error) {

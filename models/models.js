@@ -1,5 +1,5 @@
-import { OwlModel } from "owl-expressjs-utils";
-
+import { OwlModel, OwlState, OwlCrypto } from "owl-expressjs-utils";
+import { EncryptionKey } from "../consts/index.js";
 import ActionLogData from "./actionLog/model.js";
 import AddressData from "./address/model.js";
 import ContactData from "./contact/model.js";
@@ -8,10 +8,22 @@ import MessageData from "./message/model.js";
 import MessageReceptorData from "./messageReceptor/model.js";
 import PermissionData from "./permission/model.js";
 import PhoneNumberData from "./phone/model.js";
-import StateData from "./state/model.js";
 import TokenData from "./tokens/model.js";
 import UserData from "./user/model.js";
 import UserPermissionData from "./userPermission/model.js";
+
+OwlCrypto.setEncryptionKey(EncryptionKey);
+
+const StateSupported = [
+  AddressData.name,
+  UserData.name,
+  ContactData.name,
+  EmailData.name,
+  MessageData.name,
+  PhoneNumberData.name,
+];
+
+export const StateModel = OwlState(StateSupported);
 
 /** Central registry of instantiated application models. */
 export const ActionLogModel = OwlModel(ActionLogData.name, ActionLogData.model);
@@ -31,7 +43,6 @@ export const PhoneNumberModel = OwlModel(
   PhoneNumberData.name,
   PhoneNumberData.model,
 );
-export const StateModel = OwlModel(StateData.name, StateData.model);
 export const TokenModel = OwlModel(
   TokenData.name,
   TokenData.model,

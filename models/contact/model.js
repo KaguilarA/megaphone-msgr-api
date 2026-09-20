@@ -1,5 +1,4 @@
 import { Schema } from "mongoose";
-import StateData from "../state/model.js";
 import UserData from "../user/model.js";
 
 const model = {
@@ -16,7 +15,7 @@ const model = {
   },
   state: {
     type: Schema.Types.ObjectId,
-    ref: StateData.name,
+    ref: "State",
   },
 };
 
