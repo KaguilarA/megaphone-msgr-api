@@ -1,10 +1,12 @@
+import { availableParallelism } from "node:os";
 import cluster from "node:cluster";
+import { OwlClusterWorkerCount } from "owl-expressjs-utils";
 import { ClusterEnabled } from "./consts/index.js";
 import init from "./utils/init.js";
-import getWorkerCount, { cpuCount } from "./utils/workerCount.js";
 
 if (ClusterEnabled && cluster.isPrimary) {
-  const workerCount = getWorkerCount();
+  const workerCount = OwlClusterWorkerCount();
+  const cpuCount = availableParallelism();
 
   console.log(`[Primary] Master PID: ${process.pid} iniciado.`);
   console.log(
@@ -22,5 +24,5 @@ if (ClusterEnabled && cluster.isPrimary) {
     cluster.fork();
   });
 } else {
-  init();
+  await init();
 }

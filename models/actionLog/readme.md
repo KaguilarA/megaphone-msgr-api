@@ -1,28 +1,41 @@
-# ActionLog Model
+# **ActionLog Model**
 
-## Responsibility
+## **Responsibility**
 
 Stores an audit record after a permission-aware request reaches a response method.
 
-## Fields
+## **Fields**
 
-| Field | Rules |
-| --- | --- |
-| `user` | Required indexed `ObjectId` reference to `User`. |
-| `permission` | Required indexed `ObjectId` reference to `Permission`. |
-| `action` | Required trimmed string. |
-| `metadata` | Object with an empty-object default. Stores request details and status code. |
+| Field        | Rules                                                                        |
+| ------------ | ---------------------------------------------------------------------------- |
+| `user`       | Required indexed `ObjectId` reference to `User`.                             |
+| `permission` | Required indexed `ObjectId` reference to `Permission`.                       |
+| `action`     | Required trimmed string.                                                     |
+| `metadata`   | Object with an empty-object default. Stores request details and status code. |
 
-## Lifecycle
+## **Lifecycle**
 
-`actionLogMiddleware` creates records after `res.json` or `res.send` is called. The model itself does not create audit records automatically.
+`actionLogMiddleware` creates records after `res.json` or `res.send` is called.
 
-## Limitations
+The model itself does not create audit records automatically.
+
+## **Relationships**
+
+* `user` → `User`
+* `permission` → `Permission`
+
+## **Limitations**
 
 There is no retention policy, immutable database rule, or dedicated ownership filter in the schema.
 
-## Implementation
+## **Implementation**
 
-- Schema data: `models/actionLog/model.js`
-- Instantiation: `models/models.js`
-- HTTP routes: `routes/actionLog/routes.js`
+* Instantiation: `models/models.js`
+* Schema definition: `actionLog/model.js`
+* Audit creation: `actionLogMiddleware`
+
+## **Security Notes**
+
+`metadata` must not contain passwords, password hashes, session secrets, encryption keys, or private tokens.
+
+`ActionLog` is an audit record and should not be treated as an authorization mechanism.
