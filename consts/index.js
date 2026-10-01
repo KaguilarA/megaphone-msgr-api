@@ -1,4 +1,5 @@
 export const ClusterEnabled = process.env.CLUSTER_ENABLED === "true";
+export const ClusterWorkers = Number(process.env.CLUSTER_WORKERS) || 1;
 export const Port = Number(process.env.PORT) || 3000;
 export const DbHost = process.env.DB_HOST;
 export const DbName = process.env.DB_NAME;

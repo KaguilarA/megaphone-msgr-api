@@ -1,14 +1,15 @@
 import cluster from "node:cluster";
-import { ClusterEnabled } from "./consts/index.js";
+import { availableParallelism } from "node:os";
+import { OwlClusterWorkerCount } from "owl-expressjs-utils";
+import { ClusterEnabled, ClusterWorkers } from "./consts/index.js";
 import init from "./utils/init.js";
-import getWorkerCount, { cpuCount } from "./utils/workerCount.js";
 
 if (ClusterEnabled && cluster.isPrimary) {
-  const workerCount = getWorkerCount();
+  const workerCount = OwlClusterWorkerCount(ClusterEnabled, ClusterWorkers);
 
   console.log(`[Primary] Master PID: ${process.pid} iniciado.`);
   console.log(
-    `[Primary] Desplegando ${workerCount} worker(s) en ${cpuCount} núcleo(s) disponibles...\n`,
+    `[Primary] Desplegando ${workerCount} worker(s) en ${availableParallelism()} núcleo(s) disponibles...\n`,
   );
 
   for (let i = 0; i < workerCount; i++) {
