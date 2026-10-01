@@ -23,20 +23,24 @@ const routeFiles = {
 };
 
 test("every seeded permission is configured and route-validated", () => {
-  const configsByEntity = new Map(
-    routeConfig.map((entry) => [
+  const configsByEntity = new Map();
+  for (const entry of routeConfig) {
+    const entity =
       entry.config.id.replace(/\s+/g, "") === "PhoneNumber"
         ? "Phone"
-        : entry.config.id.replace(/\s+/g, ""),
-      entry.config,
-    ]),
-  );
+        : entry.config.id.replace(/\s+/g, "");
+    const entries = configsByEntity.get(entity) || [];
+    entries.push(entry);
+    configsByEntity.set(entity, entries);
+  }
 
   for (const permission of permissions) {
-    const config = configsByEntity.get(permission.entity);
-    assert.ok(config, `Missing route config for ${permission.entity}`);
+    const entries = configsByEntity.get(permission.entity);
+    assert.ok(entries, `Missing route config for ${permission.entity}`);
     assert.ok(
-      Object.values(config.actions || {}).includes(permission.name),
+      entries.some((entry) =>
+        Object.values(entry.config.actions || {}).includes(permission.name),
+      ),
       `Missing configured action ${permission.entity}.${permission.name}`,
     );
 

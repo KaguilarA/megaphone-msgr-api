@@ -1,5 +1,8 @@
 import { OwlModel, OwlState, OwlCrypto } from "owl-expressjs-utils";
-import { EncryptionKey } from "../consts/index.js";
+import {
+  EncryptionAlgorithm,
+  EncryptionKey,
+} from "../consts/index.js";
 import ActionLogData from "./actionLog/model.js";
 import AddressData from "./address/model.js";
 import ContactData from "./contact/model.js";
@@ -12,7 +15,11 @@ import TokenData from "./tokens/model.js";
 import UserData from "./user/model.js";
 import UserPermissionData from "./userPermission/model.js";
 
+if (!EncryptionKey) {
+  throw new Error("ENCRYPTION_KEY must be configured before creating models.");
+}
 OwlCrypto.setEncryptionKey(EncryptionKey);
+OwlCrypto.setEncryptionAlgorithm(EncryptionAlgorithm);
 
 const StateSupported = [
   AddressData.name,

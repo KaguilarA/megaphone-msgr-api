@@ -13,10 +13,16 @@ This directory contains environment-derived settings and the API route registry.
 | `DB_HOST` | MongoDB connection host or URI. | Required |
 | `DB_NAME` | MongoDB database name used by sessions. | Required |
 | `FRONTEND_URL` | Allowed frontend origin for CORS. | Required |
-| `NODE_ENV` | Runtime environment used by session configuration. | Unset |
-| `SESSION_SECRET` | Secret used to sign session data. | Development fallback only |
+| `NODE_ENV` | Runtime environment used by session configuration. | Required |
+| `SESSION_SECRET` | Secret used to sign session data; minimum 32 characters. | Required |
+| `ENCRYPTION_KEY` | 32-byte AES key encoded as 64 hexadecimal characters. | Required |
+| `ENCRYPTION_ALGORITHM` | Encryption cipher used for provider credentials. | `aes-256-gcm` |
+| `CLUSTER_WORKERS` | Maximum requested worker count when clustering is enabled. | `1` |
 
-Use the root `.env.example` as the configuration checklist. Production deployments must define a strong `SESSION_SECRET`; the fallback exists only to avoid an undefined local value.
+Use the root `.env.example` as the configuration checklist. Startup validates required
+values and rejects weak session secrets and malformed encryption keys. Secrets are never
+defaulted to known values. WhatsApp credentials are stored encrypted in the Token model,
+not in environment variables.
 
 ## Route registry
 

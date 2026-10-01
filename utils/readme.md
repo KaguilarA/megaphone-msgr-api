@@ -10,11 +10,13 @@ This directory contains the application startup and route-initialization helpers
 | `start.js` | Connects MongoDB, then initializes sessions and routes. |
 | `initApiRoutes.js` | Configures `OwlSession` and mounts every route from the central registry. |
 | `workerCount.js` | Determines a valid worker count when clustering is enabled. |
+| `validateConfig.js` | Fails startup when required environment settings are missing or invalid. |
 
 ## Startup sequence
 
 1. `index.js` invokes `init()`.
-2. `init()` creates the Express application with the configured frontend origin and port.
+2. `init()` validates required environment settings and creates the Express application
+   with the configured frontend origin and port.
 3. `start()` opens the MongoDB connection through `OwlMongoConnect`.
 4. `initApiRoutes()` configures the MongoDB-backed session middleware and mounts each entry from `consts/config.js`.
 
@@ -22,7 +24,8 @@ Database connection failures are reported to the console and terminate the proce
 
 ## Clustering
 
-`workerCount.js` returns one worker unless clustering is enabled. When enabled, it accepts a positive integer request and caps it at `availableParallelism()` so the process never requests more workers than the host exposes.
+`workerCount.js` defaults to one worker. It accepts a positive integer request and caps it
+at `availableParallelism()` so the process never requests more workers than the host exposes.
 
 ## Related files
 

@@ -51,6 +51,7 @@ export default [
     config: {
       id: "Address",
       model: AddressModel,
+      stateModel: StateModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,
@@ -73,7 +74,7 @@ export default [
     url: "/auth",
     config: {
       id: "Auth",
-      model: UserModel,
+      userModel: UserModel,
       emailModel: EmailModel,
     },
     router: AuthRouter,
