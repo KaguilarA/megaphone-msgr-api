@@ -24,9 +24,9 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "dev": "node --watch --env-file=.env index.js",
-    "start": "node --env-file=.env index.js",
-    "test": "node --test"
+    "dev": "node --watch --env-file-if-exists=.env index.js",
+    "start": "node --env-file-if-exists=.env index.js",
+    "test": "node --import ./utils/testSetup.js --test"
   },
   "dependencies": {
     "country-codes-flags-phone-codes": "^1.1.1",

@@ -33,6 +33,10 @@ const model = {
     trim: true,
     default: "",
   },
+  whatsappPhoneNumberId: {
+    type: String,
+    trim: true,
+  },
   telegramBotToken: {
     type: String,
     trim: true,

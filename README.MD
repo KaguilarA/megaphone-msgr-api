@@ -31,23 +31,37 @@ This documentation describes version 1.0.0.
 npm install
 ```
 
-Create a `.env` file in the project root. Use `.env.example` as the variable checklist:
+Create a `.env` file in the project root and populate the required values. Generate a
+unique 32-byte encryption key and a long session secret; do not use the sample values as
+production credentials:
 
 ```env
 CLUSTER_ENABLED=false
 CLUSTER_WORKERS=1
 DB_HOST=mongodb://127.0.0.1:27017/megaphone
 DB_NAME=megaphone
-ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+ENCRYPTION_KEY=<64-character-random-hex-key>
 ENCRYPTION_ALGORITHM=aes-256-gcm
 FRONTEND_URL=http://localhost:4200
 NODE_ENV=development
 PORT=3000
-SESSION_SECRET=replace-with-a-long-random-secret
+SESSION_SECRET=<at-least-32-random-characters>
+META_API_URL=https://graph.facebook.com
+META_API_VERSION=<supported-graph-api-version>
+WHATSAPP_ACCESS_TOKEN=
+WHATSAPP_PHONE_NUMBER_ID=
 ```
 
-`DB_HOST`, `DB_NAME`, `FRONTEND_URL`, and `SESSION_SECRET` must be configured for a normal
-local run. Use a unique encryption key and session secret outside development.
+`DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
+required at startup. Startup validation rejects missing or malformed values without logging
+their contents. Set the WhatsApp credentials only if you use the standalone WhatsApp sender.
+
+Generate suitable secrets locally:
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'))"
+```
 
 ## Running
 
@@ -64,8 +78,33 @@ npm start
 ```
 
 By default, the server listens on `http://localhost:3000`. Set `CLUSTER_ENABLED=true` to
-start the API through Node.js clustering. The current entry point uses the default worker
-count supplied by `utils/workerCount.js`.
+start the API through Node.js clustering. `CLUSTER_WORKERS` controls the worker count and
+is capped at the available CPU parallelism.
+
+## Standalone WhatsApp sender
+
+`integrations/whatsapp.js` exports `sendWhatsAppMessage(recipient, message, tokenRecord)`,
+which sends plain text through the Meta WhatsApp Cloud API. It is deliberately independent
+of Express, the database, and the API routes. Pass the record retrieved from the Token model;
+the WhatsApp token is stored encrypted there, and the API version and phone-number ID come
+from that record:
+
+```js
+import { sendWhatsAppMessage } from "./integrations/whatsapp.js";
+
+const tokenRecord = await TokenModel.getOne({ owner: userId });
+const result = await sendWhatsAppMessage(
+  "+14155552671",
+  "Hello from Megaphone!",
+  tokenRecord,
+);
+console.log(result.messages[0].id);
+```
+
+The Token record must contain `whatsappToken`, `whatsappVersion`, and
+`whatsappPhoneNumberId`. The recipient must be an E.164 phone number. The function throws
+on invalid input, network failures, timeouts, or provider errors; callers should handle
+those errors.
 
 ## Authentication
 
@@ -155,6 +194,9 @@ not replace a full end-to-end persistence test against MongoDB.
 - `MessageReceptor` is an internal model and has no standalone route.
 - State compatibility with the entity that references it is not enforced by the schema.
 - Provider credentials are encrypted, but provider validation and token refresh are outside the API.
+- Run `npm audit --omit=dev` before deployment. The current dependency tree includes
+  high-severity advisories in the Mongoose version nested under `owl-expressjs-utils`; that
+  dependency needs an upstream update or a verified compatible override before production.
 
 ## Documentation map
 

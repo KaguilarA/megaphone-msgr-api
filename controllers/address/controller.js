@@ -1,11 +1,24 @@
-import { states } from "./../../utils/states.js";
+export default function ({ id, model, stateModel }) {
+  async function createAddress(ownerType, owner, body) {
+    const address = {
+      ...body,
+      ownerType,
+      owner,
+    };
 
-export default function ({ id, model }) {
-  let activeState;
+    if (stateModel) {
+      const [activeState] = await stateModel.getByCoincidence({
+        name: "Activo",
+        entity: id,
+      });
+      if (!activeState) {
+        throw new Error(`Active state is not configured for ${id}.`);
+      }
+      address.state = activeState._id;
+    }
 
-  states
-    .getStateByNameAndEntity("Activo", id)
-    .then((states) => (activeState = states[0]));
+    return model.save(address);
+  }
 
   /**
    * Delete an address by its ID.
@@ -90,12 +103,7 @@ export default function ({ id, model }) {
   async function registerForContact(req, res) {
     try {
       const owner = req.params.id;
-      const newData = await model.save({
-        ...req.body,
-        ownerType: "Contact",
-        owner,
-        state: activeState._id,
-      });
+      const newData = await createAddress("Contact", owner, req.body);
       res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -111,12 +119,7 @@ export default function ({ id, model }) {
   async function registerForUser(req, res) {
     try {
       const owner = req.session.userId;
-      const newData = await model.save({
-        ...req.body,
-        ownerType: "User",
-        owner,
-        state: activeState._id,
-      });
+      const newData = await createAddress("User", owner, req.body);
       res.status(201).json(newData);
     } catch (error) {
       res.status(500).json({ error: error.message });

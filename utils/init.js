@@ -7,17 +7,18 @@ import {
   NodeEnv,
   DbName,
 } from "../consts/index.js";
-import ApiConfig from "../consts/config.js";
 import start from "./start.js";
+import validateConfig from "./validateConfig.js";
 
 /**
  * Create and initialize the application.
  * @returns {Promise<void>} A promise that resolves when the application is initialized.
  */
 export default async function() {
-  const app = createApp([FrontendUrl], Port);
-
   try {
+    validateConfig();
+    const app = createApp([FrontendUrl], Port);
+    const { default: ApiConfig } = await import("../consts/config.js");
     await start(app, ApiConfig, DbHost, SessionSecret, NodeEnv, DbName);
   } catch (err) {
     console.error(
