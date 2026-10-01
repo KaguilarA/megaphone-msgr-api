@@ -50,11 +50,28 @@ META_API_URL=https://graph.facebook.com
 META_API_VERSION=<supported-graph-api-version>
 WHATSAPP_ACCESS_TOKEN=
 WHATSAPP_PHONE_NUMBER_ID=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+CLOUDINARY_FOLDER=megaphone/messages
+TINYPNG_API_KEY=
 ```
 
 `DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
 required at startup. Startup validation rejects missing or malformed values without logging
 their contents. Set the WhatsApp credentials only if you use the standalone WhatsApp sender.
+Cloudinary variables are optional for text-only messages, but all three credentials are
+required together when uploading images or videos. Message uploads are limited to 16 MB and
+are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
+Images are compressed through TinyPNG before the Cloudinary upload; videos bypass TinyPNG.
+For incoming WhatsApp autoresponses, configure `WHATSAPP_WEBHOOK_VERIFY_TOKEN` and
+`WHATSAPP_APP_SECRET`, expose `GET/POST /webhooks/whatsapp` through HTTPS, and set
+`WHATSAPP_AUTO_REPLY_KEYWORD` plus `WHATSAPP_AUTO_REPLY_TEXT`. The current rule replies with
+the configured text when an incoming message contains the configured keyword; it uses the
+WhatsApp token associated with the receiving phone number.
+
+Production frontend builds use `/api` as the API base URL. Configure the reverse proxy to
+forward `/api` to this backend and preserve HTTPS cookies and the `X-Hub-Signature-256` header.
 
 Generate suitable secrets locally:
 

@@ -7,7 +7,9 @@ export default function (allowUrls, port) {
   app.disable("x-powered-by");
   app.set("trust proxy", 1);
   app.use(OwlCors(allowUrls));
+  app.use("/webhooks/whatsapp", express.raw({ type: "application/json", limit: "1mb" }));
   app.use(express.json({ limit: "1mb" }));
+  app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
 
   const server = app.listen(port, () => {
     console.log(

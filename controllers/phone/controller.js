@@ -126,11 +126,16 @@ export default function ({ id, model, stateModel }) {
   const registerForUser = async (req, res) => {
     try {
       const owner = req.session.userId;
-      const existing = typeof model.getOne === "function"
-        ? await model.getOne({ owner, ownerType: "User" })
-        : null;
-      if (existing) {
-        return res.status(409).json({ message: "User already has a phone number." });
+      if (typeof model.getByCoincidence === "function") {
+        const existing = await model.getByCoincidence({
+          owner,
+          ownerType: "User",
+          phone: req.body.phone,
+          countryNumber: req.body.countryNumber,
+        });
+        if (existing?.length) {
+          return res.status(409).json({ message: "This phone number is already registered." });
+        }
       }
       const activeState = await getActiveState();
 

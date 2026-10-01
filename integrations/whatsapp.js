@@ -18,7 +18,7 @@ export async function sendWhatsAppMessage(
   recipient,
   message,
   tokenData,
-  { apiBaseUrl = DEFAULT_API_BASE_URL, fetchImpl = fetch } = {},
+  { apiBaseUrl = DEFAULT_API_BASE_URL, fetchImpl = fetch, media } = {},
 ) {
   if (typeof recipient !== "string" || !/^\+?[1-9]\d{7,14}$/.test(recipient)) {
     throw new TypeError("recipient must be a valid E.164 phone number.");
@@ -68,8 +68,12 @@ export async function sendWhatsAppMessage(
       messaging_product: "whatsapp",
       recipient_type: "individual",
       to: recipient.replace(/^\+/, ""),
-      type: "text",
-      text: { preview_url: false, body: message },
+      ...(media
+        ? {
+            type: media.type,
+            [media.type]: { link: media.url, caption: message },
+          }
+        : { type: "text", text: { preview_url: false, body: message } }),
     }),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });

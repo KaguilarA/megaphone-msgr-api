@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+import PhoneData from "../phone/model.js";
 import UserData from "../user/model.js";
 
 const model = {
@@ -16,6 +17,33 @@ const model = {
     type: Schema.Types.ObjectId,
     ref: UserData.name,
     required: true,
+  },
+  senderPhone: {
+    type: Schema.Types.ObjectId,
+    ref: PhoneData.name,
+    required: true,
+    index: true,
+  },
+  media: {
+    type: {
+      type: String,
+      enum: ["image", "video"],
+    },
+    url: {
+      type: String,
+      trim: true,
+    },
+    publicId: {
+      type: String,
+      trim: true,
+    },
+    mimeType: {
+      type: String,
+      trim: true,
+    },
+    bytes: {
+      type: Number,
+    },
   },
   state: [
     {

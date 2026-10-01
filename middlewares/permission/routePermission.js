@@ -8,6 +8,8 @@ import requirePermission from "./permission.js";
  */
 export default (data, action) =>
   requirePermission(action, {
-    entity: data.id,
+    entity: data.id || data.entityId,
     action,
+    permissionModel: data.permissionModel,
+    userPermissionModel: data.userPermissionModel,
   });

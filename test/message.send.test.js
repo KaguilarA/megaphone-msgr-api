@@ -77,3 +77,44 @@ test('getAll returns only the authenticated user messages', async () => {
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.body, [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: user._id }]);
 });
+
+test('register sends through the selected phone token and stores its reference', async () => {
+  let savedMessage;
+  const sent = [];
+  const sourcePhoneId = '665f1a2b3c4d5e6f70819601';
+  const contactId = '665f1a2b3c4d5e6f708192c1';
+  const controller = MessageController({
+    model: {
+      save: async (data) => {
+        savedMessage = data;
+        return { ...data, _id: '665f1a2b3c4d5e6f70819502', toJSON: () => ({ ...data, _id: '665f1a2b3c4d5e6f70819502' }) };
+      },
+    },
+    receptorModel: {
+      save: async (data) => data,
+    },
+    phoneModel: {
+      getById: async () => ({ _id: sourcePhoneId, owner: user._id, ownerType: 'User' }),
+      getByCoincidence: async () => [{ phone: '5550001', countryNumber: '+52' }],
+    },
+    tokenModel: {
+      getOne: async (query) => ({ whatsappToken: 'token', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', phone: query.phone }),
+    },
+    contactModel: {
+      getById: async () => ({ _id: contactId, owner: user._id }),
+    },
+    sendWhatsAppMessage: async (...args) => sent.push(args),
+  });
+  const res = createRes();
+
+  await controller.register({
+    body: { header: 'Aviso', content: 'Hola', contacts: [contactId], sourcePhoneId },
+    session: { userId: user._id },
+  }, res);
+
+  assert.equal(res.statusCode, 201);
+  assert.equal(savedMessage.senderPhone, sourcePhoneId);
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0][0], '+525550001');
+  assert.equal(sent[0][2].phone, sourcePhoneId);
+});

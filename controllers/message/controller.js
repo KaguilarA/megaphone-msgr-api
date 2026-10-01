@@ -1,4 +1,95 @@
-export default function ({ id, model, receptorModel, populatedFields = [] }) {
+import { sendWhatsAppMessage as defaultSendWhatsAppMessage } from "../../integrations/whatsapp.js";
+
+export default function ({
+  id,
+  model,
+  receptorModel,
+  populatedFields = [],
+  phoneModel,
+  tokenModel,
+  contactModel,
+  stateModel,
+  mediaUploader,
+  sendWhatsAppMessage = defaultSendWhatsAppMessage,
+}) {
+
+  function requestError(message, status = 400) {
+    const error = new Error(message);
+    error.status = status;
+    return error;
+  }
+
+  async function getMessageState(state) {
+    if (state || !stateModel) return state;
+
+    const activeState =
+      (await stateModel.getOne({ name: "active", entity: "Message" })) ||
+      (await stateModel.save({
+        name: "active",
+        description: "Message is ready to send.",
+        entity: "Message",
+      }));
+
+    return activeState?._id;
+  }
+
+  async function getSourcePhone(userId, sourcePhoneId) {
+    if (!phoneModel) return undefined;
+    if (!sourcePhoneId) {
+      throw requestError("sourcePhoneId is required.");
+    }
+
+    const phone = await phoneModel.getById(sourcePhoneId);
+    if (
+      !phone ||
+      String(phone.owner) !== String(userId) ||
+      phone.ownerType !== "User"
+    ) {
+      throw requestError("The selected source phone does not belong to the user.", 403);
+    }
+
+    return phone;
+  }
+
+  async function getWhatsAppToken(userId, sourcePhoneId) {
+    if (!tokenModel) return undefined;
+
+    const token = await tokenModel.getOne({
+      owner: userId,
+      phone: sourcePhoneId,
+    });
+    if (!token) {
+      throw requestError("No WhatsApp token is configured for the selected phone.", 422);
+    }
+
+    return token;
+  }
+
+  async function sendToContacts(userId, contacts, message, token, media) {
+    if (!phoneModel || !contactModel || !token) return;
+
+    for (const contactId of contacts) {
+      const contact = await contactModel.getById(contactId);
+      if (!contact || String(contact.owner) !== String(userId)) {
+        throw requestError("One of the selected contacts does not belong to the user.", 403);
+      }
+
+      const phoneNumbers = await phoneModel.getByCoincidence({
+        ownerType: "Contact",
+        owner: contactId,
+      });
+      const phone = phoneNumbers?.[0];
+      if (!phone) {
+        throw requestError("One of the selected contacts has no phone number.");
+      }
+
+      const recipient = `${phone.countryNumber || ""}${phone.phone || ""}`.replace(
+        /[\s()-]/g,
+        "",
+      );
+      await sendWhatsAppMessage(recipient, message, token, { media });
+    }
+  }
 
   async function createReceptors(messageId, contacts) {
     return Promise.all(
@@ -63,18 +154,40 @@ export default function ({ id, model, receptorModel, populatedFields = [] }) {
   async function register(req, res) {
     try {
       const id = req.session.userId;
-      const { contacts = [], ...messageData } = req.body;
+      const {
+        contacts: rawContacts = [],
+        sourcePhoneId,
+        state,
+        ...messageData
+      } = req.body;
+      const contacts = typeof rawContacts === "string"
+        ? JSON.parse(rawContacts)
+        : rawContacts;
+      if (!Array.isArray(contacts)) {
+        throw requestError("contacts must be an array.");
+      }
+      const sourcePhone = await getSourcePhone(id, sourcePhoneId);
+      const token = await getWhatsAppToken(id, sourcePhoneId);
+      const messageState = await getMessageState(state);
+      const media = req.file && mediaUploader
+        ? await mediaUploader(req.file)
+        : undefined;
+
+      await sendToContacts(id, contacts, messageData.content, token, media);
 
       const newMessage = await model.save({
         ...messageData,
         sender: id,
+        ...(sourcePhone ? { senderPhone: sourcePhone._id || sourcePhoneId } : {}),
+        ...(messageState ? { state: messageState } : {}),
+        ...(media ? { media } : {}),
       });
 
       const receptors = await createReceptors(newMessage._id, contacts);
 
       res.status(201).json({ ...newMessage.toJSON(), receptors });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(error.status || 500).json({ error: error.message });
     }
   }
 

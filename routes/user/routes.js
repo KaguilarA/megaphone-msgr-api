@@ -74,7 +74,7 @@ export default (data) => {
   );
   router.put(
     "/:id/permissions",
-    requirePermission(data.actions.update, {
+    requirePermission(data.actions.updatePermissions, {
       ...auditDependencies,
       action: data.actions.updatePermissions,
     }),
@@ -83,7 +83,7 @@ export default (data) => {
   );
   router.put(
     "/",
-    requirePermission(data.actions.updatePermissions, {
+    requirePermission(data.actions.update, {
       ...auditDependencies,
       action: data.actions.update,
     }),

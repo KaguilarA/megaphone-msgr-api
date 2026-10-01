@@ -28,6 +28,15 @@ import UserPermissionRouter from "../routes/userPermission/routes.js";
 import PermissionRouter from "../routes/permission/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
+import { uploadMediaBuffer } from "../integrations/cloudinary.js";
+import { compressImageBuffer } from "../integrations/tinypng.js";
+import {
+  CloudinaryApiKey,
+  CloudinaryApiSecret,
+  CloudinaryCloudName,
+  CloudinaryFolder,
+  TinyPngApiKey,
+} from "./index.js";
 
 export default [
   {
@@ -84,6 +93,7 @@ export default [
     config: {
       id: "Contact",
       model: ContactModel,
+      stateModel: StateModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,
@@ -111,7 +121,31 @@ export default [
       id: "Message",
       model: MessageModel,
       receptorModel: MessageReceptorModel,
-      populatedFields: ["sender", "state"],
+      phoneModel: PhoneNumberModel,
+      tokenModel: TokenModel,
+      contactModel: ContactModel,
+      stateModel: StateModel,
+      mediaUploader: async (file) => {
+        const isImage = file.mimetype.startsWith("image/");
+        const buffer = isImage
+          ? await compressImageBuffer(file.buffer, TinyPngApiKey)
+          : file.buffer;
+        const result = await uploadMediaBuffer(buffer, {
+          cloudName: CloudinaryCloudName,
+          apiKey: CloudinaryApiKey,
+          apiSecret: CloudinaryApiSecret,
+          folder: CloudinaryFolder,
+        });
+
+        return {
+          type: isImage ? "image" : "video",
+          url: result.secure_url,
+          publicId: result.public_id,
+          mimeType: file.mimetype,
+          bytes: result.bytes,
+        };
+      },
+      populatedFields: ["sender", "senderPhone", "state"],
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,

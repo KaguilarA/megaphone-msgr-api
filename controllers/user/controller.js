@@ -91,6 +91,24 @@ export default function ({
       const permissionIds = Array.isArray(req.body.permissionIds)
         ? req.body.permissionIds
         : [];
+      const requestedIds = [...new Set(permissionIds.map(String))];
+
+      if (permissionModel) {
+        const permissionDocuments = await Promise.all(
+          requestedIds.map((permissionId) =>
+            typeof permissionModel.getById === "function"
+              ? permissionModel.getById(permissionId)
+              : permissionModel.getOne({ _id: permissionId }),
+          ),
+        );
+        if (permissionDocuments.some((permission) => !permission)) {
+          return res.status(400).json({
+            message: "User permissions update error.",
+            error: "One or more permissions do not exist.",
+          });
+        }
+      }
+
       const currentAssignments = await userPermissionModel.getByCoincidence({
         user: req.params.id,
       });
@@ -100,18 +118,18 @@ export default function ({
           assignment,
         ]),
       );
-      const requestedIds = new Set(permissionIds.map(String));
+      const requestedPermissionSet = new Set(requestedIds);
 
       await Promise.all(
         currentAssignments
           .filter(
-            (assignment) => !requestedIds.has(String(assignment.permission)),
+            (assignment) => !requestedPermissionSet.has(String(assignment.permission)),
           )
           .map((assignment) => userPermissionModel.delete(assignment._id)),
       );
 
       await Promise.all(
-        permissionIds
+        requestedIds
           .filter(
             (permissionId) => !currentByPermission.has(String(permissionId)),
           )

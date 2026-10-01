@@ -1,4 +1,12 @@
 import { OwlSession } from "owl-expressjs-utils";
+import WhatsAppWebhook from "../routes/webhooks/whatsapp.js";
+import { TokenModel } from "../models/models.js";
+import {
+  WhatsAppAppSecret,
+  WhatsAppAutoReplyKeyword,
+  WhatsAppAutoReplyText,
+  WhatsAppWebhookVerifyToken,
+} from "../consts/index.js";
 
 /**
  * Initialize API routes for the Express application.
@@ -18,6 +26,13 @@ export default function (
   dbHost,
 ) {
   app.use(OwlSession(sessionSecret, nodeEnv, dbName, dbHost));
+  app.use("/webhooks", WhatsAppWebhook({
+    verifyToken: WhatsAppWebhookVerifyToken,
+    appSecret: WhatsAppAppSecret,
+    tokenModel: TokenModel,
+    autoReplyKeyword: WhatsAppAutoReplyKeyword,
+    autoReplyText: WhatsAppAutoReplyText,
+  }));
 
   ApiConfig.forEach(({ url, config, router: childRouter }) =>
     app.use(url, childRouter(config)),

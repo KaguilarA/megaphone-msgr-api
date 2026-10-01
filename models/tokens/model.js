@@ -1,4 +1,5 @@
 import { Schema } from "mongoose";
+import PhoneData from "../phone/model.js";
 import UserData from "../user/model.js";
 
 const encryptedFields = [
@@ -36,6 +37,11 @@ const model = {
   whatsappPhoneNumberId: {
     type: String,
     trim: true,
+  },
+  phone: {
+    type: Schema.Types.ObjectId,
+    ref: PhoneData.name,
+    index: true,
   },
   telegramBotToken: {
     type: String,

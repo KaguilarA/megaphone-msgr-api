@@ -91,3 +91,30 @@ test('updatePermissions removes missing assignments and creates new ones', async
   }]);
   assert.equal(res.statusCode, 200);
 });
+
+test('updatePermissions rejects unknown permission ids before changing assignments', async () => {
+  let changed = false;
+  const controller = UserController({
+    entityId: 'User',
+    model: {},
+    permissionModel: {
+      getById: async () => null,
+    },
+    userPermissionModel: {
+      getByCoincidence: async () => {
+        changed = true;
+        return [];
+      },
+    },
+  });
+  const res = createRes();
+
+  await controller.updatePermissions({
+    params: { id: user._id },
+    body: { permissionIds: ['missing-permission'] },
+  }, res);
+
+  assert.equal(res.statusCode, 400);
+  assert.equal(changed, false);
+  assert.match(res.body.error, /do not exist/);
+});

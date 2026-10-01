@@ -29,9 +29,12 @@
     "test": "node --import ./utils/testSetup.js --test"
   },
   "dependencies": {
+    "cloudinary": "^2.11.0",
     "country-codes-flags-phone-codes": "^1.1.1",
     "express": "^5.2.1",
     "mongoose": "^8.12.0",
-    "owl-expressjs-utils": "^1.0.3"
+    "multer": "^2.4.0",
+    "owl-expressjs-utils": "^1.0.3",
+    "tinify": "^1.8.3"
   }
 }

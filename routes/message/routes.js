@@ -3,6 +3,7 @@ import { OwlIsAuth } from "owl-expressjs-utils";
 import MessageController from "../../controllers/message/controller.js";
 import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import routePermission from "../../middlewares/permission/routePermission.js";
+import mediaUpload from "../../middlewares/media/upload.js";
 
 /**
  * Create the authenticated message router.
@@ -21,6 +22,7 @@ export default (data) => {
   router.use(OwlIsAuth);
   router.post(
     "/",
+    mediaUpload.single("media"),
     routePermission(data, data.actions.post),
     actionLogMiddleware(auditDependencies, data.actions.post),
     register,

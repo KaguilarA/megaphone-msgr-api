@@ -17,6 +17,17 @@ export default function validateConfig(env = process.env) {
   if (env.ENCRYPTION_KEY && !/^[\da-fA-F]{64}$/.test(env.ENCRYPTION_KEY)) {
     invalid.push("ENCRYPTION_KEY (must be 64 hexadecimal characters)");
   }
+  const cloudinaryVariables = [
+    env.CLOUDINARY_CLOUD_NAME,
+    env.CLOUDINARY_API_KEY,
+    env.CLOUDINARY_API_SECRET,
+  ];
+  if (cloudinaryVariables.some(Boolean) && cloudinaryVariables.some((value) => !value?.trim())) {
+    invalid.push("Cloudinary (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are required together)");
+  }
+  if (cloudinaryVariables.every((value) => value?.trim()) && !env.TINYPNG_API_KEY?.trim()) {
+    invalid.push("TINYPNG_API_KEY (required when Cloudinary media uploads are enabled)");
+  }
   if (
     env.ENCRYPTION_ALGORITHM &&
     env.ENCRYPTION_ALGORITHM !== "aes-256-gcm"
@@ -28,6 +39,13 @@ export default function validateConfig(env = process.env) {
     !["development", "test", "production"].includes(env.NODE_ENV)
   ) {
     invalid.push("NODE_ENV (supported values: development, test, production)");
+  }
+  if (env.NODE_ENV === "production" && env.FRONTEND_URL && !env.FRONTEND_URL.startsWith("https://")) {
+    invalid.push("FRONTEND_URL (must use HTTPS in production)");
+  }
+  const webhookVariables = [env.WHATSAPP_WEBHOOK_VERIFY_TOKEN, env.WHATSAPP_APP_SECRET];
+  if (webhookVariables.some(Boolean) && webhookVariables.some((value) => !value?.trim())) {
+    invalid.push("WhatsApp webhook (WHATSAPP_WEBHOOK_VERIFY_TOKEN and WHATSAPP_APP_SECRET are required together)");
   }
 
   if (env.PORT !== undefined) {
