@@ -1,4 +1,12 @@
+import { states } from "./../../utils/states.js";
+
 export default function ({ id, model }) {
+  let activeState;
+
+  states
+    .getStateByNameAndEntity("Activo", id)
+    .then((states) => (activeState = states[0]));
+
   /**
    * Delete a contact by its ID.
    * @param {import('express').Request} req - Express request containing the contact ID.
@@ -24,9 +32,14 @@ export default function ({ id, model }) {
   async function getAll(req, res) {
     try {
       const userId = req.session?.userId;
-      const contacts = await model.getByCoincidence({
-        owner: userId,
-      });
+      const contacts = await model.getByCoincidence(
+        {
+          owner: userId,
+        },
+        {
+          populate: ['state'],
+        },
+      );
       res.status(200).json(contacts);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -63,6 +76,7 @@ export default function ({ id, model }) {
       const userId = req.session?.userId;
       const contactData = req.body;
       contactData.owner = userId;
+      contactData.state = activeState._id;
       const newContact = await model.save(contactData);
       res.status(201).json(newContact);
     } catch (error) {

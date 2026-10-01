@@ -1,10 +1,11 @@
 import { parsePermissionReference } from "./permissionKey.js";
+import { UserPermissionModel, PermissionModel } from "./../../models/models.js";
 
 /**
  * Create middleware that validates a user-permission assignment.
  * Permission identity uses a separate entity and action name.
  * @param {string|{entity?: string, name: string}} permissionName - Permission action.
- * @param {{action?: string, actionMessage?: string, entity?: string, permissionModel?: Object, userPermissionModel?: Object}} options - Validation options.
+ * @param {{action?: string, actionMessage?: string, entity?: string}} options - Validation options.
  * @returns {import('express').RequestHandler} Permission validation middleware.
  */
 export default (permissionName, options = {}) => {
@@ -12,8 +13,6 @@ export default (permissionName, options = {}) => {
     action = "access",
     actionMessage = "No tienes permisos para ejecutar esta acción.",
     entity,
-    permissionModel = null,
-    userPermissionModel = null,
   } = options;
 
   return async function permissionMiddleware(req, res, next) {
@@ -24,24 +23,17 @@ export default (permissionName, options = {}) => {
         return res.status(401).json({ message: "No autenticado." });
       }
 
-      const effectivePermissionModel = permissionModel || req.app?.locals?.permissionModel || null;
-      const effectiveUserPermissionModel = userPermissionModel || req.app?.locals?.userPermissionModel || null;
-
-      if (!effectivePermissionModel || !effectiveUserPermissionModel) {
-        return res.status(500).json({ message: "Configuración de permisos no disponible." });
-      }
-
       const permissionReference = parsePermissionReference(permissionName, entity);
       const permissionFilter = permissionReference.entity
         ? permissionReference
         : { name: permissionReference.name };
-      const permissionDoc = await effectivePermissionModel.getOne(permissionFilter);
+      const permissionDoc = await PermissionModel.getOne(permissionFilter);
 
       if (!permissionDoc) {
         return res.status(403).json({ message: `El permiso '${permissionName}' no existe.` });
       }
 
-      const assignment = await effectiveUserPermissionModel.getOne({
+      const assignment = await UserPermissionModel.getOne({
         user: userId,
         permission: permissionDoc._id,
       });

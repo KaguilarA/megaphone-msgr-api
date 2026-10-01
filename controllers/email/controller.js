@@ -9,10 +9,10 @@ export default function ({ id, model, stateModel }) {
   async function getActiveState() {
     if (!stateModel) return undefined;
 
-    return await stateModel.getOne({ name: "active", entity: "Email" })
+    return await stateModel.getOne({ name: "Activo", entity: "Email" })
       || await stateModel.save({
-        name: "active",
-        description: "Email is active.",
+        name: "Activo",
+        description: "El email está activo.",
         entity: "Email",
       });
   }
