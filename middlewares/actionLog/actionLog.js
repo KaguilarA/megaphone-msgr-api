@@ -1,6 +1,14 @@
 import { parsePermissionReference } from "../permission/permissionKey.js";
 import { ActionLogModel, PermissionModel } from "./../../models/models.js";
 
+export function redactAuditMetadata(value) {
+  if (Array.isArray(value)) return value.map(redactAuditMetadata);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
+    /password|token|secret|authorization|cookie/i.test(key) ? "[REDACTED]" : redactAuditMetadata(item),
+  ]));
+}
+
 /**
  * Create middleware that records a completed response against a permission.
  * The permission is read from `req.permission` when validation already ran;
@@ -45,8 +53,11 @@ export default ({
     const originalJson = res.json.bind(res);
     const originalSend = res.send.bind(res);
     const originalEnd = res.end.bind(res);
+    let recorded = false;
 
     const recordLog = async (statusCode) => {
+      if (recorded) return;
+      recorded = true;
       try {
         if (!userId) return;
 
@@ -69,12 +80,12 @@ export default ({
           permission: permissionId,
           action: resolveActionName(),
           metadata: {
-            ...resolveMetadata(),
+            ...redactAuditMetadata(resolveMetadata()),
             statusCode,
           },
         });
       } catch (error) {
-        console.error("Error registrando action log:", error);
+        console.error("Error registrando action log:", error.name);
       }
     };
 

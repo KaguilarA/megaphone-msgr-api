@@ -19,6 +19,8 @@ export default (data) => {
     registerForUser,
     updateDataById,
     deleteDataById,
+    configureSmtp,
+    sendToContacts,
   } = EmailController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
@@ -27,6 +29,17 @@ export default (data) => {
   };
 
   router.use(OwlIsAuth);
+  router.post(
+    "/smtp",
+    routePermission(data, data.actions.update),
+    configureSmtp,
+  );
+  router.post(
+    "/send",
+    routePermission(data, data.actions.postUser),
+    actionLogMiddleware(auditDependencies, data.actions.postUser),
+    sendToContacts,
+  );
   router.post(
     "/",
     routePermission(data, data.actions.postUser),

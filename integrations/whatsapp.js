@@ -94,12 +94,15 @@ export async function sendWhatsAppMessage(
 
   if (!response.ok) {
     const providerMessage = responseBody?.error?.message;
-    throw new Error(
+    throw Object.assign(new Error(
       providerMessage
         ? `WhatsApp provider rejected the message: ${providerMessage}`
         : `WhatsApp provider request failed (HTTP ${response.status}).`,
-    );
+    ), { providerRejected: response.status >= 400 && response.status < 500 });
   }
 
+  if (typeof responseBody?.messages?.[0]?.id !== "string" || !responseBody.messages[0].id) {
+    throw new Error("WhatsApp provider did not confirm acceptance with a message ID.");
+  }
   return responseBody;
 }

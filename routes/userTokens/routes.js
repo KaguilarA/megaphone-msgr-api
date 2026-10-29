@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { OwlController, OwlIsAuth } from "owl-expressjs-utils";
+import { OwlIsAuth } from "owl-expressjs-utils";
 import ActionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import routePermission from "../../middlewares/permission/routePermission.js";
+import UserTokenController from "../../controllers/userTokens/controller.js";
 
 /**
  * Create the authenticated user-token CRUD router.
@@ -10,7 +11,7 @@ import routePermission from "../../middlewares/permission/routePermission.js";
  */
 export default (data) => {
   const router = Router();
-  const controller = OwlController(data);
+  const userTokenController = UserTokenController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
@@ -18,28 +19,38 @@ export default (data) => {
   };
 
   router.use(OwlIsAuth);
+  router.get(
+    "/phone/:phoneId",
+    routePermission(data, data.actions.getById),
+    userTokenController.getForPhone,
+  );
+  router.post(
+    "/phone/:phoneId/telegram",
+    routePermission(data, data.actions.post),
+    userTokenController.saveTelegram,
+  );
   router.post(
     "/",
     routePermission(data, data.actions.post),
     ActionLogMiddleware(auditDependencies, data.actions.post),
-    controller.register,
+    userTokenController.saveWhatsApp,
   );
   router.get(
     "/:id",
     routePermission(data, data.actions.getById),
-    controller.getById,
+    userTokenController.getById,
   );
   router.put(
     "/:id",
     routePermission(data, data.actions.update),
     ActionLogMiddleware(auditDependencies, data.actions.update),
-    controller.update,
+    userTokenController.update,
   );
   router.delete(
     "/:id",
     routePermission(data, data.actions.delete),
     ActionLogMiddleware(auditDependencies, data.actions.delete),
-    controller.delete,
+    userTokenController.delete,
   );
 
   return router;

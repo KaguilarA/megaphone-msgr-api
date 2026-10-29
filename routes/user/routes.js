@@ -32,6 +32,7 @@ export default (data) => {
   router.post(
     "/",
     requirePermission(data.actions.post, {
+      ...auditDependencies,
       permissionModel: data.permissionModel,
       userPermissionModel: data.userPermissionModel,
       action: data.actions.post,
