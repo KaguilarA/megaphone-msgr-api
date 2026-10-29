@@ -56,9 +56,15 @@ const model = {
 };
 
 const name = "Token";
+const schema = new Schema(model);
+schema.index({ owner: 1, phone: 1 }, {
+  unique: true,
+  partialFilterExpression: { phone: { $type: "objectId" } },
+  name: "unique_owner_phone_token",
+});
 
 /**
  * Schema data for provider credentials owned by a user.
  * `encryptedFields` identifies token values that the OwlModel factory encrypts at persistence time.
  */
-export default { encryptedFields, model, name };
+export default { encryptedFields, model, name, schema };

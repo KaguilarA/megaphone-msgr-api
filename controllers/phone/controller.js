@@ -1,184 +1,82 @@
-/**
- * Create a PhoneController from the configured dependency models.
- * @param {Object} config Controller configuration.
- * @param {string} config.id Controller identifier.
- * @param {import('owl-expressjs-utils').OwlModel} config.model Phone-number data-access model.
- * @param {import('owl-expressjs-utils').OwlModel} config.stateModel State data-access model.
- * @returns {PhoneController} Configured phone controller.
- */
-export default function ({ id, model, stateModel }) {
-  async function getActiveState() {
-    if (!stateModel) return undefined;
+import { normalizePhoneNumber, phoneError } from "../../utils/phoneNumber.js";
 
-    return (
-      (await stateModel.getOne({ name: "active", entity: "Phone" })) ||
-      (await stateModel.save({
-        name: "active",
-        description: "Phone number is active.",
-        entity: "Phone",
-      }))
-    );
+/** Phone ownership is always resolved from the session or an owned contact. */
+export default function ({ model, stateModel, contactModel, tokenModel }) {
+  const fail = (message, status) => { throw Object.assign(new Error(message), { status }); };
+  function userId(req) {
+    return req.session?.userId || fail("Debes iniciar sesión.", 401);
   }
-
-  /**
-   * Delete a phone number by its ID.
-   * @param {import('express').Request} req Express request containing the phone-number ID.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends a success response or an error response.
-   */
-  const deleteDataById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      await model.delete(id);
-      res.status(204).end();
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  async function ownedContact(req, id) {
+    const owner = userId(req);
+    const contact = await contactModel.getById(id);
+    if (!contact || String(contact.owner?._id || contact.owner) !== String(owner)) {
+      fail("Contacto no encontrado.", 404);
     }
-  };
-
-  /**
-   * Return a specific phone number by its ID.
-   * @param {import('express').Request} req Express request containing the phone-number ID.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the matching phone number or an error response.
-   */
-  const getDataById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const data = await model.getById(id);
-      if (!data) {
-        return res.status(404).json({ message: "Phone number not found." });
-      }
-
-      res.status(200).json(data);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+  }
+  async function ownedPhone(req) {
+    const owner = userId(req);
+    const phone = await model.getById(req.params.id);
+    if (!phone) fail("Teléfono no encontrado.", 404);
+    if (phone.ownerType === "Contact") await ownedContact(req, phone.owner);
+    else if (phone.ownerType !== "User" || String(phone.owner?._id || phone.owner) !== String(owner)) {
+      fail("Teléfono no encontrado.", 404);
     }
+    return phone;
+  }
+  const handle = (fn) => async (req, res) => {
+    try { return await fn(req, res); } catch (error) { return phoneError(res, error); }
   };
-
-  /**
-   * Return all phone numbers owned by a specific contact.
-   * @param {import('express').Request} req Express request containing the contact ID.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the matching phone numbers or an error response.
-   */
-  const getDataForContact = async (req, res) => {
-    try {
-      const owner = req.params.id;
-      const data = await model.getByCoincidence({
-        ownerType: "Contact",
-        owner,
-      });
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  /**
-   * Return all phone numbers owned by the authenticated user.
-   * @param {import('express').Request} req Express request containing the user session.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the matching phone numbers or an error response.
-   */
-  const getDataForUser = async (req, res) => {
-    try {
-      const owner = req.session.userId;
-      const data = await model.getByCoincidence({
-        ownerType: "User",
-        owner,
-      });
-      res.json(data);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  /**
-   * Create a phone number for a specific contact.
-   * @param {import('express').Request} req Express request containing phone number data and the contact ID.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the created phone number or an error response.
-   */
-  const registerForContact = async (req, res) => {
-    try {
-      const owner = req.params.id;
-      const activeState = await getActiveState();
-
-      const newData = await model.save({
-        ...req.body,
-        ownerType: "Contact",
-        owner,
-        ...(activeState ? { state: [activeState._id] } : {}),
-      });
-      res.status(201).json(newData);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  /**
-   * Create a phone number for the authenticated user.
-   * @param {import('express').Request} req Express request containing phone number data and the user session.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the created phone number or an error response.
-   */
-  const registerForUser = async (req, res) => {
-    try {
-      const owner = req.session.userId;
-      if (typeof model.getByCoincidence === "function") {
-        const existing = await model.getByCoincidence({
-          owner,
-          ownerType: "User",
-          phone: req.body.phone,
-          countryNumber: req.body.countryNumber,
-        });
-        if (existing?.length) {
-          return res.status(409).json({ message: "This phone number is already registered." });
-        }
-      }
-      const activeState = await getActiveState();
-
-      const newData = await model.save({
-        ...req.body,
-        ownerType: "User",
-        owner,
-        ...(activeState ? { state: [activeState._id] } : {}),
-      });
-      res.status(201).json(newData);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
-  /**
-   * Update a phone number by its ID.
-   * @param {import('express').Request} req Express request containing the phone number ID and updated data.
-   * @param {import('express').Response} res Express response.
-   * @returns {Promise<void>} Sends the updated phone number or an error response.
-   */
-  const updateDataById = async (req, res) => {
-    try {
-      const id = req.params.id;
-      const updated = await model.update(id, req.body);
-      if (!updated) {
-        return res.status(404).json({ message: "Phone number not found." });
-      }
-      res.status(200).json(updated);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  };
-
+  async function assertUnique(owner, ownerType, data, id) {
+    const matches = await model.getByCoincidence({ owner, ownerType });
+    if (matches.some((phone) => {
+      if (String(phone._id) === String(id)) return false;
+      try { return normalizePhoneNumber(phone).e164 === data.e164; } catch { return false; }
+    })) fail("Este número ya está registrado para este propietario.", 409);
+  }
+  const register = (ownerType) => handle(async (req, res) => {
+    const owner = ownerType === "User" ? userId(req) : req.params.id;
+    if (ownerType === "Contact") await ownedContact(req, owner);
+    const data = normalizePhoneNumber(req.body);
+    await assertUnique(owner, ownerType, data);
+    const state = stateModel && (await stateModel.getOne({ name: "active", entity: "Phone" }) ||
+      await stateModel.save({ name: "active", entity: "Phone", description: "Phone number is active." }));
+    const saved = await model.save({ ...data, owner, ownerType, ...(state ? { state: [state._id] } : {}) });
+    return res.status(201).json(saved);
+  });
+  const registerForUser = register("User");
+  const registerForContact = register("Contact");
+  const getDataForContact = handle(async (req, res) => {
+    await ownedContact(req, req.params.id);
+    return res.json(await model.getByCoincidence({ owner: req.params.id, ownerType: "Contact" }));
+  });
   return {
-    deleteDataById,
-    getDataById,
-    getDataForContact,
-    getDataForUser,
-    registerForContact,
     registerForUser,
-    updateDataById,
-    getContactPhoneNumber: getDataForContact,
+    registerForContact,
     registerUserPhoneNumber: registerForUser,
+    getContactPhoneNumber: getDataForContact,
+    getDataForContact,
+    getDataForUser: handle(async (req, res) => res.json(await model.getByCoincidence({ owner: userId(req), ownerType: "User" }))),
+    getDataById: handle(async (req, res) => res.json(await ownedPhone(req))),
+    updateDataById: handle(async (req, res) => {
+      const phone = await ownedPhone(req);
+      const data = normalizePhoneNumber({ phone: req.body.phone ?? phone.phone, countryNumber: req.body.countryNumber ?? phone.countryNumber });
+      await assertUnique(phone.owner, phone.ownerType, data, phone._id);
+      const identityChanged = normalizePhoneNumber(phone).e164 !== data.e164;
+      const configured = phone.tokens?.whatsapp || phone.tokens?.telegram ||
+        (identityChanged && phone.ownerType === "User" && tokenModel && await tokenModel.getOne({ owner: userId(req), phone: phone._id }));
+      if (phone.ownerType === "User" && configured && identityChanged) {
+        fail("Agrega otro número y configura sus credenciales antes de reemplazar este teléfono.", 409);
+      }
+      return res.json(await model.update(phone._id, data, { runValidators: true }));
+    }),
+    deleteDataById: handle(async (req, res) => {
+      const phone = await ownedPhone(req);
+      if (phone.ownerType === "User" && tokenModel) {
+        const tokens = await tokenModel.getByCoincidence({ owner: userId(req), phone: phone._id });
+        for (const token of tokens) await tokenModel.delete(token._id);
+      }
+      await model.delete(phone._id);
+      return res.status(204).end();
+    }),
   };
 }

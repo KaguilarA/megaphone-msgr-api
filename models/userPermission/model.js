@@ -18,9 +18,11 @@ const model = {
 };
 
 const name = "UserPermission";
+const schema = new Schema(model);
+schema.index({ user: 1, permission: 1 }, { unique: true, name: "unique_user_permission" });
 
 /**
  * Schema data for one assignment between a user and a permission.
  * Authorization middleware uses both references when resolving permissions.
  */
-export default { model, name };
+export default { model, name, schema };

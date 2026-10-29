@@ -8,6 +8,7 @@ export default function ({
   permissionModel,
   userPermissionModel,
   populatedFields,
+  createUser,
 }) {
   const userModel = configuredUserModel || model;
   const entityName = entityId || id || "User";
@@ -158,55 +159,16 @@ export default function ({
    */
   async function register(req, res) {
     try {
-      const { email, ...userData } = req.body;
-      if (emailModel && (!email || !String(email).trim())) {
-        return res.status(400).json({ message: "User email is required." });
-      }
-
-      const newUser = await userModel.save(userData);
-
-      if (emailModel) {
-        const activeState = stateModel
-          ? await stateModel.getOne({ name: "active", entity: "Email" })
-            || await stateModel.save({ name: "active", description: "Email is active.", entity: "Email" })
-          : undefined;
-        await emailModel.save({
-          email: String(email).trim().toLowerCase(),
-          owner: newUser._id,
-          ownerType: "User",
-          ...(activeState?._id ? { state: activeState._id } : {}),
-        });
-      }
-
-      if (permissionModel && userPermissionModel) {
-        const allPermissions = await permissionModel.getAll();
-        const permissions = (
-          Array.isArray(allPermissions) ? allPermissions : []
-        ).filter(({ entity, name }) =>
-          entity ? entity !== "User" : !/^user:/.test(name),
-        );
-
-        if (permissions.length > 0) {
-          await Promise.all(
-            permissions.map(({ _id }) =>
-              userPermissionModel.save({
-                user: newUser._id,
-                permission: _id,
-              }),
-            ),
-          );
-        }
-      }
-
-      res.status(201).json(newUser);
+      if (!createUser) throw new Error("Account creation service is not configured.");
+      const user = await createUser(req.body);
+      return res.status(201).json(user);
     } catch (error) {
-      res.status(400).json({
-        message: `${entityName} register error.`,
-        error: error.message,
+      return res.status(error.code === 11000 ? 409 : error.status || 500).json({
+        message: error.code === 11000 ? "Ya existe un usuario con este correo." :
+          error.status ? error.message : "No se pudo crear el usuario. Comprueba la instalación inicial del servidor.",
       });
     }
-  };
-
+  }
   /**
    * Update the authenticated user's own account.
    * @param {import('express').Request} req - Express request containing the user session and updated data.
@@ -215,7 +177,12 @@ export default function ({
    */
   const update = async (req, res) => {
     try {
-      const updatedData = await userModel.update(req.session.userId, req.body, {
+      const updates = Object.fromEntries(["name", "lastName", "password"].filter((key) => key in req.body).map((key) => [key, req.body[key]]));
+      if (updates.password !== undefined && (typeof updates.password !== "string" || updates.password.length < 12 || Buffer.byteLength(updates.password, "utf8") > 72 || updates.password !== updates.password.trim())) {
+        return res.status(400).json({ message: "Usa una contraseña de al menos 12 caracteres y hasta 72 bytes, sin espacios al inicio o al final." });
+      }
+      const updatedData = await userModel.update(req.session.userId, updates, {
+        runValidators: true,
         populate: populatedFields,
       });
 

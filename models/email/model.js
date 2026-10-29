@@ -15,6 +15,31 @@ const model = {
       "El formato del correo electrónico no es válido.",
     ],
   },
+  smtpHost: {
+    type: String,
+    trim: true,
+  },
+  smtpPort: {
+    type: Number,
+    min: 1,
+    max: 65535,
+  },
+  smtpUser: {
+    type: String,
+    trim: true,
+  },
+  smtpPassword: {
+    type: String,
+    trim: true,
+  },
+  smtpSecure: {
+    type: Boolean,
+    default: false,
+  },
+  smtpFromName: {
+    type: String,
+    trim: true,
+  },
   owner: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -34,10 +59,13 @@ const model = {
 };
 
 const name = "Email"
+const schema = new Schema(model);
+schema.index({ email: 1 }, { unique: true, partialFilterExpression: { ownerType: "User" }, name: "unique_user_email" });
+const encryptedFields = ["smtpPassword"];
 
 /**
  * Schema data for a normalized email owned by a user or contact.
  * The schema validates format and lowercases the value but does not enforce uniqueness.
  */
-export default { model, name };
+export default { encryptedFields, model, name, schema };
 

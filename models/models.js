@@ -14,6 +14,7 @@ import PhoneNumberData from "./phone/model.js";
 import TokenData from "./tokens/model.js";
 import UserData from "./user/model.js";
 import UserPermissionData from "./userPermission/model.js";
+import InstallationData from "./installation/model.js";
 
 if (!EncryptionKey) {
   throw new Error("ENCRYPTION_KEY must be configured before creating models.");
@@ -36,23 +37,27 @@ export const StateModel = OwlState(StateSupported);
 export const ActionLogModel = OwlModel(ActionLogData.name, ActionLogData.model);
 export const AddressModel = OwlModel(AddressData.name, AddressData.model);
 export const ContactModel = OwlModel(ContactData.name, ContactData.model);
-export const EmailModel = OwlModel(EmailData.name, EmailData.model);
-export const MessageModel = OwlModel(MessageData.name, MessageData.model);
+export const EmailModel = OwlModel(
+  EmailData.name,
+  EmailData.schema,
+  EmailData.encryptedFields,
+);
+export const MessageModel = OwlModel(MessageData.name, MessageData.schema);
 export const MessageReceptorModel = OwlModel(
   MessageReceptorData.name,
   MessageReceptorData.model,
 );
 export const PermissionModel = OwlModel(
   PermissionData.name,
-  PermissionData.model,
+  PermissionData.schema,
 );
 export const PhoneNumberModel = OwlModel(
   PhoneNumberData.name,
-  PhoneNumberData.model,
+  PhoneNumberData.schema,
 );
 export const TokenModel = OwlModel(
   TokenData.name,
-  TokenData.model,
+  TokenData.schema,
   TokenData.encryptedFields,
 );
 export const UserModel = OwlModel(
@@ -63,5 +68,6 @@ export const UserModel = OwlModel(
 );
 export const UserPermissionModel = OwlModel(
   UserPermissionData.name,
-  UserPermissionData.model,
+  UserPermissionData.schema,
 );
+export const InstallationModel = OwlModel(InstallationData.name, InstallationData.model);

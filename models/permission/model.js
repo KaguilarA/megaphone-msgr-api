@@ -1,3 +1,5 @@
+import { Schema } from "mongoose";
+
 const model = {
   name: {
     type: String,
@@ -19,9 +21,11 @@ const model = {
 };
 
 const name = "Permission";
+const schema = new Schema(model);
+schema.index({ entity: 1, name: 1 }, { unique: true, name: "unique_permission" });
 
 /**
  * Schema data for a named permission and the entity it protects.
  * Permission assignment and request authorization are handled outside the model.
  */
-export default { model, name }
+export default { model, name, schema }

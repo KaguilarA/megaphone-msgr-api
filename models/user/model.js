@@ -20,6 +20,7 @@ const model = {
     type: Schema.Types.ObjectId,
     ref: "State",
   },
+  onboardingCompletedAt: { type: Date },
 };
 
 const name = "User";
