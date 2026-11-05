@@ -9,6 +9,7 @@ test('delete removes receptor rows and the message itself', async () => {
   const controller = MessageController({
     id: 'Message',
     model: {
+      getById: async () => ({ sender: 'user-1' }),
       delete: async (messageId) => {
         deleted.push(messageId);
         return { _id: messageId };
@@ -26,7 +27,7 @@ test('delete removes receptor rows and the message itself', async () => {
     },
   });
 
-  const req = { params: { id: '665f1a2b3c4d5e6f70819504' } };
+  const req = { session: { userId: 'user-1' }, params: { id: '665f1a2b3c4d5e6f70819504' } };
   const res = {
     status(code) {
       this.statusCode = code;
@@ -55,6 +56,7 @@ test('getById returns the message and its receptors', async () => {
     id: 'Message',
     model: {
       getById: async () => ({
+        sender: 'user-1',
         toJSON: () => ({ _id: '665f1a2b3c4d5e6f70819505', content: 'Confirmacion recibida' }),
       }),
     },
@@ -64,7 +66,7 @@ test('getById returns the message and its receptors', async () => {
     populatedFields: ['sender'],
   });
 
-  const req = { params: { id: '665f1a2b3c4d5e6f70819505' } };
+  const req = { session: { userId: 'user-1' }, params: { id: '665f1a2b3c4d5e6f70819505' } };
   const res = {
     status(code) {
       this.statusCode = code;

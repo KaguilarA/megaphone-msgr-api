@@ -1,4 +1,6 @@
 import express from "express";
+import mongoose from "mongoose";
+import { deploymentInfo } from "../utils/deployment.js";
 import { OwlCors, OwlMongoClose } from "owl-expressjs-utils";
 
 export default function (allowUrls, port) {
@@ -9,7 +11,13 @@ export default function (allowUrls, port) {
   app.use(OwlCors(allowUrls));
   app.use("/webhooks/whatsapp", express.raw({ type: "application/json", limit: "1mb" }));
   app.use(express.json({ limit: "1mb" }));
-  app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
+  app.get("/deployment.json", (_req, res) => {
+    res.set("Cache-Control", "no-store").json(deploymentInfo());
+  });
+  app.get("/health", (_req, res) => {
+    const ready = mongoose.connection.readyState === 1;
+    return res.status(ready ? 200 : 503).json({ status: ready ? "ok" : "unavailable" });
+  });
 
   const server = app.listen(port, () => {
     console.log(

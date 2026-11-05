@@ -27,8 +27,10 @@ This documentation describes version 1.0.0.
 
 ## Installation
 
+For an empty database, follow [the first-install guide](docs/first-install.md). After configuring `.env`, run `npm run setup` with the API stopped to create the initial administrator, states, permissions and unique indexes. MongoDB must support transactions. There is no public administrator-registration page. The first login opens the account configuration wizard; WhatsApp and SMTP can be configured later.
+
 ```bash
-npm install
+npm ci
 ```
 
 Create a `.env` file in the project root and populate the required values. Generate a
@@ -152,7 +154,7 @@ configured for state registration; other features can opt in through their route
 | `/user` | Registration and user profile | Registration public; profile authenticated |
 | `/contact` | User-owned contacts | Authenticated |
 | `/address` | User and contact addresses | Authenticated |
-| `/email` | User and contact emails | Root registration public; remaining routes authenticated |
+| `/email` | User/contact addresses, SMTP setup, and outbound email | Authenticated |
 | `/phone-number` | User and contact phone numbers | Root registration public; remaining routes authenticated |
 | `/message` | Messages and recipient relationships | Authenticated |
 | `/state` | State definitions | Authenticated plus state permissions |
@@ -162,6 +164,13 @@ configured for state registration; other features can opt in through their route
 
 See the complete endpoint tables in [routes/readme.md](routes/readme.md) and each feature's
 route README.
+
+Configure Nodemailer for the authenticated user's sender address with `POST /email/smtp`
+(`smtpHost`, `smtpPort`, `smtpUser`, `smtpPassword`, `smtpSecure`, optional `smtpFromName`).
+The password is encrypted in the Email model and never returned by API reads. Send to owned
+contacts with `POST /email/send` using `{ "contactIds": [], "subject": "...", "text": "..." }`;
+recipients are delivered as BCC. Each user's Phone document also stores references to its
+encrypted WhatsApp and Telegram token records at `tokens.whatsapp` and `tokens.telegram`.
 
 ## Project structure
 
@@ -211,9 +220,9 @@ not replace a full end-to-end persistence test against MongoDB.
 - `MessageReceptor` is an internal model and has no standalone route.
 - State compatibility with the entity that references it is not enforced by the schema.
 - Provider credentials are encrypted, but provider validation and token refresh are outside the API.
-- Run `npm audit --omit=dev` before deployment. The current dependency tree includes
-  high-severity advisories in the Mongoose version nested under `owl-expressjs-utils`; that
-  dependency needs an upstream update or a verified compatible override before production.
+- Run `npm audit --omit=dev` before deployment. The lockfile pins patched
+  dependencies, and the Mongoose override keeps `owl-expressjs-utils` on the same patched
+  Mongoose 8 release as the application. Use `npm ci` for reproducible deployments.
 
 ## Documentation map
 
@@ -224,6 +233,7 @@ not replace a full end-to-end persistence test against MongoDB.
 - [Startup utilities](utils/readme.md)
 - [Configuration](consts/readme.md)
 - [Environment template](.env.example)
+- [Multiple phone numbers: migration, delivery states and deployment](docs/phone-numbers-rollout.md)
 
 ## License
 

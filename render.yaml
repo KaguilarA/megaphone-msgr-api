@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: megaphone-api
+    runtime: node
+    repo: https://github.com/KaguilarA/megaphone-msgr-api
+    branch: production
+    plan: free
+    buildCommand: npm ci --omit=dev --ignore-scripts
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: CLUSTER_ENABLED
+        value: "false"
+      - key: FRONTEND_URL
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: ENCRYPTION_ALGORITHM
+        value: aes-256-gcm

@@ -98,3 +98,15 @@ test("requires HTTPS for the Meta API base URL", async () => {
     /must be an HTTPS URL/,
   );
 });
+
+test('rejects an HTTP success without a provider message ID', async () => {
+  await assert.rejects(sendWhatsAppMessage('+14155552671', 'Hello!', tokenRecord, {
+    fetchImpl: async () => ({ ok: true, json: async () => ({}) }),
+  }), /did not confirm acceptance/);
+});
+
+test('treats server failures as uncertain rather than a confirmed rejection', async () => {
+  await assert.rejects(sendWhatsAppMessage('+14155552671', 'Hello!', tokenRecord, {
+    fetchImpl: async () => ({ ok: false, status: 503, json: async () => ({ error: { message: 'Unavailable' } }) }),
+  }), (error) => error.providerRejected === false);
+});

@@ -89,6 +89,8 @@ test('register sends through the selected phone token and stores its reference',
         savedMessage = data;
         return { ...data, _id: '665f1a2b3c4d5e6f70819502', toJSON: () => ({ ...data, _id: '665f1a2b3c4d5e6f70819502' }) };
       },
+      getOne: async () => null,
+      update: async (_id, data) => data,
     },
     receptorModel: {
       save: async (data) => data,
@@ -98,7 +100,7 @@ test('register sends through the selected phone token and stores its reference',
       getByCoincidence: async () => [{ phone: '5550001', countryNumber: '+52' }],
     },
     tokenModel: {
-      getOne: async (query) => ({ whatsappToken: 'token', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', phone: query.phone }),
+      getOne: async (query) => ({ owner: user._id, whatsappToken: 'token', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', phone: query.phone }),
     },
     contactModel: {
       getById: async () => ({ _id: contactId, owner: user._id }),
@@ -108,7 +110,7 @@ test('register sends through the selected phone token and stores its reference',
   const res = createRes();
 
   await controller.register({
-    body: { header: 'Aviso', content: 'Hola', contacts: [contactId], sourcePhoneId },
+    body: { header: 'Aviso', content: 'Hola', contacts: [contactId], sourcePhoneId, requestId: 'd06b1e8b-93df-44c0-b3f8-8b3a40d7aad5' },
     session: { userId: user._id },
   }, res);
 

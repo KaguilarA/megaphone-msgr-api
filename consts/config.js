@@ -13,6 +13,7 @@ import {
   TokenModel,
   UserModel,
   UserPermissionModel,
+  InstallationModel,
 } from "../models/models.js";
 
 import AddressRouter from "../routes/address/routes.js";
@@ -28,6 +29,9 @@ import UserPermissionRouter from "../routes/userPermission/routes.js";
 import PermissionRouter from "../routes/permission/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
+import { sendEmail } from "../integrations/email.js";
+import { createOperator } from "../setup/accounts.js";
+import SetupRouter from "../routes/setup/routes.js";
 import { uploadMediaBuffer } from "../integrations/cloudinary.js";
 import { compressImageBuffer } from "../integrations/tinypng.js";
 import {
@@ -36,9 +40,25 @@ import {
   CloudinaryCloudName,
   CloudinaryFolder,
   TinyPngApiKey,
+  WhatsAppAppSecret,
+  WhatsAppWebhookVerifyToken,
 } from "./index.js";
 
 export default [
+  {
+    url: "/setup",
+    config: {
+      id: "User", userModel: UserModel, emailModel: EmailModel, phoneModel: PhoneNumberModel,
+      tokenModel: TokenModel, contactModel: ContactModel, messageModel: MessageModel,
+      installationModel: InstallationModel, permissionModel: PermissionModel, userPermissionModel: UserPermissionModel,
+      actions: { getStatus: "getInfo", complete: "getInfo" },
+      serverFeatures: {
+        mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
+        webhookConfigured: Boolean(WhatsAppAppSecret && WhatsAppWebhookVerifyToken),
+      },
+    },
+    router: SetupRouter,
+  },
   {
     url: "/action-log",
     config: {
@@ -164,6 +184,7 @@ export default [
       model: EmailModel,
       contactModel: ContactModel,
       stateModel: StateModel,
+      sendEmail,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,
@@ -185,6 +206,7 @@ export default [
       id: "Phone Number",
       model: PhoneNumberModel,
       contactModel: ContactModel,
+      tokenModel: TokenModel,
       stateModel: StateModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
@@ -222,6 +244,7 @@ export default [
     config: {
       id: "User",
       userModel: UserModel,
+      createUser: createOperator,
       emailModel: EmailModel,
       stateModel: StateModel,
       permissionModel: PermissionModel,
@@ -268,6 +291,7 @@ export default [
     config: {
       id: "Token",
       model: TokenModel,
+      phoneModel: PhoneNumberModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,

@@ -70,3 +70,67 @@ test('getContactEmail filters emails by contact owner', async () => {
   assert.deepEqual(filter, { owner: '665f1a2b3c4d5e6f708192c1', ownerType: 'Contact' });
   assert.deepEqual(res.body, [{ _id: '665f1a2b3c4d5e6f70819402', owner: '665f1a2b3c4d5e6f708192c1' }]);
 });
+
+test('configureSmtp stores SMTP settings without returning the password', async () => {
+  let updated;
+  const controller = EmailController({
+    model: {
+      getOne: async () => ({ _id: 'email-1', email: 'sender@example.com' }),
+      update: async (_id, data) => { updated = data; return { _id: 'email-1', email: 'sender@example.com', ...data }; },
+    },
+  });
+  const res = createRes();
+
+  await controller.configureSmtp({
+    session: { userId: user._id },
+    body: { smtpHost: 'smtp.example.com', smtpPort: '587', smtpUser: 'sender@example.com', smtpPassword: 'mail-secret', smtpSecure: false },
+  }, res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(updated.smtpPort, 587);
+  assert.equal(updated.smtpPassword, 'mail-secret');
+  assert.equal(res.body.hasSmtpPassword, true);
+  assert.equal(Object.hasOwn(res.body, 'smtpPassword'), false);
+});
+
+test('sendToContacts delivers to owned contact addresses as BCC', async () => {
+  let delivery;
+  const sender = { email: 'sender@example.com', smtpHost: 'smtp.example.com', smtpPassword: 'mail-secret' };
+  const contactId = '665f1a2b3c4d5e6f708192c1';
+  const controller = EmailController({
+    model: {
+      getOne: async () => sender,
+      getByCoincidence: async () => [{ email: 'recipient@example.com' }],
+    },
+    contactModel: { getById: async () => ({ _id: contactId, owner: user._id }) },
+    sendEmail: async (config, message) => { delivery = { config, message }; return { messageId: 'mail-1' }; },
+  });
+  const res = createRes();
+
+  await controller.sendToContacts({
+    session: { userId: user._id },
+    body: { contactIds: [contactId], subject: 'Aviso', text: 'Contenido' },
+  }, res);
+
+  assert.equal(res.statusCode, 202);
+  assert.equal(delivery.config, sender);
+  assert.deepEqual(delivery.message.bcc, ['recipient@example.com']);
+  assert.equal(delivery.message.to, sender.email);
+  assert.deepEqual(res.body, { accepted: 1, messageId: 'mail-1' });
+});
+
+test('sendToContacts rejects contacts owned by another user', async () => {
+  const controller = EmailController({
+    model: { getOne: async () => ({ email: 'sender@example.com', smtpHost: 'smtp.example.com', smtpPassword: 'secret' }) },
+    contactModel: { getById: async () => ({ owner: 'another-user' }) },
+    sendEmail: async () => assert.fail('Email must not be sent'),
+  });
+  const res = createRes();
+
+  await controller.sendToContacts({
+    session: { userId: user._id },
+    body: { contactIds: ['contact-1'], subject: 'Aviso', text: 'Contenido' },
+  }, res);
+
+  assert.equal(res.statusCode, 403);
+});

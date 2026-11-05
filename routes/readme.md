@@ -37,10 +37,10 @@ The application mounts the generated router under its configured prefix.
 | `/countries` | Country and calling-code catalog | Public | Custom `CountriesController` |
 | `/email` | User and contact emails | Root registration public; remaining routes authenticated | Custom `EmailController` |
 | `/message` | Messages and recipient links | All routes authenticated | Custom `MessageController` |
-| `/phone-number` | User and contact phone numbers | Root registration public; remaining routes authenticated | Custom `PhoneController` |
+| `/phone-number` | User and contact phone numbers | Authenticated and owner-scoped | Custom `PhoneController` |
 | `/state` | State definitions | Authentication plus `state:getList`/`state:register` checks | Generic `OwlController` |
-| `/user` | Registration and account profile | Registration public; profile routes authenticated | Custom user controller |
-| `/tokens` | Provider credentials | All routes authenticated | Generic `OwlController` |
+| `/user` | Registration and account profile | Authenticated; creation requires `User:register` | Custom user controller |
+| `/tokens` | Provider credentials by phone | Authenticated and owner-scoped | Custom `UserTokenController` |
 | `/permission` | Permission definitions | Authentication plus permission checks | Generic `OwlController` |
 | `/user-permission` | User-permission assignments | Authentication plus permission checks | Generic `OwlController` |
 | `/action-log` | Audit records | All routes authenticated | Generic `OwlController` |
@@ -80,8 +80,6 @@ router.post(
 The following routes intentionally declare registration before `OwlIsAuth`:
 
 - `POST /email`
-- `POST /phone-number`
-- `POST /user`
 
 The route handler is responsible for assigning the appropriate owner and owner type. The current email and phone registration endpoints accept a request body before authentication middleware is applied.
 

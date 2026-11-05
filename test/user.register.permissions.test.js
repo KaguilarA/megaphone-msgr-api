@@ -1,52 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-
 import UserController from '../controllers/user/controller.js';
-import createdUser from './mocks/user.json' with { type: 'json' };
-import permissionDocs from './mocks/permissions.json' with { type: 'json' };
 
-test('register assigns all non-user permissions to the newly created user', async () => {
-  const model = {
-    save: async (payload) => ({ ...createdUser, ...payload }),
-  };
+const response = () => ({ statusCode: 200, status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } });
 
-  const permissionModel = {
-    getAll: async () => permissionDocs,
-  };
-
-  const savedAssignments = [];
-  const userPermissionModel = {
-    save: async (payload) => {
-      savedAssignments.push(payload);
-      return payload;
-    },
-  };
-
-  const controller = UserController({
-    entityId: 'User',
-    model,
-    permissionModel,
-    userPermissionModel,
-  });
-
-  const req = { body: { name: 'Alice' } };
-  const res = {
-    status(code) {
-      this.statusCode = code;
-      return this;
-    },
-    json(payload) {
-      this.body = payload;
-      return this;
-    },
-  };
-
-  await controller.register(req, res);
-
+test('user registration delegates to the transactional account service', async () => {
+  let input;
+  const controller = UserController({ createUser: async (data) => { input = data; return { _id: 'operator-1', name: data.name }; } });
+  const body = { name: 'Alice', lastName: 'Example', email: 'alice@example.com', password: 'Example-password-42' };
+  const res = response();
+  await controller.register({ body }, res);
   assert.equal(res.statusCode, 201);
-  assert.deepEqual(res.body, { ...createdUser, name: 'Alice' });
-  assert.deepEqual(savedAssignments, [
-    { user: createdUser._id, permission: permissionDocs[0]._id },
-    { user: createdUser._id, permission: permissionDocs[1]._id },
-  ]);
+  assert.deepEqual(input, body);
+  assert.equal(res.body._id, 'operator-1');
+});
+
+test('duplicate account errors return a conflict without exposing the database error', async () => {
+  const controller = UserController({ createUser: async () => { throw Object.assign(new Error('private database details'), { code: 11000 }); } });
+  const res = response();
+  await controller.register({ body: {} }, res);
+  assert.equal(res.statusCode, 409);
+  assert.equal(JSON.stringify(res.body).includes('private'), false);
 });

@@ -26,6 +26,7 @@ test('registerUserPhoneNumber associates the phone with the authenticated user',
   const controller = PhoneController({
     id: 'Phone Number',
     model: {
+      getByCoincidence: async () => [],
       save: async (payload) => {
         savedPhone = payload;
         return { _id: '665f1a2b3c4d5e6f70819420', ...payload };
@@ -49,6 +50,7 @@ test('registerUserPhoneNumber associates the phone with the authenticated user',
   assert.deepEqual(savedPhone, {
     phone: phonePayload.phone,
     countryNumber: phonePayload.countryNumber,
+    e164: phonePayload.countryNumber + phonePayload.phone,
     ownerType: 'User',
     owner: user._id,
     state: [activeState._id],
@@ -60,6 +62,7 @@ test('getContactPhoneNumber filters phone numbers by contact owner', async () =>
   let filter;
   const controller = PhoneController({
     id: 'Phone Number',
+    contactModel: { getById: async () => ({ owner: user._id }) },
     model: {
       getByCoincidence: async (query) => {
         filter = query;
@@ -69,7 +72,7 @@ test('getContactPhoneNumber filters phone numbers by contact owner', async () =>
   });
   const res = createRes();
 
-  await controller.getContactPhoneNumber({ params: { id: '665f1a2b3c4d5e6f708192c1' } }, res);
+  await controller.getContactPhoneNumber({ session: { userId: user._id }, params: { id: '665f1a2b3c4d5e6f708192c1' } }, res);
 
   assert.deepEqual(filter, { owner: '665f1a2b3c4d5e6f708192c1', ownerType: 'Contact' });
   assert.deepEqual(res.body, [{ _id: '665f1a2b3c4d5e6f70819403', owner: '665f1a2b3c4d5e6f708192c1' }]);
@@ -80,6 +83,7 @@ test('registerUserPhoneNumber allows a second phone for the same user', async ()
   const controller = PhoneController({
     id: 'Phone Number',
     model: {
+      getByCoincidence: async () => savedPhones,
       save: async (payload) => {
         savedPhones.push(payload);
         return { _id: `phone-${savedPhones.length}`, ...payload };

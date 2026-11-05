@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import routeConfig from "../consts/config.js";
-import permissions from "../db/megaphone-msgr-db.permissions.json" with { type: "json" };
+import { permissionCatalog as permissions } from "../setup/catalog.js";
 
 const currentFile = fileURLToPath(import.meta.url);
 const repositoryRoot = path.dirname(path.dirname(currentFile));
