@@ -1,0 +1,307 @@
+import { countries } from "country-codes-flags-phone-codes";
+
+import {
+  ActionLogModel,
+  AddressModel,
+  ContactModel,
+  EmailModel,
+  MessageModel,
+  MessageReceptorModel,
+  PermissionModel,
+  PhoneNumberModel,
+  StateModel,
+  TokenModel,
+  UserModel,
+  UserPermissionModel,
+  InstallationModel,
+} from "../models/models.js";
+
+import AddressRouter from "../routes/address/routes.js";
+import AuthRouter from "../routes/auth/routes.js";
+import ContactRouter from "../routes/contact/routes.js";
+import CountriesRouter from "../routes/countries/routes.js";
+import EmailRouter from "../routes/email/routes.js";
+import MessageRouter from "../routes/message/routes.js";
+import PhoneNumberRouter from "../routes/phone/routes.js";
+import StateRouter from "../routes/state/routes.js";
+import UserRouter from "../routes/user/routes.js";
+import UserPermissionRouter from "../routes/userPermission/routes.js";
+import PermissionRouter from "../routes/permission/routes.js";
+import UserTokensRouter from "../routes/userTokens/routes.js";
+import ActionLogRouter from "../routes/actionLog/routes.js";
+import { sendEmail } from "../integrations/email.js";
+import { createOperator } from "../setup/accounts.js";
+import SetupRouter from "../routes/setup/routes.js";
+import { uploadMediaBuffer } from "../integrations/cloudinary.js";
+import { compressImageBuffer } from "../integrations/tinypng.js";
+import {
+  CloudinaryApiKey,
+  CloudinaryApiSecret,
+  CloudinaryCloudName,
+  CloudinaryFolder,
+  TinyPngApiKey,
+  WhatsAppAppSecret,
+  WhatsAppWebhookVerifyToken,
+} from "./index.js";
+
+export default [
+  {
+    url: "/setup",
+    config: {
+      id: "User", userModel: UserModel, emailModel: EmailModel, phoneModel: PhoneNumberModel,
+      tokenModel: TokenModel, contactModel: ContactModel, messageModel: MessageModel,
+      installationModel: InstallationModel, permissionModel: PermissionModel, userPermissionModel: UserPermissionModel,
+      actions: { getStatus: "getInfo", complete: "getInfo" },
+      serverFeatures: {
+        mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
+        webhookConfigured: Boolean(WhatsAppAppSecret && WhatsAppWebhookVerifyToken),
+      },
+    },
+    router: SetupRouter,
+  },
+  {
+    url: "/action-log",
+    config: {
+      id: "ActionLog",
+      model: ActionLogModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getAll: "getAll",
+        getById: "getById",
+      },
+    },
+    router: ActionLogRouter,
+  },
+
+  {
+    url: "/address",
+    config: {
+      id: "Address",
+      model: AddressModel,
+      stateModel: StateModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getAll: "getAll",
+        getByCoincidence: "getByCoincidence",
+        post: "register",
+        getById: "getDataById",
+        getContact: "getDataForContact",
+        getUser: "getDataForUser",
+        postUser: "registerForUser",
+        postContact: "registerForContact",
+        update: "updateDataById",
+        delete: "deleteDataById",
+      },
+    },
+    router: AddressRouter,
+  },
+  {
+    url: "/auth",
+    config: {
+      id: "Auth",
+      userModel: UserModel,
+      emailModel: EmailModel,
+    },
+    router: AuthRouter,
+  },
+  {
+    url: "/contact",
+    config: {
+      id: "Contact",
+      model: ContactModel,
+      stateModel: StateModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getById: "getById",
+        getAll: "getAll",
+        post: "register",
+        update: "updateById",
+        delete: "deleteById",
+      },
+    },
+    router: ContactRouter,
+  },
+  {
+    url: "/countries",
+    config: {
+      id: "Countries",
+      model: countries,
+    },
+    router: CountriesRouter,
+  },
+  {
+    url: "/message",
+    config: {
+      id: "Message",
+      model: MessageModel,
+      receptorModel: MessageReceptorModel,
+      phoneModel: PhoneNumberModel,
+      tokenModel: TokenModel,
+      contactModel: ContactModel,
+      stateModel: StateModel,
+      mediaUploader: async (file) => {
+        const isImage = file.mimetype.startsWith("image/");
+        const buffer = isImage
+          ? await compressImageBuffer(file.buffer, TinyPngApiKey)
+          : file.buffer;
+        const result = await uploadMediaBuffer(buffer, {
+          cloudName: CloudinaryCloudName,
+          apiKey: CloudinaryApiKey,
+          apiSecret: CloudinaryApiSecret,
+          folder: CloudinaryFolder,
+        });
+
+        return {
+          type: isImage ? "image" : "video",
+          url: result.secure_url,
+          publicId: result.public_id,
+          mimeType: file.mimetype,
+          bytes: result.bytes,
+        };
+      },
+      populatedFields: ["sender", "senderPhone", "state"],
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getAll: "getAll",
+        getById: "getById",
+        post: "register",
+      },
+    },
+    router: MessageRouter,
+  },
+  {
+    url: "/email",
+    config: {
+      id: "Email",
+      model: EmailModel,
+      contactModel: ContactModel,
+      stateModel: StateModel,
+      sendEmail,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getById: "getDataById",
+        getContact: "getDataForContact",
+        getUser: "getDataForUser",
+        postContact: "registerForContact",
+        postUser: "registerForUser",
+        update: "updateDataById",
+        delete: "deleteDataById",
+      },
+    },
+    router: EmailRouter,
+  },
+  {
+    url: "/phone-number",
+    config: {
+      id: "Phone Number",
+      model: PhoneNumberModel,
+      contactModel: ContactModel,
+      tokenModel: TokenModel,
+      stateModel: StateModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getById: "getDataById",
+        getContact: "getDataForContact",
+        getUser: "getDataForUser",
+        postContact: "registerForContact",
+        postUser: "registerForUser",
+        update: "updateDataById",
+        delete: "deleteDataById",
+      },
+    },
+    router: PhoneNumberRouter,
+  },
+  {
+    url: "/state",
+    config: {
+      id: "State",
+      model: StateModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getAll: "getAll",
+        getByCoincidence: "getByCoincidence",
+        post: "register",
+      },
+    },
+    router: StateRouter,
+  },
+  {
+    url: "/user",
+    config: {
+      id: "User",
+      userModel: UserModel,
+      createUser: createOperator,
+      emailModel: EmailModel,
+      stateModel: StateModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        getAll: "getAll",
+        getById: "getById",
+        getInfo: "getInfo",
+        getPermissions: "getPermissions",
+        updatePermissions: "updatePermissions",
+        post: "register",
+        update: "update",
+      },
+    },
+    router: UserRouter,
+  },
+  {
+    url: "/user-permission",
+    config: {
+      id: "UserPermission",
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+    },
+    router: UserPermissionRouter,
+  },
+  {
+    url: "/permission",
+    config: {
+      // Reuses the User:getPermissions permission since listing the catalog
+      // is only needed while managing a user's permission assignments.
+      id: "User",
+      model: PermissionModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actions: {
+        getAll: "getPermissions",
+      },
+    },
+    router: PermissionRouter,
+  },
+  {
+    url: "/tokens",
+    config: {
+      id: "Token",
+      model: TokenModel,
+      phoneModel: PhoneNumberModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+      actions: {
+        post: "register",
+        getById: "getById",
+        update: "update",
+        delete: "delete",
+      },
+    },
+    router: UserTokensRouter,
+  },
+];

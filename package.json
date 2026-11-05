@@ -1,0 +1,49 @@
+{
+  "name": "megaphone-msgr-api",
+  "version": "1.0.0",
+  "description": "API for the Megaphone Messenger application",
+  "homepage": "https://github.com/KaguilarA/megaphone-msgr-api#readme",
+  "bugs": {
+    "url": "https://github.com/KaguilarA/megaphone-msgr-api/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KaguilarA/megaphone-msgr-api.git"
+  },
+  "type": "module",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": true,
+  "author": {
+    "name": "Kevin Aguilar",
+    "email": "kevin.231@hotmail.com",
+    "url": "https://github.com/KaguilarA"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "setup": "node --env-file-if-exists=.env scripts/setup.js",
+    "dev": "node --watch --env-file-if-exists=.env index.js",
+    "start": "node --env-file-if-exists=.env index.js",
+    "test": "node --import ./utils/testSetup.js --test",
+    "migrate:phones": "node --env-file-if-exists=.env scripts/migrate-phone-numbers.js"
+  },
+  "dependencies": {
+    "cloudinary": "^2.11.0",
+    "country-codes-flags-phone-codes": "^1.1.1",
+    "express": "^5.2.1",
+    "mongoose": "^8.24.1",
+    "multer": "^2.5.0",
+    "nodemailer": "^10.3.0",
+    "owl-expressjs-utils": "^1.0.3",
+    "tinify": "^1.8.3"
+  },
+  "overrides": {
+    "mongoose": "$mongoose"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0"
+  }
+}
