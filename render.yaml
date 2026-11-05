@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: megaphone-api
+    name: megaphone-msgr-api
     runtime: node
     repo: https://github.com/KaguilarA/megaphone-msgr-api
     branch: production
