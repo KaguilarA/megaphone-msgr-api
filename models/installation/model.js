@@ -1,11 +1,1 @@
-import { Schema } from "mongoose";
-
-export default {
-  name: "Installation",
-  model: {
-    _id: { type: String },
-    administrator: { type: Schema.Types.ObjectId, ref: "User" },
-    completedAt: Date,
-    version: { type: Number, default: 1 },
-  },
-};
+function t(){var e=["Types"];return(t=function(){return e})()}import{Schema as e}from"mongoose";export default{name:"Installation",model:{_id:{type:String},administrator:{type:e[function(e){return e-=0,t()[e]}(0)].ObjectId,ref:"User"},completedAt:Date,version:{type:Number,default:1}}};

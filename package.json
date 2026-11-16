@@ -24,11 +24,9 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "setup": "node --env-file-if-exists=.env scripts/setup.js",
-    "dev": "node --watch --env-file-if-exists=.env index.js",
-    "start": "node --env-file-if-exists=.env index.js",
-    "test": "node --import ./utils/testSetup.js --test",
-    "migrate:phones": "node --env-file-if-exists=.env scripts/migrate-phone-numbers.js"
+    "start": "node index.js",
+    "setup": "node scripts/setup.js",
+    "migrate:phones": "node scripts/migrate-phone-numbers.js"
   },
   "dependencies": {
     "cloudinary": "^2.11.0",
@@ -44,6 +42,9 @@
     "mongoose": "$mongoose"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^11.3.0"
+    "es-module-lexer": "2.0.0",
+    "javascript-obfuscator": "5.10.1",
+    "mongodb-memory-server": "^11.3.0",
+    "terser": "5.51.2"
   }
 }

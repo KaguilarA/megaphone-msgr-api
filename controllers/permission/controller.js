@@ -1,16 +1,1 @@
-/** Lists the full permission catalog for permission-assignment screens. */
-export default function ({ model }) {
-  async function getAll(req, res) {
-    try {
-      const permissions = await model.getAll();
-      return res.json(permissions);
-    } catch (error) {
-      return res.status(500).json({
-        message: "Permission list error.",
-        error: error.message || error,
-      });
-    }
-  }
-
-  return { getAll };
-}
+function t(t,n){return t-=0,r()[t]}export default function n({model:n}){return{getAll:async function(r,e){const o=t;try{const t=await n.getAll();return e.json(t)}catch(t){return e.status(500)[o(0)]({message:"Permission list error.",error:t.message||t})}}}}function r(){const t=["json"];return(r=function(){return t})()}

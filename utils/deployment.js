@@ -1,10 +1,1 @@
-import { readFileSync } from 'node:fs';
-
-export function deploymentInfo() {
-  try {
-    const { sourceSha } = JSON.parse(readFileSync(new URL('../deployment.json', import.meta.url), 'utf8'));
-    return { sourceSha: /^[a-f0-9]{40}$/.test(sourceSha) ? sourceSha : null };
-  } catch {
-    return { sourceSha: null };
-  }
-}
+import{readFileSync as n}from"node:fs";function t(n,t){return n-=0,r()[n]}export function deploymentInfo(){const r=t;try{const{sourceSha:t}=JSON.parse(n(new URL(r(0),import.meta.url),"utf8"));return{sourceSha:/^[a-f0-9]{40}$/.test(t)?t:null}}catch{return{sourceSha:null}}}function r(){const n=["../deployment.json"];return(r=function(){return n})()}

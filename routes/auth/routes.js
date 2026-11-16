@@ -1,18 +1,1 @@
-import { Router } from "express";
-import AuthController from "../../controllers/auth/controller.js";
-
-/**
- * Create the authentication router.
- * @param {Object} data - Configuration data for the router.
- * @returns {import('express').Router}
- */
-export default (data) => {
-  const router = Router();
-  const { logIn, logout, status } = AuthController(data);
-
-  router.post("/login", logIn);
-  router.post("/logout", logout);
-  router.get("/status", status);
-
-  return router;
-};
+import{Router as o}from"express";import t from"../../controllers/auth/controller.js";export default r=>{const s=o(),{logIn:l,logout:e,status:u}=t(r);return s.post("/login",l),s.post("/logout",e),s.get("/status",u),s};

@@ -1,13 +1,1 @@
-import { Router } from "express";
-import { OwlIsAuth } from "owl-expressjs-utils";
-import SetupController from "../../controllers/setup/controller.js";
-import routePermission from "../../middlewares/permission/routePermission.js";
-
-export default (data) => {
-  const router = Router();
-  const controller = SetupController(data);
-  router.use(OwlIsAuth);
-  router.get("/status", routePermission(data, data.actions.getStatus), controller.status);
-  router.post("/complete", routePermission(data, data.actions.complete), controller.complete);
-  return router;
-};
+import{Router as t}from"express";import{OwlIsAuth as o}from"owl-expressjs-utils";function r(t,o){return t-=0,s()[t]}function s(){const t=["complete"];return(s=function(){return t})()}import e from"../../controllers/setup/controller.js";import n from"../../middlewares/permission/routePermission.js";export default s=>{const i=r,u=t(),m=e(s);return u.use(o),u.get("/status",n(s,s.actions.getStatus),m.status),u.post("/complete",n(s,s.actions[i(0)]),m[i(0)]),u};

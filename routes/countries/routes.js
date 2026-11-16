@@ -1,16 +1,1 @@
-import { Router } from "express";
-import CountriesController from "../../controllers/countries/controller.js";
-
-/**
- * Create the public countries router.
- * @param {Object} data - Configuration data for the router.
- * @returns {import('express').Router}
- */
-export default (data) => {
-  const router = Router();
-  const { getAll } = CountriesController(data);
-
-  router.get("/", getAll);
-
-  return router;
-}
+import{Router as r}from"express";import o from"../../controllers/countries/controller.js";export default t=>{const e=r(),{getAll:l}=o(t);return e.get("/",l),e};
