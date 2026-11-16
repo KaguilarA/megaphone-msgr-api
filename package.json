@@ -28,7 +28,9 @@
     "dev": "node --watch --env-file-if-exists=.env index.js",
     "start": "node --env-file-if-exists=.env index.js",
     "test": "node --import ./utils/testSetup.js --test",
-    "migrate:phones": "node --env-file-if-exists=.env scripts/migrate-phone-numbers.js"
+    "migrate:phones": "node --env-file-if-exists=.env scripts/migrate-phone-numbers.js",
+    "build": "node scripts/build-backend.mjs",
+    "build:worker": "node scripts/build-worker.mjs"
   },
   "dependencies": {
     "cloudinary": "^2.11.0",
@@ -44,6 +46,9 @@
     "mongoose": "$mongoose"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^11.3.0"
+    "es-module-lexer": "2.0.0",
+    "javascript-obfuscator": "5.10.1",
+    "mongodb-memory-server": "^11.3.0",
+    "terser": "5.51.2"
   }
 }

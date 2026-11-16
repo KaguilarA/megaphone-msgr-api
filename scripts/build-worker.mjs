@@ -1,0 +1,11 @@
+import { mkdir, readFile, writeFile, appendFile } from 'node:fs/promises';
+import { resolve, join } from 'node:path';
+import { protectModule } from './protect-module.mjs';
+const root = resolve(import.meta.dirname, '..');
+const output = join(root, 'dist/keep-alive');
+await mkdir(output, { recursive: true });
+await writeFile(join(output, 'worker.js'), await protectModule(await readFile(join(root, 'deploy/keep-alive/worker.js'), 'utf8'), true));
+const config = await readFile(join(root, 'deploy/keep-alive/wrangler.jsonc'), 'utf8');
+await writeFile(join(output, 'wrangler.jsonc'), config.replace('../../dist/keep-alive/worker.js', 'worker.js').replace(/\s*"build": \{[^}]+\},/, ''));
+console.log(`Protected Worker: ${output}`);
+if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `workerDirectory=${output}\n`);

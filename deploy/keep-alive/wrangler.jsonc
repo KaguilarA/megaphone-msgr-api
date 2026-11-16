@@ -1,0 +1,10 @@
+{
+  "name": "megaphone-backend-health",
+  "main": "../../dist/keep-alive/worker.js",
+  "build": { "command": "node ../../scripts/build-worker.mjs" },
+  "compatibility_date": "2026-11-07",
+  "workers_dev": true,
+  "vars": { "BACKEND_ORIGIN": "https://megaphone-msgr-api.onrender.com" },
+  "triggers": { "crons": ["3-53/10 * * * *"] },
+  "observability": { "enabled": true },
+}
