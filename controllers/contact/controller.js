@@ -21,6 +21,10 @@ export default function ({ id, model, stateModel }) {
   async function deleteById(req, res) {
     try {
       const contactId = req.params.id;
+      const contact = await model.getById(contactId);
+      if (!contact || String(contact.owner) !== String(req.session.userId)) {
+        return res.status(404).json({ message: "Contact not found." });
+      }
       await model.delete(contactId);
       res.status(204).end();
     } catch (error) {
@@ -61,7 +65,7 @@ export default function ({ id, model, stateModel }) {
     try {
       const contactId = req.params.id;
       const contact = await model.getById(contactId);
-      if (!contact) {
+      if (!contact || String(contact.owner) !== String(req.session.userId)) {
         return res.status(404).json({ message: "Contact not found." });
       }
       res.status(200).json(contact);
@@ -98,7 +102,11 @@ export default function ({ id, model, stateModel }) {
   async function updateById(req, res) {
     try {
       const contactId = req.params.id;
-      const updatedData = req.body;
+      const contact = await model.getById(contactId);
+      if (!contact || String(contact.owner) !== String(req.session.userId)) {
+        return res.status(404).json({ message: "Contact not found." });
+      }
+      const { owner: _owner, ...updatedData } = req.body;
       const updatedContact = await model.update(contactId, updatedData);
       if (!updatedContact) {
         return res.status(404).json({ message: "Contact not found." });

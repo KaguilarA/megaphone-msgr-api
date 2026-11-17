@@ -9,6 +9,7 @@ export default function ({
   userPermissionModel,
   populatedFields,
   createUser,
+  createSelfRegisteredUser,
 }) {
   const userModel = configuredUserModel || model;
   const entityName = entityId || id || "User";
@@ -169,6 +170,19 @@ export default function ({
       });
     }
   }
+  async function selfRegister(req, res) {
+    try {
+      if (!createSelfRegisteredUser) throw new Error("Self-registration service is not configured.");
+      await createSelfRegisteredUser(req.body);
+      return res.status(201).json({ message: "Cuenta creada. Un administrador debe habilitar el envío de mensajes y el registro de contactos." });
+    } catch (error) {
+      if (!error.status && error.code !== 11000) console.error("Self-registration failed:", error);
+      return res.status(error.code === 11000 ? 409 : error.status || 500).json({
+        message: error.code === 11000 ? "Ya existe un usuario con este correo." :
+          error.status ? error.message : "No se pudo crear la cuenta. Intenta de nuevo más tarde.",
+      });
+    }
+  }
   /**
    * Update the authenticated user's own account.
    * @param {import('express').Request} req - Express request containing the user session and updated data.
@@ -207,6 +221,7 @@ export default function ({
     getPermissions,
     updatePermissions,
     register,
+    selfRegister,
     update,
   };
 };

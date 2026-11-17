@@ -2,11 +2,12 @@
 
 Base path: `/email`.
 
-`POST /` is public. `OwlIsAuth` protects every route declared after the router-level middleware.
+All routes require authentication and their corresponding permissions. Sending email also requires `Message:register`.
 
 | Method | Path | Auth | Responsibility |
 | --- | --- | --- | --- |
-| POST | `/` | Public | Create a user-owned email. |
+| POST | `/` | Authenticated | Create a user-owned email. |
+| POST | `/send` | Authenticated, `Message:register` and `Email:registerForUser` | Send email to owned contacts. |
 | POST | `/:id/contact` | Authenticated | Create an email owned by the contact in `:id`. |
 | GET | `/` | Authenticated | List current-user emails. |
 | GET | `/:id` | Authenticated | Read an email by ID. |

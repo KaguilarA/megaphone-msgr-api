@@ -3,7 +3,7 @@ import { OwlIsAuth } from "owl-expressjs-utils";
 import MessageController from "../../controllers/message/controller.js";
 import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import routePermission from "../../middlewares/permission/routePermission.js";
-import mediaUpload from "../../middlewares/media/upload.js";
+import mediaUpload, { IMAGE_TYPES, MAX_IMAGE_BYTES } from "../../middlewares/media/upload.js";
 
 /**
  * Create the authenticated message router.
@@ -22,8 +22,19 @@ export default (data) => {
   router.use(OwlIsAuth);
   router.post(
     "/",
-    mediaUpload.single("media"),
     routePermission(data, data.actions.post),
+    (req, res, next) => mediaUpload.single("media")(req, res, (error) => {
+      if (error) {
+        return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : error.status || 400).json({
+          message: error.code === "LIMIT_FILE_SIZE" ? "El archivo no puede superar 16 MB." :
+            error.status ? error.message : "Solo se permite un archivo de imagen o video.",
+        });
+      }
+      if (req.file && IMAGE_TYPES.has(req.file.mimetype) && req.file.size > MAX_IMAGE_BYTES) {
+        return res.status(413).json({ message: "La imagen no puede superar 5 MB." });
+      }
+      next();
+    }),
     actionLogMiddleware(auditDependencies, data.actions.post),
     register,
   );

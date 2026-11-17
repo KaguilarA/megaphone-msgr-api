@@ -110,3 +110,19 @@ test('treats server failures as uncertain rather than a confirmed rejection', as
     fetchImpl: async () => ({ ok: false, status: 503, json: async () => ({ error: { message: 'Unavailable' } }) }),
   }), (error) => error.providerRejected === false);
 });
+
+test('sends image and video links with the message as the caption', async () => {
+  for (const type of ['image', 'video']) {
+    let payload;
+    await sendWhatsAppMessage('+14155552671', 'Hola', tokenRecord, {
+      media: { type, url: 'https://example.com/media' },
+      fetchImpl: async (_url, options) => {
+        payload = JSON.parse(options.body);
+        return { ok: true, json: async () => ({ messages: [{ id: 'wamid.test' }] }) };
+      },
+    });
+    assert.equal(payload.type, type);
+    assert.deepEqual(payload[type], { link: 'https://example.com/media', caption: 'Hola' });
+    assert.equal(payload.text, undefined);
+  }
+});

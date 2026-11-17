@@ -4,6 +4,7 @@ import express from 'express';
 import SetupController from '../controllers/setup/controller.js';
 import SetupRouter from '../routes/setup/routes.js';
 import UserRouter from '../routes/user/routes.js';
+import EmailRouter from '../routes/email/routes.js';
 
 const owner = 'user-1';
 const res = () => ({ statusCode: 200, status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } });
@@ -75,5 +76,43 @@ test('an operational register permission cannot authorize creation of other user
   await httpServer(router, { userId: owner }, async (base) => {
     assert.equal((await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })).status, 403);
     assert.deepEqual(lookedUp, { entity: 'User', name: 'register' });
+  });
+});
+
+test('public registration is separate from administrator-created accounts', async () => {
+  let received;
+  const router = UserRouter({ id: 'User', actions: { post: 'register' },
+    createSelfRegisteredUser: async (body) => { received = body; },
+    createUser: async () => assert.fail('public registration must not create an operator'),
+  });
+  await httpServer(router, {}, async (base) => {
+    const payload = { name: 'Test', email: 'test@example.com', administrator: true };
+    const result = await fetch(base + '/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+    });
+    assert.equal(result.status, 201);
+    assert.deepEqual(received, payload);
+    assert.match((await result.json()).message, /administrador/);
+    assert.equal((await fetch(base, { method: 'POST' })).status, 401);
+  });
+});
+
+test('email delivery also requires the message registration permission', async () => {
+  let canSend = false;
+  const router = EmailRouter({
+    id: 'Email',
+    actions: { update: 'updateDataById', postUser: 'registerForUser' },
+    permissionModel: { getOne: async ({ entity, name }) => ({ _id: `${entity}:${name}` }) },
+    userPermissionModel: { getOne: async ({ permission }) =>
+      permission !== 'Message:register' || canSend ? { _id: 'assignment' } : null },
+    actionLogModel: { save: async () => {} },
+  });
+  await httpServer(router, { userId: owner }, async (base) => {
+    const request = () => fetch(base + '/send', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+    });
+    assert.equal((await request()).status, 403);
+    canSend = true;
+    assert.equal((await request()).status, 400);
   });
 });

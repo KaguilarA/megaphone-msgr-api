@@ -2,19 +2,11 @@
 
 Base path: `/message`.
 
-All routes use `OwlIsAuth`.
+All routes use `OwlIsAuth` and the matching message permission.
 
 | Method | Path | Responsibility |
 | --- | --- | --- |
-| POST | `/` | Create a message and recipient links. |
+| POST | `/` | Send a message to owned contacts and record recipient delivery results. Accepts multipart form data with at most one optional `media` file. |
 | GET | `/` | List messages sent by the session user. |
 | GET | `/:id` | Read a message and its recipients. |
-| PUT | `/:id` | Update a message and optionally replace recipients. |
-| DELETE | `/:id` | Delete a message and its recipient links. |
-
-The router delegates to `MessageController`. External provider delivery is not implemented by this router.
-
-For standalone Meta WhatsApp Cloud API delivery, use
-[`integrations/whatsapp.js`](../../integrations/whatsapp.js) directly. The sender does not
-depend on this route, Express, or the message database. Pass it the provider credential
-record from the Token model; WhatsApp tokens are not environment variables.
+Attachments are limited to JPEG, PNG or static WebP images (5 MiB), and MP4 or 3GP videos (16 MiB). For messages with media, content is sent as the caption and is limited to 1024 characters; text-only messages allow 4096. Images require TinyPNG and Cloudinary; videos require Cloudinary. Meta's image, video codec, conversation and account restrictions still apply.

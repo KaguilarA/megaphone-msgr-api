@@ -188,6 +188,10 @@ export default function ({
         throw requestError("A subject and message content are required.");
       }
       if (messageData.content.length > 4096) throw requestError("Message content cannot exceed 4096 characters.");
+      if (req.file && messageData.content.trim().length > 1024) {
+        throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
+      }
+      if (req.file && !mediaUploader) throw requestError("La carga de archivos no está configurada.", 503);
       const sourcePhone = await getSourcePhone(id, sourcePhoneId);
       const token = await getWhatsAppToken(id, sourcePhone);
       const recipients = await resolveRecipients(id, contacts);

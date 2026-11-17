@@ -35,11 +35,11 @@ The application mounts the generated router under its configured prefix.
 | `/auth` | Login, logout, and status | Public | Custom `AuthController` |
 | `/contact` | User-owned contacts | All routes authenticated | Custom `ContactController` |
 | `/countries` | Country and calling-code catalog | Public | Custom `CountriesController` |
-| `/email` | User and contact emails | Root registration public; remaining routes authenticated | Custom `EmailController` |
+| `/email` | User and contact emails | Authenticated; email delivery also requires `Message:register` | Custom `EmailController` |
 | `/message` | Messages and recipient links | All routes authenticated | Custom `MessageController` |
 | `/phone-number` | User and contact phone numbers | Authenticated and owner-scoped | Custom `PhoneController` |
 | `/state` | State definitions | Authentication plus `state:getList`/`state:register` checks | Generic `OwlController` |
-| `/user` | Registration and account profile | Authenticated; creation requires `User:register` | Custom user controller |
+| `/user` | Registration and account profile | Public self-registration; other routes authenticated | Custom user controller |
 | `/tokens` | Provider credentials by phone | Authenticated and owner-scoped | Custom `UserTokenController` |
 | `/permission` | Permission definitions | Authentication plus permission checks | Generic `OwlController` |
 | `/user-permission` | User-permission assignments | Authentication plus permission checks | Generic `OwlController` |

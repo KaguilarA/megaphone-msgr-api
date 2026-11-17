@@ -29,6 +29,8 @@ This documentation describes version 1.0.0.
 
 For an empty database, follow [the first-install guide](docs/first-install.md). After configuring `.env`, run `npm run setup` with the API stopped to create the initial administrator, states, permissions and unique indexes. MongoDB must support transactions. There is no public administrator-registration page. The first login opens the account configuration wizard; WhatsApp and SMTP can be configured later.
 
+After installation, users may create their own accounts through the frontend or `POST /user/register` with `name`, `lastName`, `email`, and `password`. They can sign in immediately, but an administrator must grant `Contact:register` and `Message:register` before they can create contacts or send WhatsApp messages or email. WhatsApp automatic replies also require the token owner's `Message:register` permission. The user-permissions screen can enable or disable both together. Accounts created by administrators retain their existing operational permissions.
+
 ```bash
 npm ci
 ```
@@ -63,7 +65,7 @@ TINYPNG_API_KEY=
 required at startup. Startup validation rejects missing or malformed values without logging
 their contents. Set the WhatsApp credentials only if you use the standalone WhatsApp sender.
 Cloudinary variables are optional for text-only messages, but all three credentials are
-required together when uploading images or videos. Message uploads are limited to 16 MB and
+required together when uploading images or videos. Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB, and
 are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
 Images are compressed through TinyPNG before the Cloudinary upload; videos bypass TinyPNG.
 For incoming WhatsApp autoresponses, configure `WHATSAPP_WEBHOOK_VERIFY_TOKEN` and

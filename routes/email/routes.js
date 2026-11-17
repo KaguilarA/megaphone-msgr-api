@@ -3,6 +3,7 @@ import { OwlIsAuth } from "owl-expressjs-utils";
 import EmailController from "../../controllers/email/controller.js";
 import actionLogMiddleware from "../../middlewares/recordLog/recordLog.js";
 import routePermission from "../../middlewares/permission/routePermission.js";
+import requirePermission from "../../middlewares/permission/permission.js";
 
 /**
  * Create the email router with its public registration and authenticated routes.
@@ -36,6 +37,11 @@ export default (data) => {
   );
   router.post(
     "/send",
+    requirePermission("register", {
+      entity: "Message",
+      permissionModel: data.permissionModel,
+      userPermissionModel: data.userPermissionModel,
+    }),
     routePermission(data, data.actions.postUser),
     actionLogMiddleware(auditDependencies, data.actions.postUser),
     sendToContacts,

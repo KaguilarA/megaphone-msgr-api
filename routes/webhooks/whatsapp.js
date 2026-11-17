@@ -1,6 +1,6 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { Router } from "express";
-import { sendWhatsAppMessage } from "../../integrations/whatsapp.js";
+import { sendWhatsAppMessage as defaultSendWhatsAppMessage } from "../../integrations/whatsapp.js";
 
 function hasValidSignature(rawBody, signature, appSecret) {
   if (!rawBody || !signature || !appSecret || !signature.startsWith("sha256=")) {
@@ -26,8 +26,11 @@ export default ({
   verifyToken,
   appSecret,
   tokenModel,
+  permissionModel,
+  userPermissionModel,
   autoReplyKeyword,
   autoReplyText,
+  sendWhatsAppMessage = defaultSendWhatsAppMessage,
 }) => {
   const router = Router();
 
@@ -57,7 +60,13 @@ export default ({
 
         const phoneNumberId = payload.entry?.[0]?.changes?.[0]?.value?.metadata?.phone_number_id;
         const token = await tokenModel.getOne({ whatsappPhoneNumberId: phoneNumberId });
-        if (token) {
+        if (token?.owner) {
+          const permission = await permissionModel.getOne({ entity: "Message", name: "register" });
+          const assignment = permission && await userPermissionModel.getOne({
+            user: token.owner,
+            permission: permission._id,
+          });
+          if (!assignment) continue;
           await sendWhatsAppMessage(incoming.from, autoReplyText, token);
         }
       }

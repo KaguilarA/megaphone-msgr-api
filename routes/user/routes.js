@@ -17,6 +17,7 @@ export default (data) => {
     getInfo,
     getPermissions,
     register,
+    selfRegister,
     updatePermissions,
     update,
   } = UserController(data);
@@ -26,6 +27,8 @@ export default (data) => {
     userPermissionModel: data.userPermissionModel,
     entity: data.id || data.entityId,
   };
+
+  router.post("/register", selfRegister);
 
   router.use(OwlIsAuth);
 

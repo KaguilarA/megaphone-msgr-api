@@ -3,6 +3,9 @@ import "../models/models.js";
 import { isOperatorPermission, permissionCatalog } from "./catalog.js";
 
 export function validateAccountInput(input = {}) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    throw Object.assign(new Error("Nombre, apellido, correo y contraseña son obligatorios."), { status: 400 });
+  }
   const { name, lastName, email, password } = input;
   if (![name, lastName, email, password].every((value) => typeof value === "string" && value.trim())) {
     throw Object.assign(new Error("Nombre, apellido, correo y contraseña son obligatorios."), { status: 400 });
@@ -20,7 +23,7 @@ export function validateAccountInput(input = {}) {
 }
 
 /** All writes use the same session, including the password hashing model hooks. */
-export async function createAccountInSession(input, session, { administrator = false, connection = mongoose.connection } = {}) {
+export async function createAccountInSession(input, session, { administrator = false, pendingApproval = false, connection = mongoose.connection } = {}) {
   const { email, ...userData } = validateAccountInput(input);
   const { User, Email, State, Permission, UserPermission } = connection.models;
   if (await Email.findOne({ email, ownerType: "User" }).session(session)) {
@@ -29,7 +32,10 @@ export async function createAccountInSession(input, session, { administrator = f
   const userState = await State.findOne({ entity: "User", name: "Activo" }).session(session);
   const emailState = await State.findOne({ entity: "Email", name: "Activo" }).session(session);
   if (!userState || !emailState) throw new Error("Faltan estados básicos. Ejecuta npm run setup en el servidor.");
-  const references = administrator ? permissionCatalog : permissionCatalog.filter(isOperatorPermission);
+  const references = administrator ? permissionCatalog : permissionCatalog.filter((permission) =>
+    isOperatorPermission(permission) && (!pendingApproval ||
+      !(permission.name === "register" && ["Contact", "Message"].includes(permission.entity))),
+  );
   const permissions = await Permission.find({ $or: references.map(({ entity, name }) => ({ entity, name })) }).session(session);
   if (permissions.length !== references.length) throw new Error("Faltan permisos básicos. Ejecuta npm run setup en el servidor.");
   const user = await new User({ ...userData, state: userState._id }).save({ session });
@@ -41,4 +47,11 @@ export async function createAccountInSession(input, session, { administrator = f
 export async function createOperator(input) {
   const validated = validateAccountInput(input);
   return mongoose.connection.transaction((session) => createAccountInSession(validated, session));
+}
+
+export async function createSelfRegisteredUser(input) {
+  const validated = validateAccountInput(input);
+  return mongoose.connection.transaction((session) =>
+    createAccountInSession(validated, session, { pendingApproval: true }),
+  );
 }

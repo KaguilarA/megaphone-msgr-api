@@ -1,6 +1,6 @@
 import { OwlSession } from "owl-expressjs-utils";
 import WhatsAppWebhook from "../routes/webhooks/whatsapp.js";
-import { TokenModel } from "../models/models.js";
+import { PermissionModel, TokenModel, UserPermissionModel } from "../models/models.js";
 import {
   WhatsAppAppSecret,
   WhatsAppAutoReplyKeyword,
@@ -30,6 +30,8 @@ export default function (
     verifyToken: WhatsAppWebhookVerifyToken,
     appSecret: WhatsAppAppSecret,
     tokenModel: TokenModel,
+    permissionModel: PermissionModel,
+    userPermissionModel: UserPermissionModel,
     autoReplyKeyword: WhatsAppAutoReplyKeyword,
     autoReplyText: WhatsAppAutoReplyText,
   }));

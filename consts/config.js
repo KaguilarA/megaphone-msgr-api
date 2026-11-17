@@ -30,10 +30,11 @@ import PermissionRouter from "../routes/permission/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
 import { sendEmail } from "../integrations/email.js";
-import { createOperator } from "../setup/accounts.js";
+import { createOperator, createSelfRegisteredUser } from "../setup/accounts.js";
 import SetupRouter from "../routes/setup/routes.js";
 import { uploadMediaBuffer } from "../integrations/cloudinary.js";
 import { compressImageBuffer } from "../integrations/tinypng.js";
+import { MAX_IMAGE_BYTES } from "../middlewares/media/upload.js";
 import {
   CloudinaryApiKey,
   CloudinaryApiSecret,
@@ -150,6 +151,9 @@ export default [
         const buffer = isImage
           ? await compressImageBuffer(file.buffer, TinyPngApiKey)
           : file.buffer;
+        if (isImage && buffer.length > MAX_IMAGE_BYTES) {
+          throw Object.assign(new Error("La imagen optimizada no puede superar 5 MB."), { status: 400 });
+        }
         const result = await uploadMediaBuffer(buffer, {
           cloudName: CloudinaryCloudName,
           apiKey: CloudinaryApiKey,
@@ -245,6 +249,7 @@ export default [
       id: "User",
       userModel: UserModel,
       createUser: createOperator,
+      createSelfRegisteredUser,
       emailModel: EmailModel,
       stateModel: StateModel,
       permissionModel: PermissionModel,

@@ -2,7 +2,7 @@
 
 Base path: `/contact`.
 
-All routes use `OwlIsAuth`.
+All routes use `OwlIsAuth` and require their matching contact permission. Individual contacts can only be accessed or changed by their owner; updates cannot transfer ownership.
 
 | Method | Path | Responsibility |
 | --- | --- | --- |

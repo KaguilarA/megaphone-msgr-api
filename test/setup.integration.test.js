@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import { bootstrapInstallation } from '../setup/bootstrap.js';
-import { createOperator, validateAccountInput } from '../setup/accounts.js';
+import { createOperator, createSelfRegisteredUser, validateAccountInput } from '../setup/accounts.js';
 import { permissionCatalog, isOperatorPermission } from '../setup/catalog.js';
 
 const credentials = { name: 'Primera', lastName: 'Administradora', email: 'ADMIN@example.com', password: 'Example-password-42' };
@@ -80,6 +80,45 @@ test('subsequent users can log in and access their own profile without managing 
   assert.equal(assigned.some(({ permission }) => permission.entity === 'ActionLog'), false);
 });
 
+test('self-registered accounts can log in but require administrator assignments for contact and message registration', async () => {
+  await bootstrapInstallation(credentials);
+  const account = await createSelfRegisteredUser({
+    name: 'New', lastName: 'User', email: 'new@example.com', password: 'Example-password-42',
+    administrator: true, permissions: ['all'],
+  });
+  const { UserModel, EmailModel, PermissionModel, UserPermissionModel } = await import('../models/models.js');
+  const { default: AuthController } = await import('../controllers/auth/controller.js');
+  const { default: requirePermission } = await import('../middlewares/permission/permission.js');
+  const session = { save: (done) => done(null) };
+  const response = () => ({ statusCode: 200, status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } });
+  const login = response();
+  await AuthController({ userModel: UserModel, emailModel: EmailModel }).logIn(
+    { body: { email: 'new@example.com', password: 'Example-password-42' }, session }, login,
+  );
+  assert.equal(login.statusCode, 200);
+  assert.equal(String(session.userId), String(account._id));
+
+  const check = async (entity, name) => {
+    const res = response();
+    let allowed = false;
+    await requirePermission(name, { entity, permissionModel: PermissionModel, userPermissionModel: UserPermissionModel })(
+      { session }, res, () => { allowed = true; },
+    );
+    return { allowed, status: res.statusCode };
+  };
+  assert.equal((await check('User', 'getInfo')).allowed, true);
+  assert.equal((await check('User', 'updatePermissions')).allowed, false);
+  for (const entity of ['Contact', 'Message']) {
+    assert.deepEqual(await check(entity, 'register'), { allowed: false, status: 403 });
+  }
+  const permissions = await mongoose.models.Permission.find({ entity: { $in: ['Contact', 'Message'] }, name: 'register' });
+  assert.equal(permissions.length, 2);
+  await mongoose.models.UserPermission.insertMany(permissions.map((permission) => ({
+    user: account._id, permission: permission._id,
+  })));
+  for (const entity of ['Contact', 'Message']) assert.equal((await check(entity, 'register')).allowed, true);
+});
+
 test('duplicate login email never leaves an orphan account or assignments', async () => {
   await bootstrapInstallation(credentials);
   await assert.rejects(createOperator(credentials), (error) => error.status === 409);
@@ -96,7 +135,7 @@ test('missing permissions roll back account creation', async () => {
 });
 
 test('credential validation rejects object injection and unsafe bcrypt input', () => {
-  for (const input of [{ ...credentials, email: { $gt: '' } }, { ...credentials, password: 'a'.repeat(73) }, { ...credentials, password: ' password-with-space ' }]) {
+  for (const input of [null, [], { ...credentials, email: { $gt: '' } }, { ...credentials, password: 'a'.repeat(73) }, { ...credentials, password: ' password-with-space ' }]) {
     assert.throws(() => validateAccountInput(input));
   }
 });
