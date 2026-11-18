@@ -4,6 +4,8 @@ import {
 } from "../../integrations/whatsapp.js";
 import { normalizePhoneNumber } from "../../utils/phoneNumber.js";
 
+const MAX_MESSAGE_RECIPIENTS = 300;
+
 export default function ({
   id,
   model,
@@ -216,15 +218,20 @@ export default function ({
       if (!Array.isArray(contacts)) {
         throw requestError("contacts must be an array.");
       }
-      if (!contacts.length || contacts.length > 100 || contacts.some((contact) => typeof contact !== "string" || !contact.trim()) || new Set(contacts).size !== contacts.length) {
-        throw requestError("Select between 1 and 100 distinct contacts.");
+      if (!contacts.length || contacts.length > MAX_MESSAGE_RECIPIENTS || contacts.some((contact) => typeof contact !== "string" || !contact.trim()) || new Set(contacts).size !== contacts.length) {
+        throw requestError(`Select between 1 and ${MAX_MESSAGE_RECIPIENTS} distinct contacts.`);
       }
-      if (typeof messageData.header !== "string" || !messageData.header.trim() ||
-          typeof messageData.content !== "string" || !messageData.content.trim()) {
-        throw requestError("A subject and message content are required.");
+      if (messageData.content !== undefined && typeof messageData.content !== "string") {
+        throw requestError("Message content must be text.");
       }
-      if (messageData.content.length > 4096) throw requestError("Message content cannot exceed 4096 characters.");
-      if (req.file && messageData.content.trim().length > 1024) {
+      const header = typeof messageData.header === "string" ? messageData.header.trim() : "";
+      const rawContent = typeof messageData.content === "string" ? messageData.content : "";
+      const content = rawContent.trim();
+      if (!content && !req.file) {
+        throw requestError("Message content is required unless an attachment is included.");
+      }
+      if (rawContent.length > 4096) throw requestError("Message content cannot exceed 4096 characters.");
+      if (req.file && content.length > 1024) {
         throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
       }
       if (req.file && !mediaUploader) throw requestError("La carga de archivos no está configurada.", 503);
@@ -287,8 +294,8 @@ export default function ({
         };
       });
       const newMessage = await model.save({
-        header: messageData.header.trim(),
-        content: messageData.content.trim(),
+        header,
+        content,
         sender: id,
         senderMode,
         ...(requestId ? { requestId } : {}),
@@ -311,7 +318,7 @@ export default function ({
           const sourceSender = sourceSendersById.get(String(delivery.senderPhone));
           const result = await sendWhatsAppMessage(
             delivery.recipient,
-            messageData.content.trim(),
+            content,
             sourceSender?.token,
             {
               ...(whatsappConfig || {}),

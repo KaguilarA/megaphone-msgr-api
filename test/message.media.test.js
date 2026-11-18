@@ -60,6 +60,34 @@ test('image and video attachments reach the provider and message history', async
   });
 });
 
+test('allows an attachment-only message without a subject or caption', async () => {
+  await withServer(async (url, { saved, sent }) => {
+    const body = form('image/png', 4, '');
+    body.delete('header');
+    body.delete('content');
+
+    const response = await fetch(url, { method: 'POST', body });
+
+    assert.equal(response.status, 201);
+    assert.equal(saved[0].header, '');
+    assert.equal(saved[0].content, '');
+    assert.equal(sent[0][1], '');
+  });
+});
+
+test('requires text when no attachment is included', async () => {
+  await withServer(async (url, { saved, sent }) => {
+    const body = form('image/png', 4, '');
+    body.delete('media');
+
+    const response = await fetch(url, { method: 'POST', body });
+
+    assert.equal(response.status, 400);
+    assert.equal(saved.length, 0);
+    assert.equal(sent.length, 0);
+  });
+});
+
 test('invalid attachment types, sizes, counts and captions are rejected before sending', async () => {
   await withServer(async (url, { saved, sent }) => {
     const cases = [

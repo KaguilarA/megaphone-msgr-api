@@ -280,7 +280,7 @@ export async function verifyWhatsAppSession(
  * Send a WhatsApp message through a phone-owned WAHA session.
  *
  * @param {string} recipient E.164 phone number, with or without a leading plus.
- * @param {string} message Message text.
+ * @param {string} message Message text, optional when sending media.
  * @param {{ whatsappSession: string }} tokenData Phone-bound session record.
  * @param {{
  *   apiBaseUrl: string,
@@ -308,8 +308,8 @@ export async function sendWhatsAppMessage(
   if (typeof recipient !== "string" || !/^\+?[1-9]\d{7,14}$/.test(recipient)) {
     throw new TypeError("recipient must be a valid E.164 phone number.");
   }
-  if (typeof message !== "string" || !message.trim()) {
-    throw new TypeError("message must be a non-empty string.");
+  if (typeof message !== "string" || (!message.trim() && !media)) {
+    throw new TypeError("message must be a non-empty string unless media is included.");
   }
   if (!tokenData || typeof tokenData.whatsappSession !== "string" ||
       !SESSION_PATTERN.test(tokenData.whatsappSession)) {
@@ -344,7 +344,7 @@ export async function sendWhatsAppMessage(
             url: media.url,
             ...(media.mimeType ? { mimetype: media.mimeType } : {}),
           },
-          caption: message,
+          ...(message.trim() ? { caption: message } : {}),
         }
       : { text: message }),
   };

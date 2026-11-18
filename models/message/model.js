@@ -14,13 +14,13 @@ const model = {
   }],
   content: {
     type: String,
-    required: [true, "El contenido del mensaje es obligatorio."],
     trim: true,
+    default: "",
   },
   header: {
     type: String,
-    required: [true, "La cabecera del mensaje es obligatorio."],
     trim: true,
+    default: "",
   },
   sender: {
     type: Schema.Types.ObjectId,

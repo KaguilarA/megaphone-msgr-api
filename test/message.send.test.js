@@ -55,6 +55,38 @@ test('register creates a message and receptor entries', async () => {
   assert.equal(res.body.sender, user._id);
 });
 
+test('register accepts up to 300 distinct campaign recipients', async () => {
+  const controller = MessageController({
+    model: {
+      save: async (data) => ({
+        ...data,
+        _id: 'message-300',
+        toJSON: () => ({ ...data, _id: 'message-300' }),
+      }),
+    },
+    receptorModel: { save: async (data) => data },
+  });
+  const register = async (count) => {
+    const res = createRes();
+    await controller.register({
+      body: {
+        content: 'Hola',
+        contacts: Array.from({ length: count }, (_, index) => `contact-${index}`),
+      },
+      session: { userId: user._id },
+    }, res);
+    return res;
+  };
+
+  const accepted = await register(300);
+  assert.equal(accepted.statusCode, 201);
+  assert.equal(accepted.body.receptors.length, 300);
+
+  const rejected = await register(301);
+  assert.equal(rejected.statusCode, 400);
+  assert.match(rejected.body.error, /1 and 300 distinct contacts/);
+});
+
 test('getAll returns only the authenticated user messages', async () => {
   const controller = MessageController({
     entityId: 'Message',

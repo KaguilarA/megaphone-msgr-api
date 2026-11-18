@@ -316,6 +316,35 @@ test("sends image and video URL media with their caption", async () => {
   }
 });
 
+test("sends media without a caption when the message text is empty", async () => {
+  let payload;
+  await sendWhatsAppMessage(
+    "+14155552671",
+    "",
+    sessionRecord,
+    {
+      ...options,
+      media: { type: "image", url: "https://example.com/media" },
+      fetchImpl: async (url, request) => {
+        if (url.endsWith("/me")) {
+          return { ok: true, status: 200, json: async () => ({ id: "14155552670@c.us" }) };
+        }
+        payload = JSON.parse(request.body);
+        return { ok: true, status: 200, json: async () => ({ id: "wamid.test" }) };
+      },
+    },
+  );
+  assert.equal(payload.file.url, "https://example.com/media");
+  assert.equal(Object.hasOwn(payload, "caption"), false);
+});
+
+test("still requires text for messages without media", async () => {
+  await assert.rejects(
+    sendWhatsAppMessage("+14155552671", "", sessionRecord, options),
+    /non-empty string unless media is included/,
+  );
+});
+
 test("requires an HTTP(S) URL without embedded credentials or query values", async () => {
   await assert.rejects(
     sendWhatsAppMessage("+14155552671", "Hello!", sessionRecord, {
