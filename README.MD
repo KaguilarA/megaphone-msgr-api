@@ -1,6 +1,6 @@
 # Megaphone Messenger API
 
-Backend REST API for Megaphone Messenger. The application is built with Node.js, Express,
+Backend REST API for Megaphone Messenger. The application is built with TypeScript, Node.js, Express,
 MongoDB, Mongoose, and `owl-expressjs-utils`.
 
 ## Version
@@ -17,7 +17,7 @@ This documentation describes version 1.0.0.
 - Permission assignments and permission-aware routes.
 - Action logging after permission-aware responses.
 - Encrypted provider tokens and hashed user passwords.
-- Centralized model instantiation through `models/models.js`.
+- Centralized model instantiation through `models/models.ts`.
 
 ## Requirements
 
@@ -133,7 +133,7 @@ Only send to recipients who have agreed to receive messages, and do not use mult
 to bypass WhatsApp's limits or messaging policies.
 
 ```js
-import { sendWhatsAppMessage } from "./integrations/whatsapp.js";
+import { sendWhatsAppMessage } from "./integrations/whatsapp.ts";
 
 const tokenRecord = await TokenModel.getOne({ owner: userId, phone: sourcePhoneId });
 const result = await sendWhatsAppMessage(
@@ -204,7 +204,7 @@ encrypted WhatsApp and Telegram token records at `tokens.whatsapp` and `tokens.t
 ## Project structure
 
 ```text
-index.js                   Express application entry point
+index.ts                   Express application entry point
 app/                       Express application factory
 consts/                    Environment settings and route configuration
 controllers/               Resource-specific request handlers
@@ -218,8 +218,8 @@ utils/                     Startup, session, route, and worker helpers
 
 ## Model architecture
 
-Individual model files export schema data and `modelName`. The only file that calls
-`OwlModel` is [models/models.js](models/models.js), which exports the instantiated models used
+Individual model files export typed schema data and `modelName`. The only file that calls
+`OwlModel` is [models/models.ts](models/models.ts), which exports the instantiated models used
 by the application.
 
 - User passwords are hashed by `OwlModel`.

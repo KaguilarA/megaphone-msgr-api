@@ -147,14 +147,14 @@ test('the server CLI creates a usable administrator and can run again without cr
   const run = promisify(execFile);
   const env = { ...process.env, DB_HOST: replica.getUri(), DB_NAME: 'sessions', NODE_ENV: 'test', FRONTEND_URL: 'http://localhost:4200', SESSION_SECRET: 'test-session-secret-with-more-than-32-characters',
     SETUP_ADMIN_NAME: credentials.name, SETUP_ADMIN_LAST_NAME: credentials.lastName, SETUP_ADMIN_EMAIL: credentials.email, SETUP_ADMIN_PASSWORD: credentials.password };
-  const first = await run(process.execPath, ['scripts/setup.js'], { env, cwd: new URL('..', import.meta.url), timeout: 60000 });
+  const first = await run(process.execPath, ['--import', 'tsx', 'scripts/setup.ts'], { env, cwd: new URL('..', import.meta.url), timeout: 60000 });
   assert.match(first.stdout, /Instalación completada/);
   assert.equal(first.stdout.includes(credentials.password), false);
   const email = await mongoose.models.Email.findOne({ email: 'admin@example.com' });
   const { UserModel } = await import('../models/models.js');
   assert.equal(await UserModel.compareHash(email.owner, 'password', credentials.password), true);
   for (const key of ['SETUP_ADMIN_NAME', 'SETUP_ADMIN_LAST_NAME', 'SETUP_ADMIN_EMAIL', 'SETUP_ADMIN_PASSWORD']) delete env[key];
-  const second = await run(process.execPath, ['scripts/setup.js'], { env, cwd: new URL('..', import.meta.url), timeout: 60000 });
+  const second = await run(process.execPath, ['--import', 'tsx', 'scripts/setup.ts'], { env, cwd: new URL('..', import.meta.url), timeout: 60000 });
   assert.match(second.stdout, /ya estaba completada/);
   assert.equal(await mongoose.models.User.countDocuments(), 1);
 });

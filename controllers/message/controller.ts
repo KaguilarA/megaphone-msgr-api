@@ -1,0 +1,454 @@
+import {
+  getWhatsAppChatMessages as defaultGetWhatsAppChatMessages,
+  getWhatsAppChats as defaultGetWhatsAppChats,
+  sendWhatsAppMessage as defaultSendWhatsAppMessage,
+  verifyWhatsAppSession as defaultVerifyWhatsAppSession,
+} from "../../integrations/whatsapp.js";
+import { normalizePhoneNumber } from "../../utils/phoneNumber.js";
+import { createHttpError } from "../../utils/httpError.js";
+import type { MessageDelivery } from "../../types/domain.js";
+
+const MAX_MESSAGE_RECIPIENTS = 300;
+
+export default function ({
+  id,
+  model,
+  receptorModel,
+  populatedFields = [],
+  phoneModel,
+  tokenModel,
+  contactModel,
+  stateModel,
+  mediaProcessor,
+  whatsappConfig,
+  getWhatsAppChats = defaultGetWhatsAppChats,
+  getWhatsAppChatMessages = defaultGetWhatsAppChatMessages,
+  verifyWhatsAppSession = defaultVerifyWhatsAppSession,
+  sendWhatsAppMessage = defaultSendWhatsAppMessage,
+}) {
+
+  function requestError(message, status = 400) {
+    return createHttpError(message, status);
+  }
+
+  async function getMessageState(state?: unknown) {
+    if (state || !stateModel) return state;
+
+    const activeState =
+      (await stateModel.getOne({ name: "active", entity: "Message" })) ||
+      (await stateModel.save({
+        name: "active",
+        description: "Message is ready to send.",
+        entity: "Message",
+      }));
+
+    return activeState?._id;
+  }
+
+  async function getSourcePhone(userId, sourcePhoneId) {
+    if (!phoneModel) return undefined;
+    if (typeof sourcePhoneId !== "string" || !sourcePhoneId.trim()) {
+      throw requestError("sourcePhoneId is required.");
+    }
+
+    const phone = await phoneModel.getById(sourcePhoneId);
+    if (
+      !phone ||
+      String(phone.owner) !== String(userId) ||
+      phone.ownerType !== "User"
+    ) {
+      throw requestError("The selected source phone does not belong to the user.", 403);
+    }
+
+    return phone;
+  }
+
+  function parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId) {
+    let sourcePhoneIds = rawSourcePhoneIds;
+    if (typeof sourcePhoneIds === "string") {
+      try {
+        sourcePhoneIds = JSON.parse(sourcePhoneIds);
+      } catch {
+        throw requestError("sourcePhoneIds must be a valid JSON array.");
+      }
+    }
+    if (sourcePhoneIds === undefined) {
+      sourcePhoneIds = sourcePhoneId ? [sourcePhoneId] : [];
+    }
+    if (
+      !Array.isArray(sourcePhoneIds) ||
+      sourcePhoneIds.some((phoneId) => typeof phoneId !== "string" || !phoneId.trim()) ||
+      new Set(sourcePhoneIds).size !== sourcePhoneIds.length
+    ) {
+      throw requestError("Select distinct source phone numbers.");
+    }
+    return sourcePhoneIds;
+  }
+
+  async function getWhatsAppToken(userId, sourcePhone) {
+    if (!tokenModel) return undefined;
+
+    const sourcePhoneId = sourcePhone?._id;
+    const linkedTokenId = sourcePhone?.tokens?.whatsapp;
+    const token = linkedTokenId
+      ? await tokenModel.getById(linkedTokenId)
+      : await tokenModel.getOne({ owner: userId, phone: sourcePhoneId });
+    if (token && String(token.owner) === String(userId) && String(token.phone) === String(sourcePhoneId) &&
+        typeof token.whatsappSession === "string" &&
+        /^[a-zA-Z0-9._-]{1,64}$/.test(token.whatsappSession)) {
+      return token;
+    }
+
+    throw requestError("Conecta el número de WhatsApp seleccionado antes de enviar.", 422);
+  }
+
+  async function resolveRecipients(userId, contacts) {
+    if (!phoneModel || !contactModel) return [];
+    const recipients = [];
+    for (const contactId of contacts) {
+      const contact = await contactModel.getById(contactId);
+      if (!contact || String(contact.owner) !== String(userId)) {
+        throw requestError("One of the selected contacts does not belong to the user.", 403);
+      }
+
+      const phoneNumbers = await phoneModel.getByCoincidence({
+        ownerType: "Contact",
+        owner: contactId,
+      });
+      const phone = phoneNumbers?.[0];
+      if (!phone) {
+        throw requestError("One of the selected contacts has no phone number.");
+      }
+
+      recipients.push(normalizePhoneNumber(phone).e164);
+    }
+    return [...new Set(recipients)];
+  }
+
+  async function createReceptors(messageId, contacts) {
+    return Promise.all(
+      contacts.map((contact) =>
+        receptorModel.save({ message: messageId, contact }),
+      ),
+    );
+  }
+
+  /**
+   * Return all messages sent by the authenticated user.
+   * @param {import('express').Request} req Express request containing the user session.
+   * @param {import('express').Response} res Express response.
+   * @returns {Promise<void>} Sends the matching messages or an error response.
+   */
+  async function getAll(req, res) {
+    try {
+      const id = req.session.userId;
+      const data = await model.getByCoincidence(
+        { sender: id, hiddenAt: { $exists: false } },
+        { populate: populatedFields },
+      );
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  function getHistoryPagination(query) {
+    const limit = query.limit === undefined ? 50 : Number(query.limit);
+    const offset = query.offset === undefined ? 0 : Number(query.offset);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
+        !Number.isInteger(offset) || offset < 0 || offset > 10_000) {
+      throw requestError("Invalid chat history pagination.");
+    }
+    return { limit, offset };
+  }
+
+  async function getWhatsAppHistoryContext(req) {
+    const sourcePhone = await getSourcePhone(
+      req.session.userId,
+      req.query.sourcePhoneId,
+    );
+    const token = await getWhatsAppToken(req.session.userId, sourcePhone);
+    return {
+      token,
+      sourcePhoneNumber: normalizePhoneNumber(sourcePhone).e164,
+    };
+  }
+
+  async function getWhatsAppChatsForUser(req, res) {
+    try {
+      const { token, sourcePhoneNumber } = await getWhatsAppHistoryContext(req);
+      const chats = await getWhatsAppChats(token, sourcePhoneNumber, {
+        ...whatsappConfig,
+        ...getHistoryPagination(req.query),
+      });
+      return res.status(200).json(chats);
+    } catch (error) {
+      if (error.providerStatus === 404 && error.providerOperation === "chat history") {
+        return res.status(503).json({
+          message: "El historial no está habilitado en WAHA. Verifica que Store esté activado para esta sesión.",
+        });
+      }
+      return res.status(error.status || 500).json({ message: error.message });
+    }
+  }
+
+  async function getWhatsAppChatMessagesForUser(req, res) {
+    try {
+      const { token, sourcePhoneNumber } = await getWhatsAppHistoryContext(req);
+      const pagination = getHistoryPagination(req.query);
+      const messages = await getWhatsAppChatMessages(
+        token,
+        sourcePhoneNumber,
+        req.params.chatId,
+        {
+          ...whatsappConfig,
+          ...pagination,
+        },
+      );
+      return res.status(200).json({
+        messages,
+        nextOffset: pagination.offset + messages.length,
+        hasMore: messages.length === pagination.limit,
+      });
+    } catch (error) {
+      if (error.providerStatus === 404 && error.providerOperation === "chat messages") {
+        return res.status(503).json({
+          message: "El historial no está habilitado en WAHA. Verifica que Store esté activado para esta sesión.",
+        });
+      }
+      return res.status(error.status || 500).json({ message: error.message });
+    }
+  }
+
+  /**
+   * Return a specific message by its ID, including its recipient contacts.
+   * @param {import('express').Request} req Express request containing the message ID.
+   * @param {import('express').Response} res Express response.
+   * @returns {Promise<void>} Sends the matching message with its receptors or an error response.
+   */
+  async function getById(req, res) {
+    try {
+      const messageId = req.params.id;
+      const message = await model.getById(messageId, {
+        populate: populatedFields,
+      });
+      if (!message) {
+        return res.status(404).json({ message: "Message not found." });
+      }
+      if (message.hiddenAt) {
+        return res.status(404).json({ message: "Message not found." });
+      }
+      if (String(message.sender?._id || message.sender) !== String(req.session?.userId)) {
+        throw requestError("Message not found.", 404);
+      }
+
+      const receptors = await receptorModel.getByCoincidence(
+        { message: messageId },
+        { populate: "contact" },
+      );
+
+      res.status(200).json({ ...message.toJSON(), receptors });
+    } catch (error) {
+      res.status(error.status || 500).json({ error: error.message });
+    }
+  }
+
+  /**
+   * Create a message for the authenticated user and its recipient list.
+   * @param {import('express').Request} req Express request containing message data, the contact ID array, and the user session.
+   * @param {import('express').Response} res Express response.
+   * @returns {Promise<void>} Sends the created message with its receptors or an error response.
+   */
+  async function register(req, res) {
+    let recordedMessage;
+    try {
+      const id = req.session.userId;
+      const {
+        contacts: rawContacts = [],
+        sourcePhoneId,
+        sourcePhoneIds: rawSourcePhoneIds,
+        senderMode: rawSenderMode,
+        requestId,
+        state,
+        ...messageData
+      } = req.body;
+      const senderMode = rawSenderMode || "single";
+      if (!["single", "round-robin"].includes(senderMode)) {
+        throw requestError("senderMode must be single or round-robin.");
+      }
+      if (sourcePhoneId !== undefined && rawSourcePhoneIds !== undefined) {
+        throw requestError("Provide sourcePhoneId or sourcePhoneIds, not both.");
+      }
+      if (phoneModel && !requestId) throw requestError("requestId is required to prevent duplicate sends.");
+      if (requestId !== undefined && (typeof requestId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))) {
+        throw requestError("requestId must be a UUID.");
+      }
+      if (requestId) {
+        const previous = await model.getOne({ sender: id, requestId });
+        if (previous) return res.status(200).json(previous);
+      }
+      const contacts = typeof rawContacts === "string"
+        ? JSON.parse(rawContacts)
+        : rawContacts;
+      if (!Array.isArray(contacts)) {
+        throw requestError("contacts must be an array.");
+      }
+      if (!contacts.length || contacts.length > MAX_MESSAGE_RECIPIENTS || contacts.some((contact) => typeof contact !== "string" || !contact.trim()) || new Set(contacts).size !== contacts.length) {
+        throw requestError(`Select between 1 and ${MAX_MESSAGE_RECIPIENTS} distinct contacts.`);
+      }
+      if (messageData.content !== undefined && typeof messageData.content !== "string") {
+        throw requestError("Message content must be text.");
+      }
+      const header = typeof messageData.header === "string" ? messageData.header.trim() : "";
+      const rawContent = typeof messageData.content === "string" ? messageData.content : "";
+      const content = rawContent.trim();
+      if (!content && !req.file) {
+        throw requestError("Message content is required unless an attachment is included.");
+      }
+      if (rawContent.length > 4096) throw requestError("Message content cannot exceed 4096 characters.");
+      if (req.file && content.length > 1024) {
+        throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
+      }
+      if (req.file && !mediaProcessor) throw requestError("La carga de archivos no está disponible.", 503);
+      const sourcePhoneIds = phoneModel
+        ? parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId)
+        : [];
+      if (
+        phoneModel &&
+        ((senderMode === "single" && sourcePhoneIds.length !== 1) ||
+          (senderMode === "round-robin" && sourcePhoneIds.length < 2))
+      ) {
+        throw requestError(
+          senderMode === "single"
+            ? "Select one source phone number."
+            : "Select at least two source phone numbers for distribution.",
+        );
+      }
+      const sourcePhones = phoneModel
+        ? await Promise.all(sourcePhoneIds.map((phoneId) => getSourcePhone(id, phoneId)))
+        : [];
+      const sourceSenders = await Promise.all(
+        sourcePhones.map(async (phone) => ({
+          phone,
+          token: await getWhatsAppToken(id, phone),
+          phoneNumber: normalizePhoneNumber(phone).e164,
+        })),
+      );
+      if (whatsappConfig && (!whatsappConfig.apiBaseUrl || !whatsappConfig.apiKey)) {
+        throw requestError("El envío de WhatsApp no está disponible en este momento.", 503);
+      }
+      const recipients = await resolveRecipients(id, contacts);
+      if (senderMode === "round-robin" && sourceSenders.length > recipients.length) {
+        throw requestError("Select no more sender numbers than distinct recipients.");
+      }
+      if (whatsappConfig && recipients.length) {
+        if (!sourceSenders.length) {
+          throw requestError("Selecciona un número emisor de WhatsApp.", 422);
+        }
+        for (const sourceSender of sourceSenders) {
+          await verifyWhatsAppSession(
+            sourceSender.token,
+            sourceSender.phoneNumber,
+            whatsappConfig,
+          );
+        }
+      }
+      const messageState = await getMessageState();
+      const media = req.file && mediaProcessor
+        ? await mediaProcessor(req.file)
+        : undefined;
+
+      const deliveries: MessageDelivery[] = recipients.map((recipient, index) => {
+        const sourceSender = sourceSenders.length
+          ? sourceSenders[senderMode === "round-robin" ? index % sourceSenders.length : 0]
+          : undefined;
+        return {
+          recipient,
+          status: "pending",
+          ...(sourceSender ? { senderPhone: sourceSender.phone._id } : {}),
+        };
+      });
+      const newMessage = await model.save({
+        header,
+        content,
+        ...(media?.mediaUrl ? { mediaUrl: media.mediaUrl } : {}),
+        sender: id,
+        contacts,
+        senderMode,
+        ...(requestId ? { requestId } : {}),
+        deliveries,
+        deliveryStatus: "pending",
+        ...(sourcePhones[0] ? { senderPhone: sourcePhones[0]._id || sourcePhoneIds[0] } : {}),
+        ...(messageState ? { state: messageState } : {}),
+        channel: "whatsapp",
+      });
+      recordedMessage = newMessage;
+
+      const receptors = await createReceptors(newMessage._id, contacts);
+      const sourceSendersById = new Map(
+        sourceSenders.map((sourceSender) => [String(sourceSender.phone._id), sourceSender]),
+      );
+      for (const delivery of deliveries) {
+        delivery.status = "sending";
+        await model.update(newMessage._id, { deliveries, deliveryStatus: "sending" });
+        try {
+          const sourceSender = sourceSendersById.get(String(delivery.senderPhone));
+          const result = await sendWhatsAppMessage(
+            delivery.recipient,
+            content,
+            sourceSender?.token,
+            {
+              ...(whatsappConfig || {}),
+              sourcePhoneNumber: sourceSender?.phoneNumber,
+              sessionVerified: Boolean(whatsappConfig),
+              media,
+            },
+          );
+          delivery.status = "accepted";
+          delivery.providerMessageId = result?.messages?.[0]?.id;
+        } catch (error) {
+          // A timeout cannot establish whether WAHA accepted the message. Never retry automatically.
+          delivery.status = error.providerRejected ? "rejected" : "unknown";
+        }
+        await model.update(newMessage._id, { deliveries });
+      }
+      const accepted = deliveries.filter((delivery) => delivery.status === "accepted").length;
+      const deliveryStatus = accepted === deliveries.length ? "accepted" : accepted ? "partial" : "failed";
+      if (deliveries.length) await model.update(newMessage._id, { deliveries, deliveryStatus });
+
+      res.status(201).json({ ...newMessage.toJSON(), receptors, deliveries, deliveryStatus });
+    } catch (error) {
+      if (error.code === 11000 && req.body.requestId) {
+        const previous = await model.getOne({ sender: req.session.userId, requestId: req.body.requestId });
+        if (previous) return res.status(200).json(previous);
+      }
+      res.status(error.status || (error instanceof SyntaxError || error.name === "CastError" ? 400 : 500)).json({
+        error: recordedMessage ? "El envío quedó registrado. Consulta el historial antes de volver a enviarlo." : error.message,
+        ...(recordedMessage ? { messageId: recordedMessage._id } : {}),
+      });
+    }
+  }
+
+  async function remove(req, res) {
+    try {
+      const messageId = req.params.id;
+      const message = await model.getById(messageId);
+      if (!message || String(message.sender?._id || message.sender) !== String(req.session?.userId)) {
+        throw requestError("Message not found.", 404);
+      }
+      await model.update(messageId, { hiddenAt: new Date() });
+      return res.status(204).end();
+    } catch (error) {
+      return res.status(error.status || 500).json({ error: error.message });
+    }
+  }
+
+  return {
+    getAll,
+    getById,
+    getWhatsAppChats: getWhatsAppChatsForUser,
+    getWhatsAppChatMessages: getWhatsAppChatMessagesForUser,
+    register,
+    delete: remove,
+  };
+};

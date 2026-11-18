@@ -11,7 +11,7 @@
     "url": "git+https://github.com/KaguilarA/megaphone-msgr-api.git"
   },
   "type": "module",
-  "main": "index.js",
+  "main": "index.ts",
   "license": "UNLICENSED",
   "private": true,
   "author": {
@@ -24,11 +24,11 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "setup": "node --env-file-if-exists=.env scripts/setup.js",
-    "dev": "node --watch --env-file-if-exists=.env index.js",
-    "start": "node --env-file-if-exists=.env index.js",
-    "test": "node --import ./utils/testSetup.js --test",
-    "migrate:phones": "node --env-file-if-exists=.env scripts/migrate-phone-numbers.js",
+    "setup": "node --env-file-if-exists=.env --import tsx scripts/setup.ts",
+    "dev": "node --env-file-if-exists=.env --import tsx --watch index.ts",
+    "start": "node --env-file-if-exists=.env --import tsx index.ts",
+    "test": "node --import tsx --import ./utils/testSetup.js --test",
+    "migrate:phones": "node --env-file-if-exists=.env --import tsx scripts/migrate-phone-numbers.ts",
     "build": "node scripts/build-backend.mjs",
     "build:worker": "node scripts/build-worker.mjs"
   },
@@ -47,10 +47,17 @@
     "mongoose": "$mongoose"
   },
   "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
     "es-module-lexer": "2.0.0",
     "fflate": "^0.8.3",
     "javascript-obfuscator": "5.10.1",
     "mongodb-memory-server": "^11.3.0",
-    "terser": "5.51.2"
+    "terser": "5.51.2",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   }
 }

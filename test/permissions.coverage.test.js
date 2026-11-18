@@ -11,15 +11,15 @@ const currentFile = fileURLToPath(import.meta.url);
 const repositoryRoot = path.dirname(path.dirname(currentFile));
 
 const routeFiles = {
-  ActionLog: "routes/actionLog/routes.js",
-  Address: "routes/address/routes.js",
-  Contact: "routes/contact/routes.js",
-  Email: "routes/email/routes.js",
-  Message: "routes/message/routes.js",
-  Phone: "routes/phone/routes.js",
-  State: "routes/state/routes.js",
-  Token: "routes/userTokens/routes.js",
-  User: "routes/user/routes.js",
+  ActionLog: "routes/actionLog/routes.ts",
+  Address: "routes/address/routes.ts",
+  Contact: "routes/contact/routes.ts",
+  Email: "routes/email/routes.ts",
+  Message: "routes/message/routes.ts",
+  Phone: "routes/phone/routes.ts",
+  State: "routes/state/routes.ts",
+  Token: "routes/userTokens/routes.ts",
+  User: "routes/user/routes.ts",
 };
 
 test("every seeded permission is configured and route-validated", () => {

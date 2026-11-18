@@ -1,15 +1,15 @@
 Megaphone Messenger API - Prompt de Contexto para IA
 Versión: 1.0.0
 
-Estás trabajando con el backend de Megaphone Messenger, una API REST privada construida con Node.js, Express 5, MongoDB/Mongoose y owl-expressjs-utils. Usa módulos ES y conserva el patrón de inyección de dependencias basado en factories del proyecto. Prioriza los helpers existentes de owl-expressjs-utils sobre infraestructura personalizada.
+Estás trabajando con el backend TypeScript de Megaphone Messenger, una API REST privada construida con Node.js, Express 5, MongoDB/Mongoose y owl-expressjs-utils. Usa módulos ES y conserva el patrón de inyección de dependencias basado en factories del proyecto. Prioriza los helpers existentes de owl-expressjs-utils sobre infraestructura personalizada.
 
 Arquitectura
-- index.js es el punto de entrada. Puede iniciar la aplicación en modo cluster de Node.js cuando CLUSTER_ENABLED es true; de lo contrario llama a utils/init.js.
-- app/app.js crea la aplicación Express, deshabilita X-Powered-By, confía en un proxy, configura OwlCors, analiza cuerpos JSON de hasta 1 MB, escucha en el puerto configurado y cierra MongoDB de forma ordenada al recibir SIGINT/SIGTERM.
-- utils/init.js crea la aplicación y llama a utils/start.js.
-- utils/start.js se conecta a MongoDB con OwlMongoConnect y después llama a utils/initApiRoutes.js.
-- utils/initApiRoutes.js añade OwlSession y monta cada router listado en consts/config.js.
-- consts/index.js carga los valores de .env. No codifiques ni expongas secretos como SESSION_SECRET o claves de cifrado.
+- index.ts es el punto de entrada. Puede iniciar la aplicación en modo cluster de Node.js cuando CLUSTER_ENABLED es true; de lo contrario llama a utils/init.ts.
+- app/app.ts crea la aplicación Express, deshabilita X-Powered-By, confía en un proxy, configura OwlCors, analiza cuerpos JSON de hasta 1 MB, escucha en el puerto configurado y cierra MongoDB de forma ordenada al recibir SIGINT/SIGTERM.
+- utils/init.ts crea la aplicación y llama a utils/start.ts.
+- utils/start.ts se conecta a MongoDB con OwlMongoConnect y después llama a utils/initApiRoutes.ts.
+- utils/initApiRoutes.ts añade OwlSession y monta cada router listado en consts/config.ts.
+- consts/index.ts carga los valores de .env. No codifiques ni expongas secretos como SESSION_SECRET o claves de cifrado.
 - consts/config.js es el registro central de rutas y dependencias. Cada entrada de ruta contiene los campos url, config y router. Añade grupos de rutas nuevos mediante este registro.
 
 Capa de modelos

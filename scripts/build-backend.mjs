@@ -1,26 +1,30 @@
-import { cp, mkdir, mkdtemp, appendFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, appendFile, readFile, rm, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { protectModule } from './protect-module.mjs';
-import { readdir, readFile } from 'node:fs/promises';
+import { readdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 await mkdir(join(root, 'dist'), { recursive: true });
 const output = await mkdtemp(join(root, 'dist/backend-'));
-// Explicit allowlist: never publish database exports, credentials, or test data.
-for (const directory of ['app', 'consts', 'controllers', 'integrations', 'middlewares', 'models', 'routes', 'utils', 'setup']) {
-  await cp(join(root, directory), join(output, directory), {
-    recursive: true,
-    filter: source => !source.endsWith('.md') && !source.endsWith('testSetup.js'),
-  });
-}
-for (const file of ['index.js', 'package.json', 'package-lock.json']) {
-  await cp(join(root, file), join(output, file));
-}
-await mkdir(join(output, 'scripts'));
-for (const file of ['setup.js', 'migrate-phone-numbers.js']) {
-  await cp(join(root, 'scripts', file), join(output, 'scripts', file));
-}
+execFileSync(
+  process.execPath,
+  [
+    join(root, 'node_modules/typescript/bin/tsc'),
+    '--project',
+    join(root, 'tsconfig.json'),
+    '--outDir',
+    output,
+    '--declaration',
+    'false',
+  ],
+  { cwd: root, stdio: 'inherit' },
+);
+await rm(join(output, 'types'), { recursive: true, force: true });
+await writeFile(join(output, 'package.json'), await readFile(join(root, 'package.json')));
+await writeFile(join(output, 'package-lock.json'), await readFile(join(root, 'package-lock.json')));
 const pkg = JSON.parse(await readFile(join(output, 'package.json'), 'utf8'));
+pkg.main = 'index.js';
 pkg.scripts = { start: 'node index.js', setup: 'node scripts/setup.js', 'migrate:phones': 'node scripts/migrate-phone-numbers.js' };
 await writeFile(join(output, 'package.json'), JSON.stringify(pkg, null, 2) + '\n');
 async function protectTree(directory) {

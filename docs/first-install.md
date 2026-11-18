@@ -10,7 +10,7 @@ Esta guía corresponde al backend `megaphone-msgr-api` y al frontend `megaphone-
 
 ## 1. Configurar el backend
 
-Ejecuta `npm ci --omit=dev` en el repositorio del backend. La instalación de producción no necesita el MongoDB temporal usado por las pruebas. Copia `.env.example` a `.env` en el servidor y completa:
+Ejecuta `npm ci` en el repositorio del backend; el código fuente TypeScript necesita `tsx` para ejecutar los comandos locales. El artefacto de producción publicado por Actions ya es JavaScript y se instala sin dependencias de desarrollo. Copia `.env.example` a `.env` en el servidor y completa:
 
 ```dotenv
 NODE_ENV=production

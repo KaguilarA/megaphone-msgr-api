@@ -12,7 +12,7 @@ Los workflows de ambos repositorios se ejecutan al actualizar `main`, en pull re
 
 En ambos repositorios de GitHub, la variable de Actions `DEPLOYMENT_URL` contiene el origen HTTPS correspondiente.
 
-Render consume `production` del repositorio del backend, con auto-deploy al recibir commits, Node 24, build `npm ci --omit=dev --ignore-scripts`, inicio `node index.js` (equivalente a `npm start` con variables del hosting), y health check `/health`. Actions compila y ofusca todos los módulos propios antes de generar la rama `production`; Render solo instala dependencias de ejecución y arranca el artefacto. El paquete excluye `.env`, pruebas y exportaciones de `db/`.
+Render consume `production` del repositorio del backend, con auto-deploy al recibir commits, Node 24, build `npm ci --omit=dev --ignore-scripts`, inicio `node index.js` (equivalente a `npm start` con variables del hosting), y health check `/health`. Actions compila las fuentes TypeScript a JavaScript y ofusca todos los módulos propios antes de generar la rama `production`; Render solo instala dependencias de ejecución y arranca el artefacto. El paquete excluye fuentes, `.env`, pruebas y exportaciones de `db/`.
 
 Cloudflare Pages consume `production` del frontend sin comando de build y con la raíz como directorio de salida: Angular ya se compila en Actions. Los previews automáticos están deshabilitados. Sus variables son:
 
@@ -32,7 +32,7 @@ En Atlas permite los rangos de salida del servicio Render y la IP del equipo que
 Con la conexión lista, ejecuta:
 
 ```powershell
-node --env-file=.env.production scripts/setup.js
+node --env-file=.env.production --import tsx scripts/setup.ts
 ```
 
 El instalador pide los datos del primer administrador. También acepta `SETUP_ADMIN_NAME`, `SETUP_ADMIN_LAST_NAME`, `SETUP_ADMIN_EMAIL` y `SETUP_ADMIN_PASSWORD` como variables privadas. Es idempotente y requiere transacciones. Consulta [first-install.md](first-install.md).
@@ -54,7 +54,7 @@ Los servicios gratuitos de Render pueden suspenderse por inactividad, igual que 
 
 ## Compilación y protección obligatoria
 
-Backend: `npm run build` genera `dist/backend-*`, con módulos ESM ofuscados y minificados, sin mapas de código. Conserva los imports, exports y nombres de propiedades usados por MongoDB y HTTP. El paquete generado solo incluye scripts de ejecución; no requiere herramientas de compilación en Render. CI valida también este paso en pull requests.
+Backend: `npm run build` compila y genera `dist/backend-*`, con módulos ESM ofuscados y minificados, sin mapas de código ni fuentes TypeScript. Conserva los imports, exports y nombres de propiedades usados por MongoDB y HTTP. El paquete generado solo incluye scripts de ejecución; no requiere herramientas de compilación en Render. CI valida también este paso en pull requests.
 
 Frontend: `npm run build` compila Angular en producción y protege los módulos JavaScript, incluido `public/_worker.js` en su copia de salida. Recalcula los nombres de los chunks y sus referencias para invalidar caché. Pages recibe únicamente el directorio `browser` generado.
 

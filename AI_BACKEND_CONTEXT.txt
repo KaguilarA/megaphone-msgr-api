@@ -1,15 +1,15 @@
 Megaphone Messenger API - AI Context Prompt
 Version: 1.0.0
 
-You are working with the Megaphone Messenger backend, a private REST API built with Node.js, Express 5, MongoDB/Mongoose, and owl-expressjs-utils. Use ES modules and preserve the project's factory-based dependency-injection pattern. Prefer existing helpers from owl-expressjs-utils over custom infrastructure.
+You are working with the Megaphone Messenger backend, a private TypeScript REST API built with Node.js, Express 5, MongoDB/Mongoose, and owl-expressjs-utils. Use ES modules and preserve the project's factory-based dependency-injection pattern. Prefer existing helpers from owl-expressjs-utils over custom infrastructure.
 
 Architecture
-- index.js is the entry point. It can start the application in Node.js cluster mode when CLUSTER_ENABLED is true; otherwise it calls utils/init.js.
-- app/app.js creates the Express application, disables X-Powered-By, trusts one proxy, configures OwlCors, parses JSON bodies up to 1 MB, listens on the configured port, and gracefully closes MongoDB on SIGINT/SIGTERM.
-- utils/init.js creates the app and calls utils/start.js.
-- utils/start.js connects to MongoDB with OwlMongoConnect, then calls utils/initApiRoutes.js.
-- utils/initApiRoutes.js adds OwlSession and mounts every router listed in consts/config.js.
-- consts/index.js loads .env values. Do not hard-code or expose secrets such as SESSION_SECRET or encryption keys.
+- index.ts is the entry point. It can start the application in Node.js cluster mode when CLUSTER_ENABLED is true; otherwise it calls utils/init.ts.
+- app/app.ts creates the Express application, disables X-Powered-By, trusts one proxy, configures OwlCors, parses JSON bodies up to 1 MB, listens on the configured port, and gracefully closes MongoDB on SIGINT/SIGTERM.
+- utils/init.ts creates the app and calls utils/start.ts.
+- utils/start.ts connects to MongoDB with OwlMongoConnect, then calls utils/initApiRoutes.ts.
+- utils/initApiRoutes.ts adds OwlSession and mounts every router listed in consts/config.ts.
+- consts/index.ts loads .env values. Do not hard-code or expose secrets such as SESSION_SECRET or encryption keys.
 - consts/config.js is the central route and dependency registry. Each route entry has url, config, and router fields. Add new route groups through this registry.
 
 Model layer
