@@ -240,8 +240,29 @@ test("rejects sessions that are already connected to another source", async () =
     }),
     (error) => {
       assert.equal(error.providerRejected, true);
+      assert.equal(error.providerStatus, 404);
+      assert.equal(error.providerOperation, "connected account lookup");
       assert.match(error.message, /No se pudo completar la solicitud de WhatsApp/);
       assert.doesNotMatch(error.message, /test-api-key/);
+      return true;
+    },
+  );
+});
+
+test("reports the rejected status when the connection service refuses a request", async () => {
+  await assert.rejects(
+    startWhatsAppConnection(
+      { whatsappSession: "m-phone-1" },
+      options.sourcePhoneNumber,
+      {
+        ...options,
+        fetchImpl: async () => response(401, { message: "Unauthorized" }),
+      },
+    ),
+    (error) => {
+      assert.equal(error.providerRejected, true);
+      assert.equal(error.providerStatus, 401);
+      assert.equal(error.providerOperation, "session lookup");
       return true;
     },
   );

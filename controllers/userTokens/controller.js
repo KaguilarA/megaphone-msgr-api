@@ -108,7 +108,14 @@ export default function ({
         : await getWhatsAppConnectionStatus(sessionToken, sourcePhoneNumber, options);
     } catch (error) {
       if (error.providerRejected) {
-        fail("No se pudo completar la conexión de WhatsApp. Intenta de nuevo.", 502);
+        console.error("WhatsApp connection service rejected a request:", {
+          operation: error.providerOperation,
+          status: error.providerStatus,
+        });
+        fail(
+          `No se pudo completar la conexión de WhatsApp. Código del servicio: ${error.providerStatus}.`,
+          502,
+        );
       }
       throw error;
     }

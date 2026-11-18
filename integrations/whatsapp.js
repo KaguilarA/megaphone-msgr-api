@@ -1,7 +1,7 @@
 const REQUEST_TIMEOUT_MS = 15_000;
 const SESSION_PATTERN = /^[a-zA-Z0-9._-]{1,64}$/;
 
-function providerError(response) {
+function providerError(response, operation) {
   return Object.assign(
     new Error(
       response.status >= 500
@@ -10,6 +10,8 @@ function providerError(response) {
     ),
     {
       providerRejected: response.status >= 400 && response.status < 500,
+      providerStatus: response.status,
+      providerOperation: operation,
       status: response.status >= 500 ? 503 : 422,
     },
   );
@@ -19,7 +21,7 @@ async function readJson(response, description) {
   try {
     return await response.json();
   } catch (error) {
-    if (!response.ok) throw providerError(response);
+    if (!response.ok) throw providerError(response, description);
     throw new Error(`WAHA returned an invalid ${description} response.`, {
       cause: error,
     });
@@ -74,7 +76,7 @@ async function providerAction(fetchImpl, url, method, headers, description) {
   });
   if (!response.ok) {
     await readJson(response, description);
-    throw providerError(response);
+    throw providerError(response, description);
   }
 }
 
@@ -85,8 +87,8 @@ async function getSession(fetchImpl, sessionUrl, headers) {
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   if (response.status === 404) return null;
-  const session = await readJson(response, "session");
-  if (!response.ok) throw providerError(response);
+  const session = await readJson(response, "session lookup");
+  if (!response.ok) throw providerError(response, "session lookup");
   return session;
 }
 
@@ -108,8 +110,8 @@ async function getConnectionState(
         headers,
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-      const me = await readJson(response, "connected account");
-      if (!response.ok) throw providerError(response);
+      const me = await readJson(response, "connected account lookup");
+      if (!response.ok) throw providerError(response, "connected account lookup");
       accountId = me?.id;
     }
     if (typeof accountId !== "string") return { status: "connecting" };
@@ -130,8 +132,8 @@ async function getConnectionState(
       },
     );
     if (response.status === 422) return { status: "qr_ready" };
-    const qr = await readJson(response, "QR code");
-    if (!response.ok) throw providerError(response);
+    const qr = await readJson(response, "QR code retrieval");
+    if (!response.ok) throw providerError(response, "QR code retrieval");
     if (typeof qr?.data !== "string") {
       throw new Error("The QR code response did not contain image data.");
     }
@@ -181,13 +183,13 @@ export async function startWhatsAppConnection(
     if (response.status === 409) {
       session = await getSession(fetchImpl, sessionUrl, transport.headers);
       if (!session) {
-        await readJson(response, "session");
-        throw providerError(response);
+        await readJson(response, "session creation");
+        throw providerError(response, "session creation");
       }
     } else {
       if (!response.ok) {
-        await readJson(response, "session");
-        throw providerError(response);
+        await readJson(response, "session creation");
+        throw providerError(response, "session creation");
       }
       session = await getSession(fetchImpl, sessionUrl, transport.headers);
       created = true;
@@ -257,8 +259,8 @@ export async function verifyWhatsAppSession(
     headers,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  const session = await readJson(response, "session");
-  if (!response.ok) throw providerError(response);
+  const session = await readJson(response, "connected account lookup");
+  if (!response.ok) throw providerError(response, "connected account lookup");
 
   const connectedNumber = typeof session?.id === "string"
     ? session.id.split("@")[0].replace(/^\+/, "")
@@ -352,8 +354,8 @@ export async function sendWhatsAppMessage(
     body: JSON.stringify(payload),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
-  const responseBody = await readJson(response, "message");
-  if (!response.ok) throw providerError(response);
+  const responseBody = await readJson(response, "message send");
+  if (!response.ok) throw providerError(response, "message send");
   if (!messageId(responseBody)) {
     throw new Error("WAHA did not confirm acceptance with a message ID.");
   }

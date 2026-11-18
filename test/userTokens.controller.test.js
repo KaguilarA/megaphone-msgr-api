@@ -137,6 +137,38 @@ test('a user cannot create a WhatsApp connection for another account phone', asy
   assert.equal(providerCalled, false);
 });
 
+test('reports the upstream status without exposing service credentials', async () => {
+  const { model } = createDependencies();
+  const controller = UserTokenController({
+    model,
+    phoneModel: {
+      getById: async () => ({
+        _id: phoneId,
+        owner,
+        ownerType: 'User',
+        phone: '4155552670',
+        countryNumber: '+1',
+      }),
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'secret-key' },
+    whatsappFetch: async () => ({
+      ok: false,
+      status: 401,
+      json: async () => ({ message: 'Unauthorized' }),
+    }),
+  });
+  const res = createRes();
+
+  await controller.startWhatsAppConnection({
+    session: { userId: owner },
+    params: { phoneId },
+  }, res);
+
+  assert.equal(res.statusCode, 502);
+  assert.match(res.body.message, /código del servicio: 401/i);
+  assert.doesNotMatch(res.body.message, /secret-key/);
+});
+
 test('starts a new connection and returns the QR without exposing its internal session name', async () => {
   const requests = [];
   let created = false;
