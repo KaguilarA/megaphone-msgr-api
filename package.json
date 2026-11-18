@@ -29,7 +29,6 @@
     "migrate:phones": "node scripts/migrate-phone-numbers.js"
   },
   "dependencies": {
-    "cloudinary": "^2.11.0",
     "country-codes-flags-phone-codes": "^1.1.1",
     "express": "^5.2.1",
     "mongoose": "^8.24.1",
