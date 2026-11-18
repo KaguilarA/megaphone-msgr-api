@@ -169,6 +169,49 @@ test('reports the upstream status without exposing service credentials', async (
   assert.doesNotMatch(res.body.message, /secret-key/);
 });
 
+test('reports and safely logs upstream server errors', async () => {
+  const { model } = createDependencies();
+  const controller = UserTokenController({
+    model,
+    phoneModel: {
+      getById: async () => ({
+        _id: phoneId,
+        owner,
+        ownerType: 'User',
+        phone: '4155552670',
+        countryNumber: '+1',
+      }),
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'secret-key' },
+    whatsappFetch: async () => ({
+      ok: false,
+      status: 503,
+      json: async () => ({ message: 'Unavailable' }),
+    }),
+  });
+  const res = createRes();
+  const logged = [];
+  const originalError = console.error;
+  console.error = (...args) => logged.push(args);
+
+  try {
+    await controller.getWhatsAppConnection({
+      session: { userId: owner },
+      params: { phoneId },
+    }, res);
+  } finally {
+    console.error = originalError;
+  }
+
+  assert.equal(res.statusCode, 503);
+  assert.match(res.body.message, /código del servicio: 503/i);
+  assert.deepEqual(logged, [[
+    'WhatsApp connection service returned an error:',
+    { operation: 'session lookup', status: 503 },
+  ]]);
+  assert.doesNotMatch(JSON.stringify(logged), /secret-key|Unavailable/);
+});
+
 test('starts a new connection and returns the QR without exposing its internal session name', async () => {
   const requests = [];
   let created = false;
