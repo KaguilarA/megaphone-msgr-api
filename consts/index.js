@@ -9,5 +9,8 @@ export const SessionSecret = process.env.SESSION_SECRET;
 export const WahaApiUrl = process.env.WAHA_API_URL;
 export const WahaApiKey = process.env.WAHA_API_KEY;
 export const WahaWebhookHmacKey = process.env.WAHA_WEBHOOK_HMAC_KEY;
+export const CloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
+export const CloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
+export const CloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 export const EncryptionAlgorithm =
   process.env.ENCRYPTION_ALGORITHM || "aes-256-gcm";

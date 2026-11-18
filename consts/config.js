@@ -37,6 +37,9 @@ import { createOperator, createSelfRegisteredUser } from "../setup/accounts.js";
 import SetupRouter from "../routes/setup/routes.js";
 import { prepareWhatsAppMedia } from "../integrations/media.js";
 import {
+  CloudinaryApiKey,
+  CloudinaryApiSecret,
+  CloudinaryCloudName,
   WahaApiKey,
   WahaApiUrl,
   WahaWebhookHmacKey,
@@ -146,7 +149,11 @@ export default [
       contactModel: ContactModel,
       stateModel: StateModel,
       whatsappConfig: { apiBaseUrl: WahaApiUrl, apiKey: WahaApiKey },
-      mediaProcessor: prepareWhatsAppMedia,
+      mediaProcessor: (file) => prepareWhatsAppMedia(file, {
+        cloudName: CloudinaryCloudName,
+        apiKey: CloudinaryApiKey,
+        apiSecret: CloudinaryApiSecret,
+      }),
       populatedFields: ["sender", "senderPhone", "deliveries.senderPhone", "state"],
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,

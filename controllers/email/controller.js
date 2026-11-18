@@ -265,6 +265,7 @@ export default function ({ id, model, messageModel, stateModel, contactModel, se
           header: subject.trim(),
           content: text?.trim() || html?.trim() || "",
           sender: userId,
+          contacts: [...new Set(contactIds.map(String))],
           senderEmail: sender.email,
           deliveries,
           deliveryStatus,

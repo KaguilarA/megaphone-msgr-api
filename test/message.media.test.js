@@ -9,6 +9,7 @@ async function withServer(run, { processor = async (file) => ({
   filename: 'attachment',
   mimeType: file.mimetype,
   bytes: file.buffer.length,
+  ...(file.mimetype.startsWith('image/') ? { mediaUrl: 'https://res.cloudinary.com/example/image.png' } : {}),
 }) } = {}) {
   const saved = [];
   const sent = [];
@@ -27,7 +28,10 @@ async function withServer(run, { processor = async (file) => ({
     receptorModel: { save: async (data) => data },
     phoneModel: {
       getById: async () => ({ _id: 'phone', owner: 'owner', ownerType: 'User', phone: '5550002', countryNumber: '+52' }),
-      getByCoincidence: async () => [{ countryNumber: '+52', phone: '5550001' }],
+      getByCoincidence: async ({ owner }) => [{
+        countryNumber: '+52',
+        phone: owner === 'contact-2' ? '5550003' : '5550001',
+      }],
     },
     tokenModel: { getOne: async () => ({ owner: 'owner', phone: 'phone', whatsappSession: 'phone-session' }) },
     contactModel: { getById: async () => ({ owner: 'owner' }) },
@@ -40,11 +44,11 @@ async function withServer(run, { processor = async (file) => ({
   finally { server.close(); }
 }
 
-function form(type, bytes = 4, content = 'Hola') {
+function form(type, bytes = 4, content = 'Hola', contacts = ['contact']) {
   const body = new FormData();
   body.set('header', 'Aviso');
   body.set('content', content);
-  body.set('contacts', JSON.stringify(['contact']));
+  body.set('contacts', JSON.stringify(contacts));
   body.set('sourcePhoneId', 'phone');
   body.set('requestId', 'd06b1e8b-93df-44c0-b3f8-8b3a40d7aad5');
   body.set('media', new Blob([new Uint8Array(bytes)], { type }), 'file');
@@ -59,10 +63,44 @@ test('image and video attachments reach the provider and message history', async
       assert.equal((await response.json()).channel, 'whatsapp');
       assert.equal(saved.at(-1).channel, 'whatsapp');
       assert.equal(Object.hasOwn(saved.at(-1), 'media'), false);
+      assert.deepEqual(saved.at(-1).contacts, ['contact']);
+      assert.equal(
+        saved.at(-1).mediaUrl,
+        type === 'image' ? 'https://res.cloudinary.com/example/image.png' : undefined,
+      );
       assert.equal(sent.at(-1)[3].media.type, type);
       assert.ok(sent.at(-1)[3].media.data);
     }
   });
+});
+
+test('stores one group message, one image reference, and all contact IDs for a bulk send', async () => {
+  let mediaProcessingCount = 0;
+  const processor = async (file) => {
+    mediaProcessingCount += 1;
+    return {
+      type: 'image',
+      data: file.buffer.toString('base64'),
+      filename: 'attachment.png',
+      mimeType: file.mimetype,
+      bytes: file.buffer.length,
+      mediaUrl: 'https://res.cloudinary.com/example/image.png',
+    };
+  };
+  await withServer(async (url, { saved, sent }) => {
+    const contactIds = ['contact-1', 'contact-2'];
+    const response = await fetch(url, {
+      method: 'POST',
+      body: form('image/png', 4, 'Hola', contactIds),
+    });
+
+    assert.equal(response.status, 201);
+    assert.equal(saved.length, 1);
+    assert.deepEqual(saved[0].contacts, contactIds);
+    assert.equal(saved[0].mediaUrl, 'https://res.cloudinary.com/example/image.png');
+    assert.equal(mediaProcessingCount, 1);
+    assert.equal(sent.length, contactIds.length);
+  }, { processor });
 });
 
 test('allows an attachment-only message without a subject or caption', async () => {

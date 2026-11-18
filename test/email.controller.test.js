@@ -128,6 +128,7 @@ test('sendToContacts delivers to owned contact addresses as BCC', async () => {
   assert.equal(savedMessage.header, 'Aviso');
   assert.equal(savedMessage.content, 'Contenido');
   assert.equal(savedMessage.senderEmail, sender.email);
+  assert.deepEqual(savedMessage.contacts, [contactId]);
   assert.deepEqual(savedMessage.deliveries, [{
     recipient: 'recipient@example.com',
     status: 'accepted',

@@ -59,11 +59,15 @@ PORT=3000
 SESSION_SECRET=<at-least-32-random-characters>
 WAHA_API_URL=http://waha:3000
 WAHA_API_KEY=<private-waha-api-key>
+CLOUDINARY_CLOUD_NAME=<cloud-name>
+CLOUDINARY_API_KEY=<api-key>
+CLOUDINARY_API_SECRET=<api-secret>
 ```
 
 `DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
 required at startup. Startup validation rejects missing or malformed values without logging
 their contents. Set `WAHA_API_URL` and `WAHA_API_KEY` together to enable outbound WhatsApp messages.
+Set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` to enable image sends.
 The WAHA endpoint should be reachable only by the backend; use HTTPS unless it is on a
 trusted private network. Each sender phone must be connected to its own WAHA session.
 The API key is server-only and is never returned by Megaphone. To receive messages and enable
@@ -73,12 +77,13 @@ subscribe to the `message` event. Megaphone stores incoming messages, associates
 owned contacts, and applies the user's enabled keyword rules and templates; it does not
 reply when there is no matching rule, contact, or required template data.
 Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB.
-Images are optimized locally with Sharp and sent directly to WAHA as base64 data; attachments are
-not stored in an external media service, and neither attachment bytes nor attachment metadata are
-stored in MongoDB. Outbound email and WhatsApp message text and delivery results are retained for
-Megaphone's history and automation context. The history view reads chats directly from WAHA on
-demand; WAHA Store must be enabled for the session. Removing a history item only removes it from
-Megaphone and does not delete it from WhatsApp or the mail server.
+Images are optimized locally with Sharp, uploaded once to Cloudinary, and sent to WAHA as base64
+data. Only the Cloudinary URL is stored with the single MongoDB record for the send; the record
+also contains the recipient contact IDs as an array. Videos are sent directly to WAHA and are not
+stored in Cloudinary. Outbound email and WhatsApp messages and delivery results are retained in
+Megaphone's history. A separate history view reads chats directly from WAHA; WAHA Store must be
+enabled for the session. Removing a Megaphone history item does not delete it from WhatsApp or the
+mail server.
 Production frontend builds use `/api` as the API base URL. Configure the reverse proxy to
 forward `/api` to this backend and preserve HTTPS cookies and the `X-Webhook-Hmac` and
 `X-Webhook-Hmac-Algorithm` headers.

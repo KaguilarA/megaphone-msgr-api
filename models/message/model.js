@@ -18,6 +18,10 @@ const model = {
     trim: true,
     default: "",
   },
+  mediaUrl: {
+    type: String,
+    trim: true,
+  },
   header: {
     type: String,
     trim: true,
@@ -28,6 +32,10 @@ const model = {
     ref: UserData.name,
     required: true,
   },
+  contacts: [{
+    type: Schema.Types.ObjectId,
+    ref: "Contact",
+  }],
   senderPhone: {
     type: Schema.Types.ObjectId,
     ref: PhoneData.name,
@@ -61,7 +69,7 @@ schema.index({ sender: 1, hiddenAt: 1, createdAt: -1 }, {
 });
 
 /**
- * Schema data for a message with a required sender and state.
- * Recipient relationships are stored separately in `MessageReceptor` documents.
+ * Schema data for a message with a required sender and contact IDs.
+ * Per-recipient delivery results are stored in the `deliveries` array.
  */
 export default { model, name, schema };

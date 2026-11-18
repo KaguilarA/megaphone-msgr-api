@@ -28,7 +28,15 @@ test("optimizes images before encoding them for WAHA", async () => {
     .png({ compressionLevel: 0 })
     .toBuffer();
 
-  const media = await prepareWhatsAppMedia({ mimetype: "image/png", buffer: input });
+  let uploadedBuffer;
+  const media = await prepareWhatsAppMedia(
+    { mimetype: "image/png", buffer: input },
+    {},
+    async (buffer) => {
+      uploadedBuffer = buffer;
+      return { secure_url: "https://res.cloudinary.com/example/image/upload/photo.png" };
+    },
+  );
   const decoded = Buffer.from(media.data, "base64");
   const metadata = await sharp(decoded).metadata();
 
@@ -36,9 +44,27 @@ test("optimizes images before encoding them for WAHA", async () => {
   assert.equal(media.filename, "attachment.png");
   assert.equal(media.mimeType, "image/png");
   assert.equal(media.bytes, decoded.length);
+  assert.equal(media.mediaUrl, "https://res.cloudinary.com/example/image/upload/photo.png");
+  assert.deepEqual(uploadedBuffer, decoded);
   assert.equal(metadata.format, "png");
   assert.deepEqual([metadata.width, metadata.height], [64, 64]);
   assert.ok(decoded.length <= input.length);
+});
+
+test("requires Cloudinary credentials for image attachments", async () => {
+  const image = await sharp({
+    create: {
+      width: 16,
+      height: 16,
+      channels: 3,
+      background: { r: 40, g: 90, b: 140 },
+    },
+  }).png().toBuffer();
+
+  await assert.rejects(
+    prepareWhatsAppMedia({ mimetype: "image/png", buffer: image }),
+    (error) => error.status === 503 && /CLOUDINARY/.test(error.message),
+  );
 });
 
 test("rejects empty or unsupported media buffers", async () => {

@@ -197,6 +197,12 @@ export default function ({ id, model, stateModel, phoneNumberModel }) {
         }
       }
 
+      if (req.file.originalname.toLowerCase().endsWith(".xlsx") && invalidRows.length) {
+        return res.status(400).json({
+          error: `El Excel debe contener únicamente números de teléfono. Revisa la fila ${invalidRows[0]}.`,
+        });
+      }
+
       const existingContacts = await model.getByCoincidence({ owner: userId });
       const existingPhones = existingContacts.length
         ? await phoneNumberModel.getByCoincidence({

@@ -181,13 +181,7 @@ export default function ({
         ...whatsappConfig,
         ...getHistoryPagination(req.query),
       });
-      const hiddenIds = new Set(
-        await model.getHiddenProviderMessageIds?.(req.session.userId) || [],
-      );
-      return res.status(200).json(chats.map((chat) => ({
-        ...chat,
-        ...(hiddenIds.has(chat.lastMessage?.id) ? { lastMessage: null } : {}),
-      })));
+      return res.status(200).json(chats);
     } catch (error) {
       if (error.providerStatus === 404 && error.providerOperation === "chat history") {
         return res.status(503).json({
@@ -211,11 +205,8 @@ export default function ({
           ...pagination,
         },
       );
-      const hiddenIds = new Set(
-        await model.getHiddenProviderMessageIds?.(req.session.userId) || [],
-      );
       return res.status(200).json({
-        messages: messages.filter((message) => !hiddenIds.has(message.id)),
+        messages,
         nextOffset: pagination.offset + messages.length,
         hasMore: messages.length === pagination.limit,
       });
@@ -380,7 +371,9 @@ export default function ({
       const newMessage = await model.save({
         header,
         content,
+        ...(media?.mediaUrl ? { mediaUrl: media.mediaUrl } : {}),
         sender: id,
+        contacts,
         senderMode,
         ...(requestId ? { requestId } : {}),
         deliveries,

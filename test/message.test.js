@@ -77,7 +77,7 @@ test('getById returns the message and its receptors', async () => {
   });
 });
 
-test('getWhatsAppChats reads the authenticated user session without saving chat messages', async () => {
+test('getWhatsAppChats returns WAHA chat history independently of Megaphone hiding', async () => {
   let historyRequest;
   const phone = {
     _id: 'phone-1',
@@ -136,10 +136,13 @@ test('getWhatsAppChats reads the authenticated user session without saving chat 
     offset: 0,
   });
   assert.equal(res.body[0].id, '14155552671@c.us');
-  assert.equal(res.body[0].lastMessage, null);
+  assert.deepEqual(res.body[0].lastMessage, {
+    id: 'hidden-provider-message',
+    body: 'oculto',
+  });
 });
 
-test('getWhatsAppChatMessages hides local message IDs and preserves WAHA pagination', async () => {
+test('getWhatsAppChatMessages preserves WAHA messages and pagination', async () => {
   const phone = {
     _id: 'phone-1',
     phone: '4155552670',
@@ -183,7 +186,10 @@ test('getWhatsAppChatMessages hides local message IDs and preserves WAHA paginat
 
   assert.equal(res.statusCode, 200);
   assert.deepEqual(res.body, {
-    messages: [{ id: 'visible-id', body: 'visible', fromMe: false, timestamp: null }],
+    messages: [
+      { id: 'hidden-id', body: 'oculto', fromMe: true, timestamp: null },
+      { id: 'visible-id', body: 'visible', fromMe: false, timestamp: null },
+    ],
     nextOffset: 12,
     hasMore: false,
   });

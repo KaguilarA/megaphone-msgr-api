@@ -6,6 +6,35 @@ import ContactRouter from "../routes/contact/routes.js";
 import ContactController from "../controllers/contact/controller.js";
 import { normalizeImportedPhone, parseContactImport } from "../utils/contactImport.js";
 
+function makeExcelBuffer(sheetRows) {
+  return Buffer.from(zipSync({
+    "[Content_Types].xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
+      <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+        <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+        <Default Extension="xml" ContentType="application/xml"/>
+        <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+        <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+      </Types>`),
+    "_rels/.rels": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
+      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+      </Relationships>`),
+    "xl/workbook.xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
+      <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+        xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+        <sheets><sheet name="Contacts" sheetId="1" r:id="rId1"/></sheets>
+      </workbook>`),
+    "xl/_rels/workbook.xml.rels": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
+      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+      </Relationships>`),
+    "xl/worksheets/sheet1.xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
+      <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+        <sheetData>${sheetRows.join("")}</sheetData>
+      </worksheet>`),
+  }));
+}
+
 test("parses a CSV single-column phone list and ignores a recognized header", async () => {
   const rows = await parseContactImport({
     originalname: "phones.csv",
@@ -30,38 +59,24 @@ test("parses JSON phone arrays and rejects multi-column CSV files", async () => 
 });
 
 test("parses Excel .xlsx files with one phone column", async () => {
-  const buffer = Buffer.from(zipSync({
-    "[Content_Types].xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
-      <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-        <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
-        <Default Extension="xml" ContentType="application/xml"/>
-        <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
-        <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
-      </Types>`),
-    "_rels/.rels": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
-      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
-      </Relationships>`),
-    "xl/workbook.xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
-      <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-        xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
-        <sheets><sheet name="Contacts" sheetId="1" r:id="rId1"/></sheets>
-      </workbook>`),
-    "xl/_rels/workbook.xml.rels": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
-      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
-      </Relationships>`),
-    "xl/worksheets/sheet1.xml": strToU8(`<?xml version="1.0" encoding="UTF-8"?>
-      <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        <sheetData>
-          <row r="1"><c r="A1" t="inlineStr"><is><t>Phone</t></is></c></row>
-          <row r="2"><c r="A2" t="inlineStr"><is><t>+14155550100</t></is></c></row>
-          <row r="3"><c r="A3"><v>4155550101</v></c></row>
-        </sheetData>
-      </worksheet>`),
-  }));
+  const buffer = makeExcelBuffer([
+    '<row r="1"><c r="A1" t="inlineStr"><is><t>Phone</t></is></c></row>',
+    '<row r="2"><c r="A2" t="inlineStr"><is><t>+14155550100</t></is></c></row>',
+    '<row r="3"><c r="A3"><v>4155550101</v></c></row>',
+  ]);
   const rows = await parseContactImport({ originalname: "phones.xlsx", buffer });
   assert.deepEqual(rows.map(({ value }) => value), ["+14155550100", 4155550101]);
+});
+
+test("rejects Excel files with values outside the phone column", async () => {
+  const buffer = makeExcelBuffer([
+    '<row r="1"><c r="A1" t="inlineStr"><is><t>Phone</t></is></c></row>',
+    '<row r="2"><c r="A2" t="inlineStr"><is><t>88880001</t></is></c><c r="B2" t="inlineStr"><is><t>Ana</t></is></c></row>',
+  ]);
+  await assert.rejects(
+    parseContactImport({ originalname: "phones.xlsx", buffer }),
+    /una sola columna/,
+  );
 });
 
 test("normalizes local numbers with the selected code and full E.164 numbers", () => {
@@ -125,6 +140,41 @@ test("imports distinct valid numbers as unnamed contacts and reports duplicates 
   });
   assert.ok(savedContacts.every((contact) => !("name" in contact)));
   assert.deepEqual(savedPhones.map(({ e164 }) => e164), ["+50688880001", "+50688880002"]);
+});
+
+test("rejects Excel imports containing non-phone values", async () => {
+  let contactsQueried = false;
+  const controller = ContactController({
+    id: "Contact",
+    model: {
+      getByCoincidence: async () => {
+        contactsQueried = true;
+        return [];
+      },
+    },
+    phoneNumberModel: {},
+  });
+  const response = {
+    statusCode: 200,
+    status(code) { this.statusCode = code; return this; },
+    json(body) { this.body = body; return this; },
+  };
+  await controller.importContacts({
+    session: { userId: "owner-1" },
+    body: { countryNumber: "+506" },
+    file: {
+      originalname: "phones.xlsx",
+      buffer: makeExcelBuffer([
+        '<row r="1"><c r="A1" t="inlineStr"><is><t>Phone</t></is></c></row>',
+        '<row r="2"><c r="A2" t="inlineStr"><is><t>Ana</t></is></c></row>',
+        '<row r="3"><c r="A3"><v>88880001</v></c></row>',
+      ]),
+    },
+  }, response);
+
+  assert.equal(response.statusCode, 400);
+  assert.match(response.body.error, /únicamente números de teléfono.*fila 2/);
+  assert.equal(contactsQueried, false);
 });
 
 test("accepts a multipart CSV import and persists each number as a contact", async () => {
