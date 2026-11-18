@@ -37,7 +37,7 @@
     "nodemailer": "^10.3.0",
     "owl-expressjs-utils": "^1.0.3",
     "read-excel-file": "^9.3.17",
-    "tinify": "^1.8.3"
+    "sharp": "^0.35.5"
   },
   "overrides": {
     "mongoose": "$mongoose"
