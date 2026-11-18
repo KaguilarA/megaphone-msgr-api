@@ -41,6 +41,8 @@ import {
   CloudinaryCloudName,
   CloudinaryFolder,
   TinyPngApiKey,
+  WahaApiKey,
+  WahaApiUrl,
   WhatsAppAppSecret,
   WhatsAppWebhookVerifyToken,
 } from "./index.js";
@@ -56,6 +58,7 @@ export default [
       serverFeatures: {
         mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
         webhookConfigured: Boolean(WhatsAppAppSecret && WhatsAppWebhookVerifyToken),
+        wahaConfigured: Boolean(WahaApiUrl && WahaApiKey),
       },
     },
     router: SetupRouter,
@@ -146,6 +149,7 @@ export default [
       tokenModel: TokenModel,
       contactModel: ContactModel,
       stateModel: StateModel,
+      whatsappConfig: { apiBaseUrl: WahaApiUrl, apiKey: WahaApiKey },
       mediaUploader: async (file) => {
         const isImage = file.mimetype.startsWith("image/");
         const buffer = isImage

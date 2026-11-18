@@ -81,6 +81,7 @@ test('getAll returns only the authenticated user messages', async () => {
 test('register sends through the selected phone token and stores its reference', async () => {
   let savedMessage;
   const sent = [];
+  const verified = [];
   const sourcePhoneId = '665f1a2b3c4d5e6f70819601';
   const contactId = '665f1a2b3c4d5e6f708192c1';
   const controller = MessageController({
@@ -96,12 +97,14 @@ test('register sends through the selected phone token and stores its reference',
       save: async (data) => data,
     },
     phoneModel: {
-      getById: async () => ({ _id: sourcePhoneId, owner: user._id, ownerType: 'User' }),
+      getById: async () => ({ _id: sourcePhoneId, owner: user._id, ownerType: 'User', phone: '5550002', countryNumber: '+52' }),
       getByCoincidence: async () => [{ phone: '5550001', countryNumber: '+52' }],
     },
     tokenModel: {
-      getOne: async (query) => ({ owner: user._id, whatsappToken: 'token', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', phone: query.phone }),
+      getOne: async (query) => ({ owner: user._id, whatsappSession: 'phone-session', phone: query.phone }),
     },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'server-key' },
+    verifyWhatsAppSession: async (...args) => verified.push(args),
     contactModel: {
       getById: async () => ({ _id: contactId, owner: user._id }),
     },
@@ -116,7 +119,10 @@ test('register sends through the selected phone token and stores its reference',
 
   assert.equal(res.statusCode, 201);
   assert.equal(savedMessage.senderPhone, sourcePhoneId);
+  assert.equal(verified.length, 1);
+  assert.equal(verified[0][1], '+525550002');
   assert.equal(sent.length, 1);
   assert.equal(sent[0][0], '+525550001');
   assert.equal(sent[0][2].phone, sourcePhoneId);
+  assert.equal(sent[0][3].sessionVerified, true);
 });

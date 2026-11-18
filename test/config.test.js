@@ -50,3 +50,23 @@ test("rejects non-origin frontend URLs", () => {
     /FRONTEND_URL/,
   );
 });
+
+test("requires complete WAHA configuration and rejects credential-bearing URLs", () => {
+  assert.throws(
+    () => validateConfig({ ...validConfig, WAHA_API_URL: "http://waha:3000" }),
+    /WAHA_API_KEY/,
+  );
+  assert.throws(
+    () => validateConfig({
+      ...validConfig,
+      WAHA_API_URL: "https://user:pass@waha.example.com",
+      WAHA_API_KEY: "test-key",
+    }),
+    /WAHA_API_URL/,
+  );
+  assert.doesNotThrow(() => validateConfig({
+    ...validConfig,
+    WAHA_API_URL: "http://waha:3000",
+    WAHA_API_KEY: "test-key",
+  }));
+});

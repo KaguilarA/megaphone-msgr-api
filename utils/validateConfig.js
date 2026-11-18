@@ -47,6 +47,21 @@ export default function validateConfig(env = process.env) {
   if (webhookVariables.some(Boolean) && webhookVariables.some((value) => !value?.trim())) {
     invalid.push("WhatsApp webhook (WHATSAPP_WEBHOOK_VERIFY_TOKEN and WHATSAPP_APP_SECRET are required together)");
   }
+  const wahaVariables = [env.WAHA_API_URL, env.WAHA_API_KEY];
+  if (wahaVariables.some(Boolean) && wahaVariables.some((value) => !value?.trim())) {
+    invalid.push("WAHA (WAHA_API_URL and WAHA_API_KEY are required together)");
+  }
+  if (env.WAHA_API_URL) {
+    try {
+      const wahaUrl = new URL(env.WAHA_API_URL);
+      if (!["http:", "https:"].includes(wahaUrl.protocol) || wahaUrl.username ||
+          wahaUrl.password || wahaUrl.search || wahaUrl.hash) {
+        invalid.push("WAHA_API_URL (must be an HTTP(S) URL without embedded credentials, query, or fragment)");
+      }
+    } catch {
+      invalid.push("WAHA_API_URL (must be a valid HTTP(S) URL)");
+    }
+  }
 
   if (env.PORT !== undefined) {
     const port = Number(env.PORT);

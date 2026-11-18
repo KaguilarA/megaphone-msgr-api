@@ -23,10 +23,10 @@ async function withServer(run, { uploader = async (file) => ({
     },
     receptorModel: { save: async (data) => data },
     phoneModel: {
-      getById: async () => ({ _id: 'phone', owner: 'owner', ownerType: 'User' }),
+      getById: async () => ({ _id: 'phone', owner: 'owner', ownerType: 'User', phone: '5550002', countryNumber: '+52' }),
       getByCoincidence: async () => [{ countryNumber: '+52', phone: '5550001' }],
     },
-    tokenModel: { getOne: async () => ({ owner: 'owner', phone: 'phone', whatsappToken: 'token', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123' }) },
+    tokenModel: { getOne: async () => ({ owner: 'owner', phone: 'phone', whatsappSession: 'phone-session' }) },
     contactModel: { getById: async () => ({ owner: 'owner' }) },
     mediaUploader: uploader,
     sendWhatsAppMessage: async (...args) => { sent.push(args); return { messages: [{ id: 'wamid' }] }; },

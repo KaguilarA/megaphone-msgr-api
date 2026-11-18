@@ -15,9 +15,9 @@ function dependencies() {
     userModel: { getById: async () => ({ _id: owner, name: 'First', lastName: 'User' }), update: async (_id, data) => data },
     emailModel: collection([{ email: 'first@example.com', smtpPassword: 'smtp-secret' }]),
     phoneModel: collection([{ _id: 'phone-1' }]),
-    tokenModel: collection([{ phone: 'phone-1', whatsappToken: 'wa-secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123' }, { whatsappToken: 'legacy-secret' }]),
+    tokenModel: collection([{ phone: 'phone-1', whatsappSession: 'phone-session' }, { whatsappToken: 'legacy-secret' }]),
     contactModel: collection([]), messageModel: collection([]), installationModel: { getById: async () => ({ completedAt: new Date() }) },
-    serverFeatures: { mediaUploadsConfigured: false, webhookConfigured: false },
+    serverFeatures: { mediaUploadsConfigured: false, webhookConfigured: false, wahaConfigured: true },
   };
 }
 
@@ -29,8 +29,17 @@ test('setup reports owned configuration without returning provider secrets', asy
   assert.equal(response.body.checks.smtpConfigured, false);
   assert.equal(response.body.onboardingCompletedAt, null);
   assert.equal(response.body.checks.contactCount, 0);
+  assert.equal(response.body.server.wahaConfigured, true);
   assert.equal(JSON.stringify(response.body).includes('secret'), false);
   assert.ok(data.filters.every((filter) => filter.owner === owner || filter.sender === owner));
+});
+
+test('setup does not count legacy Meta-only tokens as a configured WAHA session', async () => {
+  const data = dependencies();
+  data.tokenModel.getByCoincidence = async () => [{ phone: 'phone-1', whatsappToken: 'legacy' }];
+  const response = res();
+  await SetupController(data).status({ session: { userId: owner } }, response);
+  assert.equal(response.body.checks.whatsappConfiguredCount, 0);
 });
 
 test('a database outage reports unavailable rather than an empty configuration', async () => {

@@ -76,7 +76,7 @@ En el proxy configura:
 - `/api/webhooks/whatsapp` sin alterar el cuerpo ni su encabezado de firma, si habilitas eventos de Meta.
 - Tiempo suficiente para los envíos actuales, que son síncronos. Si el navegador pierde la respuesta, conserva el identificador de solicitud y consulta el historial antes de enviar una solicitud nueva.
 
-Inicia el backend con `npm start` mediante el supervisor del servidor, con reinicio al fallar y al arrancar el sistema. Usa una cuenta de servicio sin privilegios administrativos. La respuesta de `/api/health` será 200 con `{"status":"ok"}` cuando MongoDB esté conectado y 503 si no lo está; este endpoint no afirma que Meta o SMTP funcionen.
+Inicia el backend con `npm start` mediante el supervisor del servidor, con reinicio al fallar y al arrancar el sistema. Usa una cuenta de servicio sin privilegios administrativos. La respuesta de `/api/health` será 200 con `{"status":"ok"}` cuando MongoDB esté conectado y 503 si no lo está; este endpoint no afirma que WAHA, Meta o SMTP funcionen.
 
 No uses `ng serve` ni `npm run dev` para publicar en producción. No abras MongoDB o el puerto 3000 al público. Configura y prueba respaldos y restauración antes de cargar información real.
 
@@ -84,10 +84,10 @@ No uses `ng serve` ni `npm run dev` para publicar en producción. No abras Mongo
 
 1. Abre `https://TU-DOMINIO/login` y usa el email y contraseña que creaste.
 2. La primera sesión abre el asistente. Revisa tu cuenta y agrega tus teléfonos.
-3. Para cada emisor, introduce en el asistente las credenciales de WhatsApp Business correspondientes a ese número en Meta. El software no crea ni aprueba cuentas de Meta por ti.
+3. Configura `WAHA_API_URL` y `WAHA_API_KEY` en el backend. En WAHA crea una sesión por número emisor y conéctala mediante el QR; luego guarda el nombre de sesión correspondiente en el asistente de Megaphone.
 4. Configura SMTP desde Mi perfil si vas a usar email. Es opcional y no afecta al inicio de sesión.
 5. Crea un contacto de prueba con un teléfono autorizado y prepara un envío desde el formulario normal. Ningún paso del asistente envía mensajes automáticamente.
-6. Revisa el historial. “Aceptado por WhatsApp” confirma la aceptación de la solicitud por Meta, no la entrega ni lectura.
+6. Revisa el historial. “Aceptado por WhatsApp” confirma que WAHA aceptó la solicitud, no la entrega ni lectura.
 
 Puedes elegir “Guardar y continuar más tarde” aunque falten canales o contactos. Esto conserva la decisión por usuario; no marca las integraciones pendientes como listas. Vuelve desde **Configuración** para revisar estado o abrir el asistente de nuevo.
 
@@ -100,4 +100,4 @@ Los usuarios que cree el administrador reciben un estado activo y permisos opera
 - Probar dos emisores de WhatsApp y una cuenta sin canales; comprobar que no se permite enviar desde un número sin configurar.
 - Verificar HTTPS, cookies de sesión, reinicio del servicio y restauración del respaldo.
 
-`npm test` incluye pruebas con un replica set local temporal creado por `mongodb-memory-server`: la primera ejecución descarga MongoDB al caché de pruebas, puede tardar y necesita espacio y acceso a Internet. Las pruebas no leen `.env` ni se conectan a tu base. Para instalación y cuentas se verifican transacciones, repetición, concurrencia y rollback. La aceptación real de Meta y SMTP se comprueba por separado con tus credenciales de prueba.
+`npm test` incluye pruebas con un replica set local temporal creado por `mongodb-memory-server`: la primera ejecución descarga MongoDB al caché de pruebas, puede tardar y necesita espacio y acceso a Internet. Las pruebas no leen `.env` ni se conectan a tu base. Para instalación y cuentas se verifican transacciones, repetición, concurrencia y rollback. La aceptación real de WAHA y SMTP se comprueba por separado en el entorno de despliegue.

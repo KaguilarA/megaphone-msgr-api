@@ -50,10 +50,8 @@ FRONTEND_URL=http://localhost:4200
 NODE_ENV=development
 PORT=3000
 SESSION_SECRET=<at-least-32-random-characters>
-META_API_URL=https://graph.facebook.com
-META_API_VERSION=<supported-graph-api-version>
-WHATSAPP_ACCESS_TOKEN=
-WHATSAPP_PHONE_NUMBER_ID=
+WAHA_API_URL=http://waha:3000
+WAHA_API_KEY=<private-waha-api-key>
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -63,7 +61,11 @@ TINYPNG_API_KEY=
 
 `DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
 required at startup. Startup validation rejects missing or malformed values without logging
-their contents. Set the WhatsApp credentials only if you use the standalone WhatsApp sender.
+their contents. Set `WAHA_API_URL` and `WAHA_API_KEY` together to enable outbound WhatsApp messages.
+The WAHA endpoint should be reachable only by the backend; use HTTPS unless it is on a
+trusted private network. Each sender phone must be connected to its own WAHA session.
+The API key is server-only and is never returned by Megaphone. Incoming WhatsApp webhooks
+and automatic replies remain on the existing Meta integration and are configured separately.
 Cloudinary variables are optional for text-only messages, but all three credentials are
 required together when uploading images or videos. Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB, and
 are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
@@ -102,30 +104,39 @@ By default, the server listens on `http://localhost:3000`. Set `CLUSTER_ENABLED=
 start the API through Node.js clustering. `CLUSTER_WORKERS` controls the worker count and
 is capped at the available CPU parallelism.
 
-## Standalone WhatsApp sender
+## WhatsApp delivery through WAHA
 
-`integrations/whatsapp.js` exports `sendWhatsAppMessage(recipient, message, tokenRecord)`,
-which sends plain text through the Meta WhatsApp Cloud API. It is deliberately independent
-of Express, the database, and the API routes. Pass the record retrieved from the Token model;
-the WhatsApp token is stored encrypted there, and the API version and phone-number ID come
-from that record:
+Outbound messages and media are sent through the WAHA HTTP API. The server requires
+`WAHA_API_URL` and `WAHA_API_KEY`; each phone's Token record stores only its WAHA session
+name. Configure a session in WAHA, connect the corresponding WhatsApp account with its QR
+code, then save that session name for the same phone in the user's profile. Megaphone checks
+the connected account number through WAHA before sending and prevents a session from being
+assigned to multiple phones. Session names must contain 1-64 letters, numbers, dots,
+underscores, or hyphens.
+Treat WAHA session names as identifiers, not credentials: restrict access to the WAHA
+dashboard and keep its API key private. Do not assign a session to a phone unless its
+connected WhatsApp account is authorized for that user.
 
 ```js
 import { sendWhatsAppMessage } from "./integrations/whatsapp.js";
 
-const tokenRecord = await TokenModel.getOne({ owner: userId });
+const tokenRecord = await TokenModel.getOne({ owner: userId, phone: sourcePhoneId });
 const result = await sendWhatsAppMessage(
   "+14155552671",
   "Hello from Megaphone!",
   tokenRecord,
+  {
+    apiBaseUrl: process.env.WAHA_API_URL,
+    apiKey: process.env.WAHA_API_KEY,
+    sourcePhoneNumber: "+14155552670",
+  },
 );
 console.log(result.messages[0].id);
 ```
 
-The Token record must contain `whatsappToken`, `whatsappVersion`, and
-`whatsappPhoneNumberId`. The recipient must be an E.164 phone number. The function throws
-on invalid input, network failures, timeouts, or provider errors; callers should handle
-those errors.
+See the [WAHA session guide](https://waha.devlike.pro/docs/how-to/sessions/) and
+[send-message API](https://waha.devlike.pro/docs/how-to/send-messages/). For inbound
+autoresponses, the existing webhook still uses the stored Meta WhatsApp credentials.
 
 ## Authentication
 

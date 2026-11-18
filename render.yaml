@@ -28,3 +28,7 @@ services:
         sync: false
       - key: ENCRYPTION_ALGORITHM
         value: aes-256-gcm
+      - key: WAHA_API_URL
+        sync: false
+      - key: WAHA_API_KEY
+        sync: false

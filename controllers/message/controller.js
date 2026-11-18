@@ -1,4 +1,7 @@
-import { sendWhatsAppMessage as defaultSendWhatsAppMessage } from "../../integrations/whatsapp.js";
+import {
+  sendWhatsAppMessage as defaultSendWhatsAppMessage,
+  verifyWhatsAppSession as defaultVerifyWhatsAppSession,
+} from "../../integrations/whatsapp.js";
 import { normalizePhoneNumber } from "../../utils/phoneNumber.js";
 
 export default function ({
@@ -11,6 +14,8 @@ export default function ({
   contactModel,
   stateModel,
   mediaUploader,
+  whatsappConfig,
+  verifyWhatsAppSession = defaultVerifyWhatsAppSession,
   sendWhatsAppMessage = defaultSendWhatsAppMessage,
 }) {
 
@@ -61,12 +66,12 @@ export default function ({
       ? await tokenModel.getById(linkedTokenId)
       : await tokenModel.getOne({ owner: userId, phone: sourcePhoneId });
     if (token && String(token.owner) === String(userId) && String(token.phone) === String(sourcePhoneId) &&
-        typeof token.whatsappToken === "string" && token.whatsappToken.trim() &&
-        /^v\d+\.\d+$/.test(token.whatsappVersion) && /^\d+$/.test(token.whatsappPhoneNumberId)) {
+        typeof token.whatsappSession === "string" &&
+        /^[a-zA-Z0-9._-]{1,64}$/.test(token.whatsappSession)) {
       return token;
     }
 
-    throw requestError("No WhatsApp token is configured for the selected phone. Configure a token for this number before sending.", 422);
+    throw requestError("No WAHA session is configured for the selected phone. Configure a session for this number before sending.", 422);
   }
 
   async function resolveRecipients(userId, contacts) {
@@ -194,7 +199,19 @@ export default function ({
       if (req.file && !mediaUploader) throw requestError("La carga de archivos no está configurada.", 503);
       const sourcePhone = await getSourcePhone(id, sourcePhoneId);
       const token = await getWhatsAppToken(id, sourcePhone);
+      if (whatsappConfig && (!whatsappConfig.apiBaseUrl || !whatsappConfig.apiKey)) {
+        throw requestError("WAHA is not configured on the server.", 503);
+      }
       const recipients = await resolveRecipients(id, contacts);
+      const sourcePhoneNumber = sourcePhone
+        ? normalizePhoneNumber(sourcePhone).e164
+        : undefined;
+      if (whatsappConfig && recipients.length) {
+        if (!sourcePhoneNumber) {
+          throw requestError("A source phone is required to send through WAHA.", 422);
+        }
+        await verifyWhatsAppSession(token, sourcePhoneNumber, whatsappConfig);
+      }
       const messageState = await getMessageState();
       const media = req.file && mediaUploader
         ? await mediaUploader(req.file)
@@ -219,11 +236,21 @@ export default function ({
         delivery.status = "sending";
         await model.update(newMessage._id, { deliveries, deliveryStatus: "sending" });
         try {
-          const result = await sendWhatsAppMessage(delivery.recipient, messageData.content.trim(), token, { media });
+          const result = await sendWhatsAppMessage(
+            delivery.recipient,
+            messageData.content.trim(),
+            token,
+            {
+              ...(whatsappConfig || {}),
+              sourcePhoneNumber,
+              sessionVerified: Boolean(whatsappConfig),
+              media,
+            },
+          );
           delivery.status = "accepted";
           delivery.providerMessageId = result?.messages?.[0]?.id;
         } catch (error) {
-          // A timeout cannot establish whether Meta accepted the message. Never retry automatically.
+          // A timeout cannot establish whether WAHA accepted the message. Never retry automatically.
           delivery.status = error.providerRejected ? "rejected" : "unknown";
         }
         await model.update(newMessage._id, { deliveries });

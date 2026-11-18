@@ -38,6 +38,11 @@ const model = {
     type: String,
     trim: true,
   },
+  whatsappSession: {
+    type: String,
+    trim: true,
+    match: /^[a-zA-Z0-9._-]{1,64}$/,
+  },
   phone: {
     type: Schema.Types.ObjectId,
     ref: PhoneData.name,
@@ -61,6 +66,11 @@ schema.index({ owner: 1, phone: 1 }, {
   unique: true,
   partialFilterExpression: { phone: { $type: "objectId" } },
   name: "unique_owner_phone_token",
+});
+schema.index({ whatsappSession: 1 }, {
+  unique: true,
+  partialFilterExpression: { whatsappSession: { $type: "string" } },
+  name: "unique_whatsapp_session",
 });
 
 /**

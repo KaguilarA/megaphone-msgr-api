@@ -25,7 +25,7 @@ export default function ({ userModel, emailModel, phoneModel, tokenModel, contac
       if (!user) fail("Usuario no encontrado.", 404);
       const phoneIds = new Set(phones.map((phone) => String(phone._id)));
       const configuredPhones = new Set(tokens.filter((token) => phoneIds.has(String(token.phone)) &&
-        token.whatsappToken && /^v\d+\.\d+$/.test(token.whatsappVersion) && /^\d+$/.test(token.whatsappPhoneNumberId)).map((token) => String(token.phone)));
+        typeof token.whatsappSession === "string" && /^[a-zA-Z0-9._-]{1,64}$/.test(token.whatsappSession)).map((token) => String(token.phone)));
       return res.json({
         onboardingCompletedAt: user.onboardingCompletedAt || null,
         account: { name: user.name, lastName: user.lastName, email: emails[0]?.email || "" },
@@ -37,7 +37,8 @@ export default function ({ userModel, emailModel, phoneModel, tokenModel, contac
           acceptedMessageCount: messages.filter((message) => message.deliveries?.some((delivery) => delivery.status === "accepted")).length,
         },
         server: { databaseConnected: true, installationInitialized: Boolean(installation?.completedAt),
-          mediaUploadsConfigured: Boolean(serverFeatures.mediaUploadsConfigured), webhookConfigured: Boolean(serverFeatures.webhookConfigured) },
+          mediaUploadsConfigured: Boolean(serverFeatures.mediaUploadsConfigured), webhookConfigured: Boolean(serverFeatures.webhookConfigured),
+          wahaConfigured: Boolean(serverFeatures.wahaConfigured) },
       });
     }),
     complete: handle(async (req, res) => {

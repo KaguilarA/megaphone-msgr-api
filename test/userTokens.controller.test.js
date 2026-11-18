@@ -28,19 +28,43 @@ function createDependencies() {
   return { controller: UserTokenController({ model, phoneModel }), updates };
 }
 
-test('saving a WhatsApp token links its Token record to Phone without returning the secret', async () => {
+test('saving a WAHA session links its Token record to Phone without returning credentials', async () => {
   const { controller, updates } = createDependencies();
   const res = createRes();
 
   await controller.saveWhatsApp({
     session: { userId: owner },
-    body: { phone: phoneId, whatsappToken: 'wa-secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123456789' },
+    body: { phone: phoneId, whatsappSession: 'my-number' },
   }, res);
 
   assert.equal(res.statusCode, 201);
   assert.deepEqual(updates[0], { 'tokens.whatsapp': 'token-1' });
-  assert.equal(res.body.hasWhatsappToken, true);
+  assert.equal(res.body.hasWhatsappSession, true);
+  assert.equal(res.body.whatsappSession, 'my-number');
   assert.equal(Object.hasOwn(res.body, 'whatsappToken'), false);
+});
+
+test('a WAHA session cannot be assigned to a second phone', async () => {
+  const res = createRes();
+  const guardedController = UserTokenController({
+    model: {
+      getOne: async (filter) => filter.whatsappSession
+        ? { _id: 'existing-token', phone: 'other-phone' }
+        : null,
+      save: async () => assert.fail('Conflicting session must not be saved'),
+    },
+    phoneModel: {
+      getById: async () => ({ _id: phoneId, owner, ownerType: 'User' }),
+      update: async () => assert.fail('Conflicting session must not be linked'),
+    },
+  });
+
+  await guardedController.saveWhatsApp({
+    session: { userId: owner },
+    body: { phone: phoneId, whatsappSession: 'other-session' },
+  }, res);
+
+  assert.equal(res.statusCode, 409);
 });
 
 test('saving a Telegram token links it under Phone.tokens.telegram', async () => {

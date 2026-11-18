@@ -90,10 +90,10 @@ for (const operation of ['getById', 'update', 'delete']) {
 }
 
 test('token metadata responses never disclose either channel secret', async () => {
-  const controller = TokenController({ model: { getById: async () => ({ _id: 't-1', owner, phone: phone._id, whatsappToken: 'secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', telegramBotToken: 'secret2' }) } });
+  const controller = TokenController({ model: { getById: async () => ({ _id: 't-1', owner, phone: phone._id, whatsappSession: 'phone-session', whatsappToken: 'secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', telegramBotToken: 'secret2' }) } });
   const res = response();
   await controller.getById(req(), res);
-  assert.equal(res.body.hasWhatsappToken, true);
+  assert.equal(res.body.hasWhatsappSession, true);
   assert.equal(res.body.hasTelegramToken, true);
   assert.equal(JSON.stringify(res.body).includes('secret'), false);
 });
@@ -115,6 +115,9 @@ test('migration can run repeatedly without further changes', () => {
 
 test('phone, token and message schemas declare database-enforced uniqueness', () => {
   for (const data of [PhoneData, TokenData, MessageData]) assert.ok(data.schema.indexes().some(([, options]) => options.unique && options.partialFilterExpression));
+  assert.ok(TokenData.schema.indexes().some(([fields, options]) =>
+    fields.whatsappSession === 1 && options.unique && options.name === 'unique_whatsapp_session',
+  ));
 });
 
 test('audit redacts nested credentials without changing request data', () => {
@@ -137,7 +140,7 @@ function messageFixture({ invalidContact, legacyToken, failSend, failSave, previ
     },
     receptorModel: { save: async (data) => data },
     phoneModel: { getById: async () => phone, getByCoincidence: async ({ owner }) => [{ phone: owner === 'contact-1' ? '88880001' : '88880002', countryNumber: '+506' }] },
-    tokenModel: { getOne: async () => ({ owner, phone: legacyToken ? undefined : phone._id, whatsappToken: 'secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123' }), getByCoincidence: async () => [{ owner, whatsappToken: 'legacy' }] },
+    tokenModel: { getOne: async () => ({ owner, phone: legacyToken ? undefined : phone._id, whatsappSession: 'phone-session' }), getByCoincidence: async () => [{ owner, whatsappSession: 'legacy-session' }] },
     contactModel: { getById: async (id) => ({ owner: invalidContact === id ? 'victim' : owner }) },
     sendWhatsAppMessage: async (recipient) => { sent.push(recipient); if (failSend && sent.length === 2) throw new Error('timeout'); return { messages: [{ id: 'provider-1' }] }; },
   });

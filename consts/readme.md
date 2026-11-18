@@ -18,11 +18,14 @@ This directory contains environment-derived settings and the API route registry.
 | `ENCRYPTION_KEY` | 32-byte AES key encoded as 64 hexadecimal characters. | Required |
 | `ENCRYPTION_ALGORITHM` | Encryption cipher used for provider credentials. | `aes-256-gcm` |
 | `CLUSTER_WORKERS` | Maximum requested worker count when clustering is enabled. | `1` |
+| `WAHA_API_URL` | Private base URL for the WAHA HTTP API. | Optional |
+| `WAHA_API_KEY` | Server-side WAHA API key; required together with `WAHA_API_URL`. | Optional |
 
 Use the root `.env.example` as the configuration checklist. Startup validates required
 values and rejects weak session secrets and malformed encryption keys. Secrets are never
-defaulted to known values. WhatsApp credentials are stored encrypted in the Token model,
-not in environment variables.
+defaulted to known values. The WAHA API key is server-only; each outbound WhatsApp session
+name is associated with a phone in the Token model. Legacy Meta tokens remain encrypted for
+the existing inbound webhook/autoresponse integration.
 
 ## Route registry
 

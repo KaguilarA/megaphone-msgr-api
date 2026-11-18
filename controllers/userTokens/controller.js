@@ -24,6 +24,8 @@ export default function ({ model, phoneModel }) {
     if (!token) return null;
     return {
       _id: token._id, phone: token.phone,
+      whatsappSession: token.whatsappSession || "",
+      hasWhatsappSession: Boolean(token.whatsappSession),
       whatsappPhoneNumberId: token.whatsappPhoneNumberId,
       whatsappVersion: token.whatsappVersion,
       hasWhatsappToken: Boolean(typeof token.whatsappToken === "string" && token.whatsappToken.trim() &&
@@ -31,14 +33,12 @@ export default function ({ model, phoneModel }) {
       hasTelegramToken: Boolean(token.telegramBotToken),
     };
   }
-  function whatsAppData(body) {
-    const whatsappToken = text(body.whatsappToken, "Token de WhatsApp");
-    const whatsappVersion = text(body.whatsappVersion, "Versión de WhatsApp");
-    const whatsappPhoneNumberId = text(body.whatsappPhoneNumberId, "ID del número de WhatsApp");
-    if (!/^v\d+\.\d+$/.test(whatsappVersion) || !/^\d+$/.test(whatsappPhoneNumberId)) {
-      fail("La versión o el ID del número de WhatsApp no son válidos.");
+  function whatsAppSessionData(body) {
+    const whatsappSession = text(body.whatsappSession, "Sesión de WAHA");
+    if (!/^[a-zA-Z0-9._-]{1,64}$/.test(whatsappSession)) {
+      fail("El nombre de sesión de WAHA no es válido.");
     }
-    return { whatsappToken, whatsappVersion, whatsappPhoneNumberId };
+    return { whatsappSession };
   }
   async function saveTokenForPhone(owner, phoneId, data, channel) {
     const phone = await getOwnedPhone(owner, phoneId);
@@ -57,7 +57,14 @@ export default function ({ model, phoneModel }) {
       return res.json(safeToken(await model.getOne({ owner, phone: req.params.phoneId })));
     }),
     saveWhatsApp: handle(async (req, res) => {
-      const { saved, created } = await saveTokenForPhone(userId(req), req.body.phone, whatsAppData(req.body), "whatsapp");
+      const owner = userId(req);
+      const data = whatsAppSessionData(req.body);
+      const phone = await getOwnedPhone(owner, req.body.phone);
+      const existing = await model.getOne({ whatsappSession: data.whatsappSession });
+      if (existing && String(existing.phone) !== String(phone._id)) {
+        fail("Esta sesión de WAHA ya está vinculada a otro teléfono.", 409);
+      }
+      const { saved, created } = await saveTokenForPhone(owner, phone._id, data, "whatsapp");
       return res.status(created ? 201 : 200).json(safeToken(saved));
     }),
     saveTelegram: handle(async (req, res) => {
@@ -69,14 +76,17 @@ export default function ({ model, phoneModel }) {
     update: handle(async (req, res) => {
       const token = await getOwnedToken(req);
       const data = {};
-      if (["whatsappToken", "whatsappVersion", "whatsappPhoneNumberId"].some((key) => key in req.body)) {
-        Object.assign(data, whatsAppData({ whatsappToken: token.whatsappToken, whatsappVersion: token.whatsappVersion,
-          whatsappPhoneNumberId: token.whatsappPhoneNumberId, ...req.body }));
-      }
+      if ("whatsappSession" in req.body) Object.assign(data, whatsAppSessionData(req.body));
       if ("telegramBotToken" in req.body) data.telegramBotToken = text(req.body.telegramBotToken, "Token de Telegram");
       if (!Object.keys(data).length) fail("No hay credenciales para actualizar.");
       if (!token.phone) fail("Vincula las credenciales a un número desde tu perfil.", 409);
       await getOwnedPhone(userId(req), String(token.phone));
+      if (data.whatsappSession) {
+        const existing = await model.getOne({ whatsappSession: data.whatsappSession });
+        if (existing && String(existing._id) !== String(token._id)) {
+          fail("Esta sesión de WAHA ya está vinculada a otro teléfono.", 409);
+        }
+      }
       return res.json(safeToken(await model.update(token._id, data, { runValidators: true })));
     }),
     delete: handle(async (req, res) => {
