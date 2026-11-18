@@ -108,7 +108,8 @@ test('token metadata responses never disclose either channel secret', async () =
   const controller = TokenController({ model: { getById: async () => ({ _id: 't-1', owner, phone: phone._id, whatsappSession: 'phone-session', whatsappToken: 'secret', whatsappVersion: 'v22.0', whatsappPhoneNumberId: '123', telegramBotToken: 'secret2' }) } });
   const res = response();
   await controller.getById(req(), res);
-  assert.equal(res.body.hasWhatsappSession, true);
+  assert.equal(res.body.hasWhatsAppConnection, true);
+  assert.equal(Object.hasOwn(res.body, 'whatsappSession'), false);
   assert.equal(res.body.hasTelegramToken, true);
   assert.equal(JSON.stringify(res.body).includes('secret'), false);
 });

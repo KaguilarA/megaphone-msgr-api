@@ -1,18 +1,12 @@
 const REQUEST_TIMEOUT_MS = 15_000;
 const SESSION_PATTERN = /^[a-zA-Z0-9._-]{1,64}$/;
 
-function providerError(response, body) {
-  const providerMessage =
-    typeof body?.message === "string"
-      ? body.message
-      : typeof body?.error === "string"
-        ? body.error
-        : body?.error?.message;
+function providerError(response) {
   return Object.assign(
     new Error(
-      providerMessage
-        ? `WAHA rejected the request: ${providerMessage}`
-        : `WAHA request failed (HTTP ${response.status}).`,
+      response.status >= 500
+        ? "El servicio de WhatsApp no está disponible."
+        : "No se pudo completar la solicitud de WhatsApp.",
     ),
     {
       providerRejected: response.status >= 400 && response.status < 500,
@@ -60,6 +54,189 @@ function getTransport(apiBaseUrl, apiKey) {
   };
 }
 
+function validateConnectionInput(tokenData, sourcePhoneNumber, options) {
+  if (!tokenData || typeof tokenData.whatsappSession !== "string" ||
+      !SESSION_PATTERN.test(tokenData.whatsappSession)) {
+    throw new Error("A phone record with a valid whatsappSession is required.");
+  }
+  if (typeof sourcePhoneNumber !== "string" ||
+      !/^\+?[1-9]\d{7,14}$/.test(sourcePhoneNumber)) {
+    throw new Error("A valid sourcePhoneNumber is required to verify the WhatsApp connection.");
+  }
+  return getTransport(options.apiBaseUrl, options.apiKey);
+}
+
+async function providerAction(fetchImpl, url, method, headers, description) {
+  const response = await fetchImpl(url, {
+    method,
+    headers,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (!response.ok) {
+    await readJson(response, description);
+    throw providerError(response);
+  }
+}
+
+async function getSession(fetchImpl, sessionUrl, headers) {
+  const response = await fetchImpl(sessionUrl, {
+    method: "GET",
+    headers,
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+  if (response.status === 404) return null;
+  const session = await readJson(response, "session");
+  if (!response.ok) throw providerError(response);
+  return session;
+}
+
+async function getConnectionState(
+  tokenData,
+  sourcePhoneNumber,
+  { apiRoot, headers, fetchImpl },
+) {
+  const sessionName = encodeURIComponent(tokenData.whatsappSession);
+  const sessionUrl = `${apiRoot}/api/sessions/${sessionName}`;
+  const session = await getSession(fetchImpl, sessionUrl, headers);
+  if (!session) return { status: "not_connected" };
+
+  if (session.status === "WORKING") {
+    let accountId = session.me?.id;
+    if (typeof accountId !== "string") {
+      const response = await fetchImpl(`${sessionUrl}/me`, {
+        method: "GET",
+        headers,
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
+      const me = await readJson(response, "connected account");
+      if (!response.ok) throw providerError(response);
+      accountId = me?.id;
+    }
+    if (typeof accountId !== "string") return { status: "connecting" };
+    const connectedNumber = accountId.split("@")[0].replace(/\D/g, "");
+    const expectedNumber = sourcePhoneNumber.replace(/\D/g, "");
+    return {
+      status: connectedNumber === expectedNumber ? "connected" : "wrong_number",
+    };
+  }
+
+  if (session.status === "SCAN_QR_CODE") {
+    const response = await fetchImpl(
+      `${apiRoot}/api/${sessionName}/auth/qr?format=image`,
+      {
+        method: "GET",
+        headers: { ...headers, Accept: "application/json" },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      },
+    );
+    if (response.status === 422) return { status: "qr_ready" };
+    const qr = await readJson(response, "QR code");
+    if (!response.ok) throw providerError(response);
+    if (typeof qr?.data !== "string") {
+      throw new Error("The QR code response did not contain image data.");
+    }
+    return {
+      status: "qr_ready",
+      qrCode: qr.data,
+      qrMimeType: typeof qr.mimetype === "string" ? qr.mimetype : "image/png",
+    };
+  }
+
+  if (session.status === "STOPPED") return { status: "not_connected" };
+  if (session.status === "FAILED") return { status: "failed" };
+  return { status: "connecting" };
+}
+
+export async function getWhatsAppConnectionStatus(
+  tokenData,
+  sourcePhoneNumber,
+  options = {},
+) {
+  const transport = validateConnectionInput(tokenData, sourcePhoneNumber, options);
+  return getConnectionState(tokenData, sourcePhoneNumber, {
+    ...transport,
+    fetchImpl: options.fetchImpl || fetch,
+  });
+}
+
+export async function startWhatsAppConnection(
+  tokenData,
+  sourcePhoneNumber,
+  { restartWrongNumber = false, ...options } = {},
+) {
+  const transport = validateConnectionInput(tokenData, sourcePhoneNumber, options);
+  const fetchImpl = options.fetchImpl || fetch;
+  const sessionName = encodeURIComponent(tokenData.whatsappSession);
+  const sessionUrl = `${transport.apiRoot}/api/sessions/${sessionName}`;
+  let session = await getSession(fetchImpl, sessionUrl, transport.headers);
+  let created = false;
+
+  if (!session) {
+    const response = await fetchImpl(`${transport.apiRoot}/api/sessions`, {
+      method: "POST",
+      headers: transport.headers,
+      body: JSON.stringify({ name: tokenData.whatsappSession }),
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+    if (response.status === 409) {
+      session = await getSession(fetchImpl, sessionUrl, transport.headers);
+      if (!session) {
+        await readJson(response, "session");
+        throw providerError(response);
+      }
+    } else {
+      if (!response.ok) {
+        await readJson(response, "session");
+        throw providerError(response);
+      }
+      session = await getSession(fetchImpl, sessionUrl, transport.headers);
+      created = true;
+    }
+  }
+
+  if (created && !session) return { status: "connecting" };
+
+  if (session?.status === "WORKING" && restartWrongNumber) {
+    const state = await getConnectionState(tokenData, sourcePhoneNumber, {
+      ...transport,
+      fetchImpl,
+    });
+    if (state.status === "wrong_number") {
+      await providerAction(
+        fetchImpl,
+        `${sessionUrl}/logout`,
+        "POST",
+        transport.headers,
+        "session logout",
+      );
+      session = { status: "STOPPED" };
+    }
+  }
+
+  if (session?.status === "FAILED") {
+    await providerAction(
+      fetchImpl,
+      `${sessionUrl}/restart`,
+      "POST",
+      transport.headers,
+      "session restart",
+    );
+  } else if (session?.status === "STOPPED") {
+    await providerAction(
+      fetchImpl,
+      `${sessionUrl}/start`,
+      "POST",
+      transport.headers,
+      "session start",
+    );
+  }
+
+  return getConnectionState(tokenData, sourcePhoneNumber, {
+    ...transport,
+    fetchImpl,
+  });
+}
+
 export async function verifyWhatsAppSession(
   tokenData,
   sourcePhoneNumber,
@@ -81,7 +258,7 @@ export async function verifyWhatsAppSession(
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   const session = await readJson(response, "session");
-  if (!response.ok) throw providerError(response, session);
+  if (!response.ok) throw providerError(response);
 
   const connectedNumber = typeof session?.id === "string"
     ? session.id.split("@")[0].replace(/^\+/, "")
@@ -176,7 +353,7 @@ export async function sendWhatsAppMessage(
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   const responseBody = await readJson(response, "message");
-  if (!response.ok) throw providerError(response, responseBody);
+  if (!response.ok) throw providerError(response);
   if (!messageId(responseBody)) {
     throw new Error("WAHA did not confirm acceptance with a message ID.");
   }

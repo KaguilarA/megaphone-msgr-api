@@ -17,7 +17,7 @@ function dependencies() {
     phoneModel: collection([{ _id: 'phone-1' }]),
     tokenModel: collection([{ phone: 'phone-1', whatsappSession: 'phone-session' }, { whatsappToken: 'legacy-secret' }]),
     contactModel: collection([]), messageModel: collection([]), installationModel: { getById: async () => ({ completedAt: new Date() }) },
-    serverFeatures: { mediaUploadsConfigured: false, webhookConfigured: false, wahaConfigured: true },
+    serverFeatures: { mediaUploadsConfigured: false, webhookConfigured: false, whatsappConfigured: true },
   };
 }
 
@@ -29,7 +29,7 @@ test('setup reports owned configuration without returning provider secrets', asy
   assert.equal(response.body.checks.smtpConfigured, false);
   assert.equal(response.body.onboardingCompletedAt, null);
   assert.equal(response.body.checks.contactCount, 0);
-  assert.equal(response.body.server.wahaConfigured, true);
+  assert.equal(response.body.server.whatsappConfigured, true);
   assert.equal(JSON.stringify(response.body).includes('secret'), false);
   assert.ok(data.filters.every((filter) => filter.owner === owner || filter.sender === owner));
 });

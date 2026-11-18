@@ -93,7 +93,7 @@ export default function ({
       return token;
     }
 
-    throw requestError("No WAHA session is configured for the selected phone. Configure a session for this number before sending.", 422);
+    throw requestError("Conecta el número de WhatsApp seleccionado antes de enviar.", 422);
   }
 
   async function resolveRecipients(userId, contacts) {
@@ -253,7 +253,7 @@ export default function ({
         })),
       );
       if (whatsappConfig && (!whatsappConfig.apiBaseUrl || !whatsappConfig.apiKey)) {
-        throw requestError("WAHA is not configured on the server.", 503);
+        throw requestError("El envío de WhatsApp no está disponible en este momento.", 503);
       }
       const recipients = await resolveRecipients(id, contacts);
       if (senderMode === "round-robin" && sourceSenders.length > recipients.length) {
@@ -261,7 +261,7 @@ export default function ({
       }
       if (whatsappConfig && recipients.length) {
         if (!sourceSenders.length) {
-          throw requestError("A source phone is required to send through WAHA.", 422);
+          throw requestError("Selecciona un número emisor de WhatsApp.", 422);
         }
         for (const sourceSender of sourceSenders) {
           await verifyWhatsAppSession(

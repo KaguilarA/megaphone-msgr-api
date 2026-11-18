@@ -14,7 +14,14 @@ function createRes() {
 }
 
 function createDependencies() {
-  const phone = { _id: phoneId, owner, ownerType: 'User', tokens: {} };
+  const phone = {
+    _id: phoneId,
+    owner,
+    ownerType: 'User',
+    phone: '4155552670',
+    countryNumber: '+1',
+    tokens: {},
+  };
   const updates = [];
   const token = { _id: 'token-1', owner, phone: phoneId };
   const model = {
@@ -25,10 +32,10 @@ function createDependencies() {
     getById: async () => phone,
     update: async (_id, data) => { updates.push(data); return data; },
   };
-  return { controller: UserTokenController({ model, phoneModel }), updates };
+  return { controller: UserTokenController({ model, phoneModel }), updates, model };
 }
 
-test('saving a WAHA session links its Token record to Phone without returning credentials', async () => {
+test('saving a WhatsApp connection links its Token record to Phone without returning session details', async () => {
   const { controller, updates } = createDependencies();
   const res = createRes();
 
@@ -39,12 +46,12 @@ test('saving a WAHA session links its Token record to Phone without returning cr
 
   assert.equal(res.statusCode, 201);
   assert.deepEqual(updates[0], { 'tokens.whatsapp': 'token-1' });
-  assert.equal(res.body.hasWhatsappSession, true);
-  assert.equal(res.body.whatsappSession, 'my-number');
+  assert.equal(res.body.hasWhatsAppConnection, true);
+  assert.equal(Object.hasOwn(res.body, 'whatsappSession'), false);
   assert.equal(Object.hasOwn(res.body, 'whatsappToken'), false);
 });
 
-test('a WAHA session cannot be assigned to a second phone', async () => {
+test('a WhatsApp session cannot be assigned to a second phone', async () => {
   const res = createRes();
   const guardedController = UserTokenController({
     model: {
@@ -97,4 +104,124 @@ test('token registration rejects phones owned by another user', async () => {
   }, res);
 
   assert.equal(res.statusCode, 403);
+});
+
+test('a user cannot create a WhatsApp connection for another account phone', async () => {
+  const { model } = createDependencies();
+  let providerCalled = false;
+  const controller = UserTokenController({
+    model,
+    phoneModel: {
+      getById: async () => ({
+        _id: phoneId,
+        owner: 'another-user',
+        ownerType: 'User',
+        phone: '4155552670',
+        countryNumber: '+1',
+      }),
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'secret-key' },
+    whatsappFetch: async () => {
+      providerCalled = true;
+      assert.fail('No connection request should be sent for another account phone');
+    },
+  });
+  const res = createRes();
+
+  await controller.startWhatsAppConnection({
+    session: { userId: owner },
+    params: { phoneId },
+  }, res);
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(providerCalled, false);
+});
+
+test('starts a new connection and returns the QR without exposing its internal session name', async () => {
+  const requests = [];
+  let created = false;
+  const { model, updates } = createDependencies();
+  const controller = UserTokenController({
+    model,
+    phoneModel: {
+      getById: async () => ({
+        _id: phoneId,
+        owner,
+        ownerType: 'User',
+        phone: '4155552670',
+        countryNumber: '+1',
+      }),
+      update: async (_id, data) => { updates.push(data); return data; },
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'secret-key' },
+    whatsappFetch: async (url, request) => {
+      requests.push({ url, request });
+      if (url.endsWith('/api/sessions/m-phone-1')) {
+        return created
+          ? { ok: true, status: 200, json: async () => ({ status: 'SCAN_QR_CODE' }) }
+          : { ok: false, status: 404, json: async () => ({ message: 'Not found' }) };
+      }
+      if (url.endsWith('/api/sessions') && request.method === 'POST') {
+        created = true;
+        return { ok: true, status: 201, json: async () => ({ status: 'STARTING' }) };
+      }
+      if (url.endsWith('/api/m-phone-1/auth/qr?format=image')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ mimetype: 'image/png', data: 'qr-image-data' }),
+        };
+      }
+      assert.fail(`Unexpected request: ${url}`);
+    },
+  });
+  const res = createRes();
+
+  await controller.startWhatsAppConnection({
+    session: { userId: owner },
+    params: { phoneId },
+  }, res);
+
+  assert.equal(res.body.status, 'qr_ready');
+  assert.equal(res.body.qrCode, 'qr-image-data');
+  assert.equal(Object.hasOwn(res.body, 'whatsappSession'), false);
+  assert.equal(Object.hasOwn(res.body, 'apiKey'), false);
+  assert.equal(requests[0].request.headers['X-Api-Key'], 'secret-key');
+  assert.equal(updates.length, 0);
+});
+
+test('stores the connection only after the selected phone is authenticated', async () => {
+  const { model, updates } = createDependencies();
+  model.save = async (data) => ({ _id: 'token-1', ...data });
+  const controller = UserTokenController({
+    model,
+    phoneModel: {
+      getById: async () => ({
+        _id: phoneId,
+        owner,
+        ownerType: 'User',
+        phone: '4155552670',
+        countryNumber: '+1',
+      }),
+      update: async (_id, data) => { updates.push(data); return data; },
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'secret-key' },
+    whatsappFetch: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        status: 'WORKING',
+        me: { id: '14155552670@c.us' },
+      }),
+    }),
+  });
+  const res = createRes();
+
+  await controller.getWhatsAppConnection({
+    session: { userId: owner },
+    params: { phoneId },
+  }, res);
+
+  assert.deepEqual(res.body, { status: 'connected' });
+  assert.equal(updates[0]['tokens.whatsapp'], 'token-1');
 });

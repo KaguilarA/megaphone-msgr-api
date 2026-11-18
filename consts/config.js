@@ -60,7 +60,7 @@ export default [
       serverFeatures: {
         mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
         webhookConfigured: Boolean(WahaWebhookHmacKey),
-        wahaConfigured: Boolean(WahaApiUrl && WahaApiKey),
+        whatsappConfigured: Boolean(WahaApiUrl && WahaApiKey),
       },
     },
     router: SetupRouter,
@@ -316,6 +316,7 @@ export default [
       id: "Token",
       model: TokenModel,
       phoneModel: PhoneNumberModel,
+      whatsappConfig: { apiBaseUrl: WahaApiUrl, apiKey: WahaApiKey },
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,

@@ -38,7 +38,7 @@ export default function ({ userModel, emailModel, phoneModel, tokenModel, contac
         },
         server: { databaseConnected: true, installationInitialized: Boolean(installation?.completedAt),
           mediaUploadsConfigured: Boolean(serverFeatures.mediaUploadsConfigured), webhookConfigured: Boolean(serverFeatures.webhookConfigured),
-          wahaConfigured: Boolean(serverFeatures.wahaConfigured) },
+          whatsappConfigured: Boolean(serverFeatures.whatsappConfigured) },
       });
     }),
     complete: handle(async (req, res) => {

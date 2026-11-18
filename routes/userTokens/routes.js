@@ -29,6 +29,17 @@ export default (data) => {
     routePermission(data, data.actions.post),
     userTokenController.saveTelegram,
   );
+  router.get(
+    "/phone/:phoneId/whatsapp/connection",
+    routePermission(data, data.actions.getById),
+    userTokenController.getWhatsAppConnection,
+  );
+  router.post(
+    "/phone/:phoneId/whatsapp/connection",
+    routePermission(data, data.actions.post),
+    ActionLogMiddleware(auditDependencies, data.actions.post),
+    userTokenController.startWhatsAppConnection,
+  );
   router.post(
     "/",
     routePermission(data, data.actions.post),

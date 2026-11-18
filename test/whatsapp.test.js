@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getWhatsAppConnectionStatus,
   sendWhatsAppMessage,
+  startWhatsAppConnection,
   verifyWhatsAppSession,
 } from "../integrations/whatsapp.js";
 
@@ -19,6 +21,109 @@ function fetchFor({ session = { id: "14155552670@c.us" }, message = { id: "wamid
     json: async () => url.endsWith("/me") ? session : message,
   });
 }
+
+function response(status, body) {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  };
+}
+
+test("creates a number connection and returns the QR image without exposing the API key", async () => {
+  const requests = [];
+  let created = false;
+  const result = await startWhatsAppConnection(
+    { whatsappSession: "m-phone-1" },
+    options.sourcePhoneNumber,
+    {
+      ...options,
+      fetchImpl: async (url, request) => {
+        requests.push({ url, request });
+        if (url.endsWith("/api/sessions/m-phone-1")) {
+          return created
+            ? response(200, { name: "m-phone-1", status: "SCAN_QR_CODE" })
+            : response(404, { message: "Not found" });
+        }
+        if (url.endsWith("/api/sessions") && request.method === "POST") {
+          created = true;
+          return response(201, { name: "m-phone-1", status: "STARTING" });
+        }
+        if (url.endsWith("/api/m-phone-1/auth/qr?format=image")) {
+          return response(200, { mimetype: "image/png", data: "qr-image-data" });
+        }
+        assert.fail(`Unexpected request: ${url}`);
+      },
+    },
+  );
+
+  assert.equal(result.status, "qr_ready");
+  assert.equal(result.qrCode, "qr-image-data");
+  assert.equal(result.qrMimeType, "image/png");
+  assert.deepEqual(JSON.parse(requests[1].request.body), { name: "m-phone-1" });
+  assert.equal(requests[4].request.headers.Accept, "application/json");
+  assert.equal(JSON.stringify(result).includes(options.apiKey), false);
+});
+
+test("starts stopped connections and returns the QR code", async () => {
+  const requests = [];
+  let sessionReads = 0;
+  const result = await startWhatsAppConnection(
+    { whatsappSession: "phone-session" },
+    options.sourcePhoneNumber,
+    {
+      ...options,
+      fetchImpl: async (url, request) => {
+        requests.push({ url, request });
+        if (url.endsWith("/api/sessions/phone-session")) {
+          sessionReads++;
+          return response(200, {
+            status: sessionReads === 1 ? "STOPPED" : "SCAN_QR_CODE",
+          });
+        }
+        if (url.endsWith("/api/sessions/phone-session/start")) return response(200, {});
+        if (url.endsWith("/api/phone-session/auth/qr?format=image")) {
+          return response(200, { mimetype: "image/png", data: "qr-image-data" });
+        }
+        assert.fail(`Unexpected request: ${url}`);
+      },
+    },
+  );
+
+  assert.equal(requests[1].url, `${options.apiBaseUrl}/api/sessions/phone-session/start`);
+  assert.equal(result.status, "qr_ready");
+  assert.equal(sessionReads, 2);
+});
+
+test("reports whether a connected account matches the selected phone", async () => {
+  const connected = await getWhatsAppConnectionStatus(
+    { whatsappSession: "phone-session" },
+    options.sourcePhoneNumber,
+    {
+      ...options,
+      fetchImpl: async () =>
+        response(200, {
+          status: "WORKING",
+          me: { id: "14155552670@c.us" },
+        }),
+    },
+  );
+  const wrongNumber = await getWhatsAppConnectionStatus(
+    { whatsappSession: "phone-session" },
+    options.sourcePhoneNumber,
+    {
+      ...options,
+      fetchImpl: async () =>
+        response(200, {
+          status: "WORKING",
+          me: { id: "14155550000@c.us" },
+        }),
+    },
+  );
+
+  assert.deepEqual(connected, { status: "connected" });
+  assert.deepEqual(wrongNumber, { status: "wrong_number" });
+});
 
 test("verifies the source session and sends text through WAHA", async () => {
   const requests = [];
@@ -135,7 +240,7 @@ test("rejects sessions that are already connected to another source", async () =
     }),
     (error) => {
       assert.equal(error.providerRejected, true);
-      assert.match(error.message, /Session not found/);
+      assert.match(error.message, /No se pudo completar la solicitud de WhatsApp/);
       assert.doesNotMatch(error.message, /test-api-key/);
       return true;
     },
