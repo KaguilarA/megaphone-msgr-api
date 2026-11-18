@@ -8,13 +8,14 @@ Stores a contact belonging to one `User`. Related emails, phone numbers, and add
 
 | Field | Rules |
 | --- | --- |
-| `name` | Required trimmed string. |
+| `name` | Optional trimmed string. |
 | `owner` | Required indexed `ObjectId` reference to `User`. |
 | `state` | Optional `ObjectId` reference to `State`. |
 
 ## Relationships
 
 Contact-owned child resources use `owner: contact._id` and `ownerType: "Contact"`. The model does not embed those resources.
+Contact creation requires at least one valid phone number; the controller stores phone numbers as separate owned resources.
 
 ## Limitations
 

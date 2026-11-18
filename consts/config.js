@@ -14,6 +14,8 @@ import {
   UserModel,
   UserPermissionModel,
   InstallationModel,
+  WhatsAppAutomationModel,
+  WhatsAppConversationMessageModel,
 } from "../models/models.js";
 
 import AddressRouter from "../routes/address/routes.js";
@@ -29,6 +31,7 @@ import UserPermissionRouter from "../routes/userPermission/routes.js";
 import PermissionRouter from "../routes/permission/routes.js";
 import UserTokensRouter from "../routes/userTokens/routes.js";
 import ActionLogRouter from "../routes/actionLog/routes.js";
+import WhatsAppAutomationRouter from "../routes/whatsappAutomation/routes.js";
 import { sendEmail } from "../integrations/email.js";
 import { createOperator, createSelfRegisteredUser } from "../setup/accounts.js";
 import SetupRouter from "../routes/setup/routes.js";
@@ -43,8 +46,7 @@ import {
   TinyPngApiKey,
   WahaApiKey,
   WahaApiUrl,
-  WhatsAppAppSecret,
-  WhatsAppWebhookVerifyToken,
+  WahaWebhookHmacKey,
 } from "./index.js";
 
 export default [
@@ -57,7 +59,7 @@ export default [
       actions: { getStatus: "getInfo", complete: "getInfo" },
       serverFeatures: {
         mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
-        webhookConfigured: Boolean(WhatsAppAppSecret && WhatsAppWebhookVerifyToken),
+        webhookConfigured: Boolean(WahaWebhookHmacKey),
         wahaConfigured: Boolean(WahaApiUrl && WahaApiKey),
       },
     },
@@ -117,6 +119,7 @@ export default [
     config: {
       id: "Contact",
       model: ContactModel,
+      phoneNumberModel: PhoneNumberModel,
       stateModel: StateModel,
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
@@ -173,7 +176,7 @@ export default [
           bytes: result.bytes,
         };
       },
-      populatedFields: ["sender", "senderPhone", "state"],
+      populatedFields: ["sender", "senderPhone", "deliveries.senderPhone", "state"],
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
       actionLogModel: ActionLogModel,
@@ -184,6 +187,18 @@ export default [
       },
     },
     router: MessageRouter,
+  },
+  {
+    url: "/whatsapp-automation",
+    config: {
+      id: "Message",
+      automationModel: WhatsAppAutomationModel,
+      conversationMessageModel: WhatsAppConversationMessageModel,
+      permissionModel: PermissionModel,
+      userPermissionModel: UserPermissionModel,
+      actionLogModel: ActionLogModel,
+    },
+    router: WhatsAppAutomationRouter,
   },
   {
     url: "/email",

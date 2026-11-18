@@ -32,3 +32,5 @@ services:
         sync: false
       - key: WAHA_API_KEY
         sync: false
+      - key: WAHA_WEBHOOK_HMAC_KEY
+        sync: false

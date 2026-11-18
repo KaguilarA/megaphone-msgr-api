@@ -18,7 +18,7 @@ Stores a phone number owned by a `User` or `Contact`, with one or more related s
 
 ## Limitations
 
-The controller normalizes phone formatting, validates international syntax and enforces user/contact ownership. A partial unique index on `(ownerType, owner, e164)` prevents concurrent duplicates after migration. This does not verify that a number exists or that Meta assigned it to the configured business. See `docs/phone-numbers-rollout.md` for migration and deployment steps.
+The controller normalizes phone formatting, validates international syntax and enforces user/contact ownership. A partial unique index on `(ownerType, owner, e164)` prevents concurrent duplicates after migration. This does not verify that a number exists or that its WhatsApp account is connected to WAHA. See `docs/phone-numbers-rollout.md` for migration and deployment steps.
 
 ## Implementation
 

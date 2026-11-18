@@ -1,12 +1,16 @@
 import { OwlSession } from "owl-expressjs-utils";
-import WhatsAppWebhook from "../routes/webhooks/whatsapp.js";
-import { PermissionModel, TokenModel, UserPermissionModel } from "../models/models.js";
+import WahaWebhook from "../routes/webhooks/waha.js";
 import {
-  WhatsAppAppSecret,
-  WhatsAppAutoReplyKeyword,
-  WhatsAppAutoReplyText,
-  WhatsAppWebhookVerifyToken,
-} from "../consts/index.js";
+  ContactModel,
+  MessageModel,
+  PermissionModel,
+  PhoneNumberModel,
+  TokenModel,
+  UserPermissionModel,
+  WhatsAppAutomationModel,
+  WhatsAppConversationMessageModel,
+} from "../models/models.js";
+import { WahaApiKey, WahaApiUrl, WahaWebhookHmacKey } from "../consts/index.js";
 
 /**
  * Initialize API routes for the Express application.
@@ -26,14 +30,17 @@ export default function (
   dbHost,
 ) {
   app.use(OwlSession(sessionSecret, nodeEnv, dbName, dbHost));
-  app.use("/webhooks", WhatsAppWebhook({
-    verifyToken: WhatsAppWebhookVerifyToken,
-    appSecret: WhatsAppAppSecret,
+  app.use("/webhooks/waha", WahaWebhook({
+    hmacKey: WahaWebhookHmacKey,
     tokenModel: TokenModel,
+    phoneModel: PhoneNumberModel,
+    contactModel: ContactModel,
+    messageModel: MessageModel,
+    automationModel: WhatsAppAutomationModel,
+    conversationMessageModel: WhatsAppConversationMessageModel,
     permissionModel: PermissionModel,
     userPermissionModel: UserPermissionModel,
-    autoReplyKeyword: WhatsAppAutoReplyKeyword,
-    autoReplyText: WhatsAppAutoReplyText,
+    whatsappConfig: { apiBaseUrl: WahaApiUrl, apiKey: WahaApiKey },
   }));
 
   ApiConfig.forEach(({ url, config, router: childRouter }) =>

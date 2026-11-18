@@ -5,7 +5,9 @@ export function redactAuditMetadata(value) {
   if (Array.isArray(value)) return value.map(redactAuditMetadata);
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(Object.entries(value).map(([key, item]) => [key,
-    /password|token|secret|authorization|cookie/i.test(key) ? "[REDACTED]" : redactAuditMetadata(item),
+    /password|token|secret|authorization|cookie|phone|mobile|telephone/i.test(key)
+      ? "[REDACTED]"
+      : redactAuditMetadata(item),
   ]));
 }
 

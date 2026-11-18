@@ -80,6 +80,21 @@ test('deleting an owned user number removes only its linked credentials', async 
   assert.deepEqual(deleted, ['token-1', 'phone-1']);
 });
 
+test('a contact cannot lose its last phone number', async () => {
+  const contactPhone = { ...phone, owner: 'contact-1', ownerType: 'Contact' };
+  const controller = PhoneController({
+    model: {
+      getById: async () => contactPhone,
+      getByCoincidence: async () => [contactPhone],
+      delete: async () => assert.fail('the last contact phone must remain'),
+    },
+    contactModel: { getById: async () => ({ owner }) },
+  });
+  const res = response();
+  await controller.deleteDataById(req(), res);
+  assert.equal(res.statusCode, 409);
+});
+
 for (const operation of ['getById', 'update', 'delete']) {
   test(`token ${operation} blocks cross-account access`, async () => {
     const controller = TokenController({ model: { getById: async () => ({ owner: 'victim' }) } });
@@ -126,7 +141,8 @@ test('audit redacts nested credentials without changing request data', () => {
   assert.equal(redacted.body.whatsappToken, '[REDACTED]');
   assert.equal(redacted.body.smtpPassword, '[REDACTED]');
   assert.equal(redacted.body.child[0].telegramBotToken, '[REDACTED]');
-  assert.equal(redacted.body.phone, 'phone-1');
+  assert.equal(redacted.body.phone, '[REDACTED]');
+  assert.equal(redactAuditMetadata({ phoneNumbers: [{ phone: '+50688887777' }] }).phoneNumbers, '[REDACTED]');
   assert.equal(metadata.body.whatsappToken, 'secret');
 });
 

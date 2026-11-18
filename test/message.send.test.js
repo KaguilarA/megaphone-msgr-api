@@ -126,3 +126,87 @@ test('register sends through the selected phone token and stores its reference',
   assert.equal(sent[0][2].phone, sourcePhoneId);
   assert.equal(sent[0][3].sessionVerified, true);
 });
+
+test('register distributes recipients round-robin across verified sender phones', async () => {
+  const firstPhone = {
+    _id: '665f1a2b3c4d5e6f70819601',
+    owner: user._id,
+    ownerType: 'User',
+    phone: '5550001',
+    countryNumber: '+52',
+  };
+  const secondPhone = {
+    _id: '665f1a2b3c4d5e6f70819602',
+    owner: user._id,
+    ownerType: 'User',
+    phone: '5550002',
+    countryNumber: '+52',
+  };
+  const phonesById = new Map([
+    [firstPhone._id, firstPhone],
+    [secondPhone._id, secondPhone],
+  ]);
+  const contacts = ['contact-1', 'contact-2', 'contact-3', 'contact-4'];
+  const verified = [];
+  const sent = [];
+  let savedMessage;
+  const controller = MessageController({
+    model: {
+      save: async (data) => {
+        savedMessage = data;
+        return { ...data, _id: 'message-1', toJSON: () => ({ ...data, _id: 'message-1' }) };
+      },
+      getOne: async () => null,
+      update: async () => null,
+    },
+    receptorModel: { save: async (data) => data },
+    phoneModel: {
+      getById: async (id) => phonesById.get(id),
+      getByCoincidence: async ({ owner }) => [{
+        phone: `555100${owner.split('-')[1]}`,
+        countryNumber: '+52',
+      }],
+    },
+    tokenModel: {
+      getOne: async (query) => ({
+        owner: user._id,
+        phone: query.phone,
+        whatsappSession: query.phone === firstPhone._id ? 'session-one' : 'session-two',
+      }),
+    },
+    contactModel: {
+      getById: async (id) => ({ _id: id, owner: user._id }),
+    },
+    whatsappConfig: { apiBaseUrl: 'http://waha.example.test:3000', apiKey: 'server-key' },
+    verifyWhatsAppSession: async (...args) => verified.push(args),
+    sendWhatsAppMessage: async (...args) => {
+      sent.push(args);
+      return { messages: [{ id: `provider-${sent.length}` }] };
+    },
+  });
+  const res = createRes();
+
+  await controller.register({
+    body: {
+      header: 'Aviso',
+      content: 'Hola',
+      contacts,
+      sourcePhoneIds: JSON.stringify([firstPhone._id, secondPhone._id]),
+      senderMode: 'round-robin',
+      requestId: 'd06b1e8b-93df-44c0-b3f8-8b3a40d7aad5',
+    },
+    session: { userId: user._id },
+  }, res);
+
+  assert.equal(res.statusCode, 201);
+  assert.equal(savedMessage.senderMode, 'round-robin');
+  assert.deepEqual(
+    savedMessage.deliveries.map((delivery) => delivery.senderPhone),
+    [firstPhone._id, secondPhone._id, firstPhone._id, secondPhone._id],
+  );
+  assert.deepEqual(verified.map((args) => args[0].whatsappSession), ['session-one', 'session-two']);
+  assert.deepEqual(
+    sent.map((args) => args[2].whatsappSession),
+    ['session-one', 'session-two', 'session-one', 'session-two'],
+  );
+});

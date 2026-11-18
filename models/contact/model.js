@@ -13,7 +13,6 @@ const model = {
    */
   name: {
     type: String,
-    required: [true, "El nombre del contacto es obligatorio."],
     trim: true,
   },
   /**

@@ -69,4 +69,12 @@ test("requires complete WAHA configuration and rejects credential-bearing URLs",
     WAHA_API_URL: "http://waha:3000",
     WAHA_API_KEY: "test-key",
   }));
+  assert.throws(
+    () => validateConfig({ ...validConfig, WAHA_WEBHOOK_HMAC_KEY: "short" }),
+    /WAHA_WEBHOOK_HMAC_KEY/,
+  );
+  assert.doesNotThrow(() => validateConfig({
+    ...validConfig,
+    WAHA_WEBHOOK_HMAC_KEY: "a".repeat(32),
+  }));
 });

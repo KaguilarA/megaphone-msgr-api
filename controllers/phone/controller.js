@@ -71,6 +71,15 @@ export default function ({ model, stateModel, contactModel, tokenModel }) {
     }),
     deleteDataById: handle(async (req, res) => {
       const phone = await ownedPhone(req);
+      if (phone.ownerType === "Contact") {
+        const contactPhones = await model.getByCoincidence({
+          owner: phone.owner,
+          ownerType: "Contact",
+        });
+        if (contactPhones.length <= 1) {
+          fail("Un contacto debe tener al menos un teléfono.", 409);
+        }
+      }
       if (phone.ownerType === "User" && tokenModel) {
         const tokens = await tokenModel.getByCoincidence({ owner: userId(req), phone: phone._id });
         for (const token of tokens) await tokenModel.delete(token._id);

@@ -20,12 +20,12 @@ This directory contains environment-derived settings and the API route registry.
 | `CLUSTER_WORKERS` | Maximum requested worker count when clustering is enabled. | `1` |
 | `WAHA_API_URL` | Private base URL for the WAHA HTTP API. | Optional |
 | `WAHA_API_KEY` | Server-side WAHA API key; required together with `WAHA_API_URL`. | Optional |
+| `WAHA_WEBHOOK_HMAC_KEY` | Shared secret for authenticating incoming WAHA webhooks; at least 32 characters. | Optional |
 
 Use the root `.env.example` as the configuration checklist. Startup validates required
 values and rejects weak session secrets and malformed encryption keys. Secrets are never
-defaulted to known values. The WAHA API key is server-only; each outbound WhatsApp session
-name is associated with a phone in the Token model. Legacy Meta tokens remain encrypted for
-the existing inbound webhook/autoresponse integration.
+defaulted to known values. The WAHA API key and webhook HMAC key are server-only. Each
+WhatsApp session is associated with a phone in the Token model.
 
 ## Route registry
 

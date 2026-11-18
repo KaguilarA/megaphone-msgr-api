@@ -4,9 +4,11 @@ import UserData from "../user/model.js";
 
 const model = {
   requestId: { type: String },
+  senderMode: { type: String, enum: ["single", "round-robin"], default: "single" },
   deliveryStatus: { type: String, enum: ["pending", "sending", "accepted", "partial", "failed"], default: "pending" },
   deliveries: [{
     recipient: String,
+    senderPhone: { type: Schema.Types.ObjectId, ref: PhoneData.name },
     status: { type: String, enum: ["pending", "sending", "accepted", "rejected", "unknown"], default: "pending" },
     providerMessageId: String,
   }],

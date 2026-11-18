@@ -31,6 +31,13 @@ For an empty database, follow [the first-install guide](docs/first-install.md). 
 
 After installation, users may create their own accounts through the frontend or `POST /user/register` with `name`, `lastName`, `email`, and `password`. They can sign in immediately, but an administrator must grant `Contact:register` and `Message:register` before they can create contacts or send WhatsApp messages or email. WhatsApp automatic replies also require the token owner's `Message:register` permission. The user-permissions screen can enable or disable both together. Accounts created by administrators retain their existing operational permissions.
 
+Contacts require at least one phone number; names are optional. The contacts page accepts
+CSV or Excel `.xlsx` files with one phone number per row in the first column, or JSON files
+containing a phone-number array (directly or in a `phoneNumbers` property).
+Choose a country code for local numbers; numbers written with a leading `+` keep their own
+international country code. Each new number becomes an unnamed contact, while duplicate
+numbers are skipped. Imports are limited to 5 MB and 1000 numbers per file.
+
 ```bash
 npm ci
 ```
@@ -64,20 +71,19 @@ required at startup. Startup validation rejects missing or malformed values with
 their contents. Set `WAHA_API_URL` and `WAHA_API_KEY` together to enable outbound WhatsApp messages.
 The WAHA endpoint should be reachable only by the backend; use HTTPS unless it is on a
 trusted private network. Each sender phone must be connected to its own WAHA session.
-The API key is server-only and is never returned by Megaphone. Incoming WhatsApp webhooks
-and automatic replies remain on the existing Meta integration and are configured separately.
+The API key is server-only and is never returned by Megaphone. To receive messages and enable
+automatic replies, configure a random `WAHA_WEBHOOK_HMAC_KEY` of at least 32 characters in
+both Megaphone and WAHA. Set WAHA's webhook URL to `https://<api-host>/webhooks/waha` and
+subscribe to the `message` event. Megaphone stores incoming messages, associates them with
+owned contacts, and applies the user's enabled keyword rules and templates; it does not
+reply when there is no matching rule, contact, or required template data.
 Cloudinary variables are optional for text-only messages, but all three credentials are
 required together when uploading images or videos. Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB, and
 are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
 Images are compressed through TinyPNG before the Cloudinary upload; videos bypass TinyPNG.
-For incoming WhatsApp autoresponses, configure `WHATSAPP_WEBHOOK_VERIFY_TOKEN` and
-`WHATSAPP_APP_SECRET`, expose `GET/POST /webhooks/whatsapp` through HTTPS, and set
-`WHATSAPP_AUTO_REPLY_KEYWORD` plus `WHATSAPP_AUTO_REPLY_TEXT`. The current rule replies with
-the configured text when an incoming message contains the configured keyword; it uses the
-WhatsApp token associated with the receiving phone number.
-
 Production frontend builds use `/api` as the API base URL. Configure the reverse proxy to
-forward `/api` to this backend and preserve HTTPS cookies and the `X-Hub-Signature-256` header.
+forward `/api` to this backend and preserve HTTPS cookies and the `X-Webhook-Hmac` and
+`X-Webhook-Hmac-Algorithm` headers.
 
 Generate suitable secrets locally:
 
@@ -117,6 +123,12 @@ Treat WAHA session names as identifiers, not credentials: restrict access to the
 dashboard and keep its API key private. Do not assign a session to a phone unless its
 connected WhatsApp account is authorized for that user.
 
+Each campaign can use one selected sender number or distribute recipients in round-robin
+order across multiple selected sender numbers. Every sender session is verified before the
+message is recorded, and the sender used for each recipient is stored in delivery history.
+Only send to recipients who have agreed to receive messages, and do not use multiple senders
+to bypass WhatsApp's limits or messaging policies.
+
 ```js
 import { sendWhatsAppMessage } from "./integrations/whatsapp.js";
 
@@ -136,7 +148,8 @@ console.log(result.messages[0].id);
 
 See the [WAHA session guide](https://waha.devlike.pro/docs/how-to/sessions/) and
 [send-message API](https://waha.devlike.pro/docs/how-to/send-messages/). For inbound
-autoresponses, the existing webhook still uses the stored Meta WhatsApp credentials.
+messages and autoresponses, see the `/whatsapp-automation` endpoints and configure the WAHA
+webhook HMAC key described above.
 
 ## Authentication
 

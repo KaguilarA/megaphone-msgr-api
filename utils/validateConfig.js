@@ -43,9 +43,8 @@ export default function validateConfig(env = process.env) {
   if (env.NODE_ENV === "production" && env.FRONTEND_URL && !env.FRONTEND_URL.startsWith("https://")) {
     invalid.push("FRONTEND_URL (must use HTTPS in production)");
   }
-  const webhookVariables = [env.WHATSAPP_WEBHOOK_VERIFY_TOKEN, env.WHATSAPP_APP_SECRET];
-  if (webhookVariables.some(Boolean) && webhookVariables.some((value) => !value?.trim())) {
-    invalid.push("WhatsApp webhook (WHATSAPP_WEBHOOK_VERIFY_TOKEN and WHATSAPP_APP_SECRET are required together)");
+  if (env.WAHA_WEBHOOK_HMAC_KEY && env.WAHA_WEBHOOK_HMAC_KEY.trim().length < 32) {
+    invalid.push("WAHA_WEBHOOK_HMAC_KEY (must be at least 32 characters)");
   }
   const wahaVariables = [env.WAHA_API_URL, env.WAHA_API_KEY];
   if (wahaVariables.some(Boolean) && wahaVariables.some((value) => !value?.trim())) {

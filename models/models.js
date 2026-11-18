@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { OwlModel, OwlState, OwlCrypto } from "owl-expressjs-utils";
 import {
   EncryptionAlgorithm,
@@ -15,6 +16,8 @@ import TokenData from "./tokens/model.js";
 import UserData from "./user/model.js";
 import UserPermissionData from "./userPermission/model.js";
 import InstallationData from "./installation/model.js";
+import WhatsAppAutomationData from "./whatsappAutomation/model.js";
+import WhatsAppConversationMessageData from "./whatsappConversationMessage/model.js";
 
 if (!EncryptionKey) {
   throw new Error("ENCRYPTION_KEY must be configured before creating models.");
@@ -71,3 +74,33 @@ export const UserPermissionModel = OwlModel(
   UserPermissionData.schema,
 );
 export const InstallationModel = OwlModel(InstallationData.name, InstallationData.model);
+export const WhatsAppAutomationModel = OwlModel(
+  WhatsAppAutomationData.name,
+  WhatsAppAutomationData.schema,
+);
+export const WhatsAppConversationMessageModel = OwlModel(
+  WhatsAppConversationMessageData.name,
+  WhatsAppConversationMessageData.schema,
+);
+
+WhatsAppConversationMessageModel.getLatest = async (filter, limit = 50) =>
+  mongoose.model(WhatsAppConversationMessageData.name)
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select("-owner -__v")
+    .populate({ path: "contact", select: "name lastName" })
+    .populate({ path: "senderPhone", select: "phone countryNumber e164" });
+
+MessageModel.getLatestForRecipient = async (owner, recipient, limit = 50) =>
+  mongoose.model(MessageData.name)
+    .find({
+      sender: owner,
+      deliveries: {
+        $elemMatch: { recipient, status: "accepted" },
+      },
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .select("content createdAt")
+    .lean();

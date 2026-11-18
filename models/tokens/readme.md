@@ -9,15 +9,16 @@ Stores messaging-provider credentials owned by a `User`.
 | Field | Rules |
 | --- | --- |
 | `emailToken` | Optional trimmed encrypted string. |
-| `whatsappToken` | Optional trimmed encrypted string used by messaging integrations. |
-| `whatsappVersion` | Optional trimmed Meta Graph API version; not encrypted. |
-| `whatsappPhoneNumberId` | Optional trimmed Meta business phone-number ID; not encrypted. |
+| `whatsappSession` | Optional trimmed WAHA session name associated with the phone. |
+| `whatsappToken` | Legacy optional encrypted string retained for existing records. |
+| `whatsappVersion` | Legacy optional configuration retained for existing records. |
+| `whatsappPhoneNumberId` | Legacy optional configuration retained for existing records. |
 | `telegramToken` | Optional trimmed encrypted string. |
 | `owner` | Required indexed `ObjectId` reference to `User`. |
 
 ## Security
 
-`models/models.js` passes `emailToken`, `whatsappToken`, and `telegramToken` as `encryptedFields` to `OwlModel`. WhatsApp version and phone-number ID are configuration, not secrets. The standalone sender receives a Token model record explicitly and never reads credentials from environment variables.
+`models/models.js` passes `emailToken`, `whatsappToken`, and `telegramToken` as `encryptedFields` to `OwlModel`. WAHA session names are identifiers, not credentials. The sender receives a Token model record explicitly and never reads credentials from environment variables.
 
 ## Limitations
 

@@ -20,6 +20,8 @@ The factory accepts an object with these fields:
 
 After `res.json`, `res.send`, or `res.end` completes, the middleware attempts to save an entry containing the session user, resolved permission ID, action name, HTTP method, URL, body, route parameters, query parameters, and final status code. When permission middleware already ran, its `req.permission` value is reused; otherwise `permissionModel` resolves the configured entity and action. Custom metadata replaces the default metadata when `getMetadata` is supplied.
 
+Phone-number values are redacted recursively from recorded request data.
+
 The middleware bypasses logging when no session user, action-log model, or resolvable permission exists. Persistence errors are reported to the server console and do not alter the response sent to the client.
 
 ## Response interception

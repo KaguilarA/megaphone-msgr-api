@@ -57,6 +57,28 @@ export default function ({
     return phone;
   }
 
+  function parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId) {
+    let sourcePhoneIds = rawSourcePhoneIds;
+    if (typeof sourcePhoneIds === "string") {
+      try {
+        sourcePhoneIds = JSON.parse(sourcePhoneIds);
+      } catch {
+        throw requestError("sourcePhoneIds must be a valid JSON array.");
+      }
+    }
+    if (sourcePhoneIds === undefined) {
+      sourcePhoneIds = sourcePhoneId ? [sourcePhoneId] : [];
+    }
+    if (
+      !Array.isArray(sourcePhoneIds) ||
+      sourcePhoneIds.some((phoneId) => typeof phoneId !== "string" || !phoneId.trim()) ||
+      new Set(sourcePhoneIds).size !== sourcePhoneIds.length
+    ) {
+      throw requestError("Select distinct source phone numbers.");
+    }
+    return sourcePhoneIds;
+  }
+
   async function getWhatsAppToken(userId, sourcePhone) {
     if (!tokenModel) return undefined;
 
@@ -167,10 +189,19 @@ export default function ({
       const {
         contacts: rawContacts = [],
         sourcePhoneId,
+        sourcePhoneIds: rawSourcePhoneIds,
+        senderMode: rawSenderMode,
         requestId,
         state,
         ...messageData
       } = req.body;
+      const senderMode = rawSenderMode || "single";
+      if (!["single", "round-robin"].includes(senderMode)) {
+        throw requestError("senderMode must be single or round-robin.");
+      }
+      if (sourcePhoneId !== undefined && rawSourcePhoneIds !== undefined) {
+        throw requestError("Provide sourcePhoneId or sourcePhoneIds, not both.");
+      }
       if (phoneModel && !requestId) throw requestError("requestId is required to prevent duplicate sends.");
       if (requestId !== undefined && (typeof requestId !== "string" || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestId))) {
         throw requestError("requestId must be a UUID.");
@@ -197,52 +228,94 @@ export default function ({
         throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
       }
       if (req.file && !mediaUploader) throw requestError("La carga de archivos no está configurada.", 503);
-      const sourcePhone = await getSourcePhone(id, sourcePhoneId);
-      const token = await getWhatsAppToken(id, sourcePhone);
+      const sourcePhoneIds = phoneModel
+        ? parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId)
+        : [];
+      if (
+        phoneModel &&
+        ((senderMode === "single" && sourcePhoneIds.length !== 1) ||
+          (senderMode === "round-robin" && sourcePhoneIds.length < 2))
+      ) {
+        throw requestError(
+          senderMode === "single"
+            ? "Select one source phone number."
+            : "Select at least two source phone numbers for distribution.",
+        );
+      }
+      const sourcePhones = phoneModel
+        ? await Promise.all(sourcePhoneIds.map((phoneId) => getSourcePhone(id, phoneId)))
+        : [];
+      const sourceSenders = await Promise.all(
+        sourcePhones.map(async (phone) => ({
+          phone,
+          token: await getWhatsAppToken(id, phone),
+          phoneNumber: normalizePhoneNumber(phone).e164,
+        })),
+      );
       if (whatsappConfig && (!whatsappConfig.apiBaseUrl || !whatsappConfig.apiKey)) {
         throw requestError("WAHA is not configured on the server.", 503);
       }
       const recipients = await resolveRecipients(id, contacts);
-      const sourcePhoneNumber = sourcePhone
-        ? normalizePhoneNumber(sourcePhone).e164
-        : undefined;
+      if (senderMode === "round-robin" && sourceSenders.length > recipients.length) {
+        throw requestError("Select no more sender numbers than distinct recipients.");
+      }
       if (whatsappConfig && recipients.length) {
-        if (!sourcePhoneNumber) {
+        if (!sourceSenders.length) {
           throw requestError("A source phone is required to send through WAHA.", 422);
         }
-        await verifyWhatsAppSession(token, sourcePhoneNumber, whatsappConfig);
+        for (const sourceSender of sourceSenders) {
+          await verifyWhatsAppSession(
+            sourceSender.token,
+            sourceSender.phoneNumber,
+            whatsappConfig,
+          );
+        }
       }
       const messageState = await getMessageState();
       const media = req.file && mediaUploader
         ? await mediaUploader(req.file)
         : undefined;
 
-      const deliveries = recipients.map((recipient) => ({ recipient, status: "pending" }));
+      const deliveries = recipients.map((recipient, index) => {
+        const sourceSender = sourceSenders.length
+          ? sourceSenders[senderMode === "round-robin" ? index % sourceSenders.length : 0]
+          : undefined;
+        return {
+          recipient,
+          status: "pending",
+          ...(sourceSender ? { senderPhone: sourceSender.phone._id } : {}),
+        };
+      });
       const newMessage = await model.save({
         header: messageData.header.trim(),
         content: messageData.content.trim(),
         sender: id,
+        senderMode,
         ...(requestId ? { requestId } : {}),
         deliveries,
         deliveryStatus: "pending",
-        ...(sourcePhone ? { senderPhone: sourcePhone._id || sourcePhoneId } : {}),
+        ...(sourcePhones[0] ? { senderPhone: sourcePhones[0]._id || sourcePhoneIds[0] } : {}),
         ...(messageState ? { state: messageState } : {}),
         ...(media ? { media } : {}),
       });
       recordedMessage = newMessage;
 
       const receptors = await createReceptors(newMessage._id, contacts);
+      const sourceSendersById = new Map(
+        sourceSenders.map((sourceSender) => [String(sourceSender.phone._id), sourceSender]),
+      );
       for (const delivery of deliveries) {
         delivery.status = "sending";
         await model.update(newMessage._id, { deliveries, deliveryStatus: "sending" });
         try {
+          const sourceSender = sourceSendersById.get(String(delivery.senderPhone));
           const result = await sendWhatsAppMessage(
             delivery.recipient,
             messageData.content.trim(),
-            token,
+            sourceSender?.token,
             {
               ...(whatsappConfig || {}),
-              sourcePhoneNumber,
+              sourcePhoneNumber: sourceSender?.phoneNumber,
               sessionVerified: Boolean(whatsappConfig),
               media,
             },

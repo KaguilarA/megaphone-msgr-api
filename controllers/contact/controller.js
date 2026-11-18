@@ -1,4 +1,9 @@
-export default function ({ id, model, stateModel }) {
+import { normalizePhoneNumber } from "../../utils/phoneNumber.js";
+import { normalizeImportedPhone, parseContactImport } from "../../utils/contactImport.js";
+
+const MAX_IMPORT_ROWS = 1000;
+
+export default function ({ id, model, stateModel, phoneNumberModel }) {
   async function getActiveState() {
     if (!stateModel) return undefined;
 
@@ -25,6 +30,13 @@ export default function ({ id, model, stateModel }) {
       if (!contact || String(contact.owner) !== String(req.session.userId)) {
         return res.status(404).json({ message: "Contact not found." });
       }
+      if (phoneNumberModel) {
+        const phones = await phoneNumberModel.getByCoincidence({
+          owner: contactId,
+          ownerType: "Contact",
+        });
+        for (const phone of phones) await phoneNumberModel.delete(phone._id);
+      }
       await model.delete(contactId);
       res.status(204).end();
     } catch (error) {
@@ -49,7 +61,22 @@ export default function ({ id, model, stateModel }) {
           populate: ['state'],
         },
       );
-      res.status(200).json(contacts);
+      if (!phoneNumberModel || !contacts.length) {
+        return res.status(200).json(contacts);
+      }
+      const phones = await phoneNumberModel.getByCoincidence({
+        ownerType: "Contact",
+        owner: { $in: contacts.map((contact) => contact._id) },
+      });
+      const phonesByContact = new Map();
+      for (const phone of phones) {
+        const key = String(phone.owner);
+        phonesByContact.set(key, [...(phonesByContact.get(key) || []), phone]);
+      }
+      return res.status(200).json(contacts.map((contact) => ({
+        ...(typeof contact.toObject === "function" ? contact.toObject() : contact),
+        phoneNumbers: phonesByContact.get(String(contact._id)) || [],
+      })));
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -81,15 +108,159 @@ export default function ({ id, model, stateModel }) {
    * @returns {Promise<void>} Sends the created contact or an error response.
    */
   async function register(req, res) {
+    let contact;
+    const savedPhones = [];
     try {
       const userId = req.session?.userId;
-      const contactData = { ...req.body, owner: userId };
+      const body = req.body || {};
+      if (!Array.isArray(body.phoneNumbers) || body.phoneNumbers.length === 0) {
+        return res.status(400).json({ error: "Agrega al menos un número de teléfono." });
+      }
+      if (!phoneNumberModel) {
+        return res.status(500).json({ error: "Phone number storage is not configured." });
+      }
+      const normalizedPhones = body.phoneNumbers.map((phone) => {
+        if (!phone || typeof phone !== "object" || Array.isArray(phone)) {
+          throw Object.assign(new Error("Cada teléfono debe incluir número y código de país."), { status: 400 });
+        }
+        return normalizePhoneNumber(phone);
+      });
+      if (new Set(normalizedPhones.map((phone) => phone.e164)).size !== normalizedPhones.length) {
+        return res.status(400).json({ error: "No repitas números de teléfono en el contacto." });
+      }
+      if (body.name !== undefined && typeof body.name !== "string") {
+        return res.status(400).json({ error: "El nombre del contacto debe ser texto." });
+      }
+      const { name } = body;
+      const contactData = { owner: userId, ...(typeof name === "string" && name.trim() ? { name: name.trim() } : {}) };
       const activeState = await getActiveState();
       if (activeState?._id) contactData.state = activeState._id;
-      const newContact = await model.save(contactData);
-      res.status(201).json(newContact);
+      contact = await model.save(contactData);
+      const phoneState = stateModel && (
+        await stateModel.getOne({ name: "active", entity: "Phone" }) ||
+        await stateModel.save({ name: "active", entity: "Phone", description: "Phone number is active." })
+      );
+      for (const phone of normalizedPhones) {
+        savedPhones.push(await phoneNumberModel.save({
+          ...phone,
+          owner: contact._id,
+          ownerType: "Contact",
+          ...(phoneState ? { state: [phoneState._id] } : {}),
+        }));
+      }
+      return res.status(201).json({
+        ...(typeof contact.toObject === "function" ? contact.toObject() : contact),
+        phoneNumbers: savedPhones,
+      });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      try {
+        for (const phone of savedPhones) await phoneNumberModel.delete(phone._id);
+        if (contact) await model.delete(contact._id);
+      } catch (rollbackError) {
+        console.error("Contact creation rollback failed:", rollbackError.message);
+      }
+      return res.status(error.status || 500).json({ error: error.message });
+    }
+  }
+
+  async function importContacts(req, res) {
+    const created = [];
+    try {
+      const userId = req.session?.userId;
+      const countryNumber = req.body?.countryNumber;
+      if (typeof countryNumber !== "string" || !/^\+[1-9]\d{0,2}$/.test(countryNumber)) {
+        return res.status(400).json({ error: "Selecciona un código de país válido." });
+      }
+      if (!phoneNumberModel) {
+        return res.status(500).json({ error: "Phone number storage is not configured." });
+      }
+      const rows = await parseContactImport(req.file);
+      if (rows.length > MAX_IMPORT_ROWS) {
+        return res.status(413).json({ error: `Se permiten hasta ${MAX_IMPORT_ROWS} números por archivo.` });
+      }
+
+      const numbers = [];
+      const invalidRows = [];
+      const seenNumbers = new Set();
+      let duplicateCount = 0;
+      for (const { row, value } of rows) {
+        try {
+          const number = normalizeImportedPhone(value, countryNumber);
+          if (seenNumbers.has(number.e164)) {
+            duplicateCount += 1;
+            continue;
+          }
+          seenNumbers.add(number.e164);
+          numbers.push({ ...number, row });
+        } catch {
+          invalidRows.push(row);
+        }
+      }
+
+      const existingContacts = await model.getByCoincidence({ owner: userId });
+      const existingPhones = existingContacts.length
+        ? await phoneNumberModel.getByCoincidence({
+            ownerType: "Contact",
+            owner: { $in: existingContacts.map((contact) => contact._id) },
+          })
+        : [];
+      const existingNumbers = new Set();
+      for (const phone of existingPhones) {
+        try {
+          existingNumbers.add(phone.e164 || normalizePhoneNumber(phone).e164);
+        } catch {
+          console.error("Skipping a malformed existing contact phone during import.");
+        }
+      }
+
+      const uniqueNumbers = numbers.filter(({ e164 }) => {
+        if (!existingNumbers.has(e164)) return true;
+        duplicateCount += 1;
+        return false;
+      });
+      const activeState = await getActiveState();
+      const phoneState = stateModel && (
+        await stateModel.getOne({ name: "active", entity: "Phone" }) ||
+        await stateModel.save({ name: "active", entity: "Phone", description: "Phone number is active." })
+      );
+
+      for (const number of uniqueNumbers) {
+        const contact = await model.save({
+          owner: userId,
+          ...(activeState?._id ? { state: activeState._id } : {}),
+        });
+        try {
+          const phone = await phoneNumberModel.save({
+            phone: number.phone,
+            countryNumber: number.countryNumber,
+            e164: number.e164,
+            owner: contact._id,
+            ownerType: "Contact",
+            ...(phoneState ? { state: [phoneState._id] } : {}),
+          });
+          created.push({ contactId: contact._id, phoneId: phone._id });
+        } catch (error) {
+          await model.delete(contact._id);
+          throw error;
+        }
+      }
+
+      return res.status(201).json({
+        createdCount: created.length,
+        duplicateCount,
+        invalidCount: invalidRows.length,
+        invalidRows: invalidRows.slice(0, 20),
+      });
+    } catch (error) {
+      try {
+        for (const item of created) {
+          await phoneNumberModel.delete(item.phoneId);
+          await model.delete(item.contactId);
+        }
+      } catch (rollbackError) {
+        console.error("Contact import rollback failed:", rollbackError.message);
+      }
+      return res.status(error.status || 500).json({ error: error.message });
     }
   }
 
@@ -121,6 +292,7 @@ export default function ({ id, model, stateModel }) {
     deleteById,
     getAll,
     getById,
+    importContacts,
     register,
     updateById,
   };

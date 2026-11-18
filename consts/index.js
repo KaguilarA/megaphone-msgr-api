@@ -13,9 +13,6 @@ export const CloudinaryFolder = process.env.CLOUDINARY_FOLDER || "megaphone/mess
 export const TinyPngApiKey = process.env.TINYPNG_API_KEY;
 export const WahaApiUrl = process.env.WAHA_API_URL;
 export const WahaApiKey = process.env.WAHA_API_KEY;
-export const WhatsAppWebhookVerifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
-export const WhatsAppAppSecret = process.env.WHATSAPP_APP_SECRET;
-export const WhatsAppAutoReplyKeyword = process.env.WHATSAPP_AUTO_REPLY_KEYWORD;
-export const WhatsAppAutoReplyText = process.env.WHATSAPP_AUTO_REPLY_TEXT;
+export const WahaWebhookHmacKey = process.env.WAHA_WEBHOOK_HMAC_KEY;
 export const EncryptionAlgorithm =
   process.env.ENCRYPTION_ALGORITHM || "aes-256-gcm";

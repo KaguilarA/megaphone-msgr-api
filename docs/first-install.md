@@ -73,10 +73,10 @@ En el proxy configura:
 - `/api/` hacia el backend, quitando ese prefijo. Por ejemplo, `/api/auth/login` debe llegar a `/auth/login`.
 - Encabezados `Host`, `X-Forwarded-Proto` y `X-Forwarded-For`. La aplicación confía en un salto de proxy: el backend debe ser accesible solo a través de ese proxy.
 - Un límite de cuerpo suficiente para adjuntos de hasta 16 MB más el formulario; por ejemplo, 20 MB.
-- `/api/webhooks/whatsapp` sin alterar el cuerpo ni su encabezado de firma, si habilitas eventos de Meta.
+- `/api/webhooks/waha` sin alterar el cuerpo ni los encabezados `X-Webhook-Hmac` y `X-Webhook-Hmac-Algorithm`.
 - Tiempo suficiente para los envíos actuales, que son síncronos. Si el navegador pierde la respuesta, conserva el identificador de solicitud y consulta el historial antes de enviar una solicitud nueva.
 
-Inicia el backend con `npm start` mediante el supervisor del servidor, con reinicio al fallar y al arrancar el sistema. Usa una cuenta de servicio sin privilegios administrativos. La respuesta de `/api/health` será 200 con `{"status":"ok"}` cuando MongoDB esté conectado y 503 si no lo está; este endpoint no afirma que WAHA, Meta o SMTP funcionen.
+Inicia el backend con `npm start` mediante el supervisor del servidor, con reinicio al fallar y al arrancar el sistema. Usa una cuenta de servicio sin privilegios administrativos. La respuesta de `/api/health` será 200 con `{"status":"ok"}` cuando MongoDB esté conectado y 503 si no lo está; este endpoint no afirma que WAHA o SMTP funcionen.
 
 No uses `ng serve` ni `npm run dev` para publicar en producción. No abras MongoDB o el puerto 3000 al público. Configura y prueba respaldos y restauración antes de cargar información real.
 
@@ -85,9 +85,10 @@ No uses `ng serve` ni `npm run dev` para publicar en producción. No abras Mongo
 1. Abre `https://TU-DOMINIO/login` y usa el email y contraseña que creaste.
 2. La primera sesión abre el asistente. Revisa tu cuenta y agrega tus teléfonos.
 3. Configura `WAHA_API_URL` y `WAHA_API_KEY` en el backend. En WAHA crea una sesión por número emisor y conéctala mediante el QR; luego guarda el nombre de sesión correspondiente en el asistente de Megaphone.
-4. Configura SMTP desde Mi perfil si vas a usar email. Es opcional y no afecta al inicio de sesión.
-5. Crea un contacto de prueba con un teléfono autorizado y prepara un envío desde el formulario normal. Ningún paso del asistente envía mensajes automáticamente.
-6. Revisa el historial. “Aceptado por WhatsApp” confirma que WAHA aceptó la solicitud, no la entrega ni lectura.
+4. Para recibir mensajes y automatizar respuestas, configura `WAHA_WEBHOOK_HMAC_KEY` en el backend y en WAHA. Usa la URL pública `https://TU-DOMINIO/api/webhooks/waha` y suscribe el evento `message`.
+5. Configura SMTP desde Mi perfil si vas a usar email. Es opcional y no afecta al inicio de sesión.
+6. Crea un contacto de prueba con un teléfono autorizado y prepara un envío desde el formulario normal. Ningún paso del asistente envía mensajes automáticamente.
+7. Revisa el historial. “Aceptado por WhatsApp” confirma que WAHA aceptó la solicitud, no la entrega ni lectura.
 
 Puedes elegir “Guardar y continuar más tarde” aunque falten canales o contactos. Esto conserva la decisión por usuario; no marca las integraciones pendientes como listas. Vuelve desde **Configuración** para revisar estado o abrir el asistente de nuevo.
 
