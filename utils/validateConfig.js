@@ -25,9 +25,6 @@ export default function validateConfig(env = process.env) {
   if (cloudinaryVariables.some(Boolean) && cloudinaryVariables.some((value) => !value?.trim())) {
     invalid.push("Cloudinary (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are required together)");
   }
-  if (cloudinaryVariables.every((value) => value?.trim()) && !env.TINYPNG_API_KEY?.trim()) {
-    invalid.push("TINYPNG_API_KEY (required when Cloudinary media uploads are enabled)");
-  }
   if (
     env.ENCRYPTION_ALGORITHM &&
     env.ENCRYPTION_ALGORITHM !== "aes-256-gcm"

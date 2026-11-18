@@ -10,7 +10,6 @@ export const CloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME;
 export const CloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 export const CloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 export const CloudinaryFolder = process.env.CLOUDINARY_FOLDER || "megaphone/messages";
-export const TinyPngApiKey = process.env.TINYPNG_API_KEY;
 export const WahaApiUrl = process.env.WAHA_API_URL;
 export const WahaApiKey = process.env.WAHA_API_KEY;
 export const WahaWebhookHmacKey = process.env.WAHA_WEBHOOK_HMAC_KEY;

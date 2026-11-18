@@ -35,7 +35,7 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 
 Guarda sus salidas en `ENCRYPTION_KEY` y `SESSION_SECRET`. Protege el archivo para que solo lo lea la cuenta del servicio; no lo subas a Git ni al frontend. Conserva la clave de cifrado en un respaldo seguro: cambiarla sin migrar los datos impide recuperar las credenciales cifradas.
 
-WhatsApp, SMTP, Cloudinary y TinyPNG no son necesarios para crear el administrador. Si configuras archivos adjuntos o webhooks, completa los grupos de variables correspondientes; la validación del servidor exige que cada grupo esté completo.
+WhatsApp, SMTP y Cloudinary no son necesarios para crear el administrador. Si configuras archivos adjuntos o webhooks, completa los grupos de variables correspondientes; la validación del servidor exige que cada grupo esté completo.
 
 ## 2. Ejecutar el instalador
 

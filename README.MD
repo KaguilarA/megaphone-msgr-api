@@ -63,7 +63,6 @@ CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 CLOUDINARY_FOLDER=megaphone/messages
-TINYPNG_API_KEY=
 ```
 
 `DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
@@ -80,7 +79,7 @@ reply when there is no matching rule, contact, or required template data.
 Cloudinary variables are optional for text-only messages, but all three credentials are
 required together when uploading images or videos. Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB, and
 are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
-Images are compressed through TinyPNG before the Cloudinary upload; videos bypass TinyPNG.
+Images are optimized locally with Sharp before upload, preserving their format without resizing.
 Production frontend builds use `/api` as the API base URL. Configure the reverse proxy to
 forward `/api` to this backend and preserve HTTPS cookies and the `X-Webhook-Hmac` and
 `X-Webhook-Hmac-Algorithm` headers.

@@ -36,14 +36,12 @@ import { sendEmail } from "../integrations/email.js";
 import { createOperator, createSelfRegisteredUser } from "../setup/accounts.js";
 import SetupRouter from "../routes/setup/routes.js";
 import { uploadMediaBuffer } from "../integrations/cloudinary.js";
-import { compressImageBuffer } from "../integrations/tinypng.js";
-import { MAX_IMAGE_BYTES } from "../middlewares/media/upload.js";
+import { optimizeImageBuffer } from "../integrations/imageOptimization.js";
 import {
   CloudinaryApiKey,
   CloudinaryApiSecret,
   CloudinaryCloudName,
   CloudinaryFolder,
-  TinyPngApiKey,
   WahaApiKey,
   WahaApiUrl,
   WahaWebhookHmacKey,
@@ -58,7 +56,7 @@ export default [
       installationModel: InstallationModel, permissionModel: PermissionModel, userPermissionModel: UserPermissionModel,
       actions: { getStatus: "getInfo", complete: "getInfo" },
       serverFeatures: {
-        mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret && TinyPngApiKey),
+        mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret),
         webhookConfigured: Boolean(WahaWebhookHmacKey),
         whatsappConfigured: Boolean(WahaApiUrl && WahaApiKey),
       },
@@ -156,11 +154,8 @@ export default [
       mediaUploader: async (file) => {
         const isImage = file.mimetype.startsWith("image/");
         const buffer = isImage
-          ? await compressImageBuffer(file.buffer, TinyPngApiKey)
+          ? await optimizeImageBuffer(file.buffer, file.mimetype)
           : file.buffer;
-        if (isImage && buffer.length > MAX_IMAGE_BYTES) {
-          throw Object.assign(new Error("La imagen optimizada no puede superar 5 MB."), { status: 400 });
-        }
         const result = await uploadMediaBuffer(buffer, {
           cloudName: CloudinaryCloudName,
           apiKey: CloudinaryApiKey,
