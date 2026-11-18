@@ -160,7 +160,6 @@ export default ({
         direction: "inbound",
         providerMessageId,
         text: messageText,
-        hasMedia: Boolean(event.payload?.hasMedia),
         status: "received",
         autoReplyStatus: "not_matched",
       }).catch((error) => {

@@ -35,7 +35,7 @@ node -e "console.log(require('node:crypto').randomBytes(48).toString('base64url'
 
 Guarda sus salidas en `ENCRYPTION_KEY` y `SESSION_SECRET`. Protege el archivo para que solo lo lea la cuenta del servicio; no lo subas a Git ni al frontend. Conserva la clave de cifrado en un respaldo seguro: cambiarla sin migrar los datos impide recuperar las credenciales cifradas.
 
-WhatsApp, SMTP y Cloudinary no son necesarios para crear el administrador. Si configuras archivos adjuntos o webhooks, completa los grupos de variables correspondientes; la validación del servidor exige que cada grupo esté completo.
+WhatsApp, SMTP, archivos adjuntos y webhooks no son necesarios para crear el administrador. Configura WAHA para habilitar mensajes y archivos adjuntos de WhatsApp; no se requieren credenciales de un servicio de medios externo.
 
 ## 2. Ejecutar el instalador
 

@@ -92,10 +92,27 @@ WhatsAppConversationMessageModel.getLatest = async (filter, limit = 50) =>
     .populate({ path: "contact", select: "name lastName" })
     .populate({ path: "senderPhone", select: "phone countryNumber e164" });
 
+MessageModel.getHiddenProviderMessageIds = async (owner) => {
+  const hiddenMessages = await mongoose.model(MessageData.name)
+    .find({
+      sender: owner,
+      hiddenAt: { $exists: true },
+      $or: [{ channel: "whatsapp" }, { channel: { $exists: false } }],
+    })
+    .select("deliveries.providerMessageId")
+    .lean();
+  return hiddenMessages.flatMap((message) =>
+    (message.deliveries || [])
+      .map((delivery) => delivery.providerMessageId)
+      .filter((providerMessageId) => typeof providerMessageId === "string"),
+  );
+};
+
 MessageModel.getLatestForRecipient = async (owner, recipient, limit = 50) =>
   mongoose.model(MessageData.name)
     .find({
       sender: owner,
+      $or: [{ channel: "whatsapp" }, { channel: { $exists: false } }],
       deliveries: {
         $elemMatch: { recipient, status: "accepted" },
       },

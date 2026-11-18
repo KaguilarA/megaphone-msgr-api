@@ -38,10 +38,6 @@ const model = {
     default: "",
     maxlength: 4096,
   },
-  hasMedia: {
-    type: Boolean,
-    default: false,
-  },
   status: {
     type: String,
     enum: ["received", "accepted", "rejected", "unknown"],

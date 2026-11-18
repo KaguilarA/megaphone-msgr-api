@@ -15,17 +15,6 @@ test("accepts a complete application configuration", () => {
   assert.doesNotThrow(() => validateConfig(validConfig));
 });
 
-test("accepts Cloudinary media uploads with only Cloudinary configuration", () => {
-  assert.doesNotThrow(() =>
-    validateConfig({
-      ...validConfig,
-      CLOUDINARY_CLOUD_NAME: "test-cloud",
-      CLOUDINARY_API_KEY: "test-api-key",
-      CLOUDINARY_API_SECRET: "test-api-secret",
-    }),
-  );
-});
-
 test("rejects missing required settings without disclosing their values", () => {
   assert.throws(
     () => validateConfig({ ...validConfig, DB_HOST: "", SESSION_SECRET: "" }),

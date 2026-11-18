@@ -95,12 +95,19 @@ test('configureSmtp stores SMTP settings without returning the password', async 
 
 test('sendToContacts delivers to owned contact addresses as BCC', async () => {
   let delivery;
+  let savedMessage;
   const sender = { email: 'sender@example.com', smtpHost: 'smtp.example.com', smtpPassword: 'mail-secret' };
   const contactId = '665f1a2b3c4d5e6f708192c1';
   const controller = EmailController({
     model: {
       getOne: async () => sender,
       getByCoincidence: async () => [{ email: 'recipient@example.com' }],
+    },
+    messageModel: {
+      save: async (payload) => {
+        savedMessage = payload;
+        return { _id: 'message-1', ...payload };
+      },
     },
     contactModel: { getById: async () => ({ _id: contactId, owner: user._id }) },
     sendEmail: async (config, message) => { delivery = { config, message }; return { messageId: 'mail-1' }; },
@@ -116,7 +123,16 @@ test('sendToContacts delivers to owned contact addresses as BCC', async () => {
   assert.equal(delivery.config, sender);
   assert.deepEqual(delivery.message.bcc, ['recipient@example.com']);
   assert.equal(delivery.message.to, sender.email);
-  assert.deepEqual(res.body, { accepted: 1, messageId: 'mail-1' });
+  assert.deepEqual(res.body, { accepted: 1, messageId: 'mail-1', historyRecorded: true });
+  assert.equal(savedMessage.channel, 'email');
+  assert.equal(savedMessage.header, 'Aviso');
+  assert.equal(savedMessage.content, 'Contenido');
+  assert.equal(savedMessage.senderEmail, sender.email);
+  assert.deepEqual(savedMessage.deliveries, [{
+    recipient: 'recipient@example.com',
+    status: 'accepted',
+    providerMessageId: 'mail-1',
+  }]);
 });
 
 test('sendToContacts rejects contacts owned by another user', async () => {

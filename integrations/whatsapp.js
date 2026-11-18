@@ -1,4 +1,5 @@
 const REQUEST_TIMEOUT_MS = 15_000;
+const MEDIA_REQUEST_TIMEOUT_MS = 60_000;
 const SESSION_PATTERN = /^[a-zA-Z0-9._-]{1,64}$/;
 
 function providerError(response, operation) {
@@ -287,7 +288,7 @@ export async function verifyWhatsAppSession(
  *   apiKey: string,
  *   sourcePhoneNumber: string,
  *   sessionVerified?: boolean,
- *   media?: { type: "image" | "video", url: string, mimeType?: string },
+ *   media?: { type: "image" | "video", data: string, filename: string, mimeType: string },
  *   fetchImpl?: typeof fetch
  * }} options WAHA transport settings and verified source number.
  * @returns {Promise<object>} WAHA's accepted message response.
@@ -319,6 +320,20 @@ export async function sendWhatsAppMessage(
       !/^\+?[1-9]\d{7,14}$/.test(sourcePhoneNumber)) {
     throw new Error("A valid sourcePhoneNumber is required to verify the WAHA session.");
   }
+  if (media && !["image", "video"].includes(media.type)) {
+    throw new TypeError("media.type must be image or video.");
+  }
+  if (
+    media &&
+    (typeof media.data !== "string" ||
+      !media.data ||
+      typeof media.filename !== "string" ||
+      !media.filename ||
+      typeof media.mimeType !== "string" ||
+      !media.mimeType)
+  ) {
+    throw new TypeError("Media requires base64 data, a filename, and a MIME type.");
+  }
   const { apiRoot, headers } = getTransport(apiBaseUrl, apiKey);
   if (!sessionVerified) {
     await verifyWhatsAppSession(tokenData, sourcePhoneNumber, {
@@ -332,17 +347,15 @@ export async function sendWhatsAppMessage(
   const endpoint = media
     ? media.type === "image" ? "sendImage" : "sendVideo"
     : "sendText";
-  if (media && !["image", "video"].includes(media.type)) {
-    throw new TypeError("media.type must be image or video.");
-  }
   const payload = {
     session: tokenData.whatsappSession,
     chatId,
     ...(media
       ? {
           file: {
-            url: media.url,
-            ...(media.mimeType ? { mimetype: media.mimeType } : {}),
+            data: media.data,
+            filename: media.filename,
+            mimetype: media.mimeType,
           },
           ...(message.trim() ? { caption: message } : {}),
         }
@@ -352,7 +365,7 @@ export async function sendWhatsAppMessage(
     method: "POST",
     headers,
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(media ? MEDIA_REQUEST_TIMEOUT_MS : REQUEST_TIMEOUT_MS),
   });
   const responseBody = await readJson(response, "message send");
   if (!response.ok) throw providerError(response, "message send");
@@ -363,4 +376,103 @@ export async function sendWhatsAppMessage(
     ...responseBody,
     messages: [{ id: messageId(responseBody) }],
   };
+}
+
+function historyItems(body, operation) {
+  if (!Array.isArray(body)) {
+    throw new Error(`WAHA returned an invalid ${operation} response.`);
+  }
+  return body;
+}
+
+function historyTimestamp(value) {
+  if (typeof value !== "number" && typeof value !== "string") return null;
+  const numeric = typeof value === "number" || /^\d+$/.test(value) ? Number(value) : NaN;
+  const date = Number.isFinite(numeric)
+    ? new Date(numeric < 1_000_000_000_000 ? numeric * 1000 : numeric)
+    : new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function historyMessage(message) {
+  if (!message || typeof message !== "object") {
+    throw new Error("WAHA returned an invalid chat message.");
+  }
+  const id = messageId(message);
+  if (!id) throw new Error("WAHA returned a chat message without an ID.");
+  const body = typeof message.body === "string" ? message.body : "";
+  return {
+    id,
+    body: body || (message.hasMedia ? "Mensaje multimedia" : ""),
+    timestamp: historyTimestamp(message.timestamp),
+    fromMe: Boolean(message.fromMe),
+  };
+}
+
+export async function getWhatsAppChats(
+  tokenData,
+  sourcePhoneNumber,
+  { apiBaseUrl, apiKey, fetchImpl = fetch, limit = 50, offset = 0 } = {},
+) {
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
+      !Number.isInteger(offset) || offset < 0 || offset > 10_000) {
+    throw new TypeError("Chat history pagination is invalid.");
+  }
+  const { apiRoot, headers } = getTransport(apiBaseUrl, apiKey);
+  await verifyWhatsAppSession(tokenData, sourcePhoneNumber, {
+    apiBaseUrl,
+    apiKey,
+    fetchImpl,
+  });
+
+  const session = encodeURIComponent(tokenData.whatsappSession);
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  const response = await fetchImpl(
+    `${apiRoot}/api/${session}/chats/overview?${query}`,
+    { method: "GET", headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+  );
+  const body = await readJson(response, "chat history");
+  if (!response.ok) throw providerError(response, "chat history");
+
+  return historyItems(body, "chat history").map((chat) => {
+    const id = messageId(chat);
+    if (!id) throw new Error("WAHA returned a chat without an ID.");
+    const lastMessage = chat.lastMessage;
+    return {
+      id,
+      name: typeof chat.name === "string" && chat.name.trim() ? chat.name : id,
+      lastMessage: lastMessage ? historyMessage(lastMessage) : null,
+    };
+  });
+}
+
+export async function getWhatsAppChatMessages(
+  tokenData,
+  sourcePhoneNumber,
+  chatId,
+  { apiBaseUrl, apiKey, fetchImpl = fetch, limit = 50, offset = 0 } = {},
+) {
+  if (typeof chatId !== "string" || !/^[\w.+-]+@[a-z\d.-]+$/i.test(chatId)) {
+    throw new TypeError("A valid WhatsApp chat ID is required.");
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
+      !Number.isInteger(offset) || offset < 0 || offset > 10_000) {
+    throw new TypeError("Chat history pagination is invalid.");
+  }
+  const { apiRoot, headers } = getTransport(apiBaseUrl, apiKey);
+  await verifyWhatsAppSession(tokenData, sourcePhoneNumber, {
+    apiBaseUrl,
+    apiKey,
+    fetchImpl,
+  });
+
+  const session = encodeURIComponent(tokenData.whatsappSession);
+  const query = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  const response = await fetchImpl(
+    `${apiRoot}/api/${session}/chats/${encodeURIComponent(chatId)}/messages?${query}`,
+    { method: "GET", headers, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
+  );
+  const body = await readJson(response, "chat messages");
+  if (!response.ok) throw providerError(response, "chat messages");
+  return historyItems(body, "chat messages").map(historyMessage);
 }

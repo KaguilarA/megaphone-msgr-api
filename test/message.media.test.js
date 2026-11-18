@@ -3,9 +3,12 @@ import assert from 'node:assert/strict';
 import express from 'express';
 import MessageRouter from '../routes/message/routes.js';
 
-async function withServer(run, { uploader = async (file) => ({
+async function withServer(run, { processor = async (file) => ({
   type: file.mimetype.startsWith('image/') ? 'image' : 'video',
-  url: 'https://example.com/media', mimeType: file.mimetype,
+  data: file.buffer.toString('base64'),
+  filename: 'attachment',
+  mimeType: file.mimetype,
+  bytes: file.buffer.length,
 }) } = {}) {
   const saved = [];
   const sent = [];
@@ -28,7 +31,7 @@ async function withServer(run, { uploader = async (file) => ({
     },
     tokenModel: { getOne: async () => ({ owner: 'owner', phone: 'phone', whatsappSession: 'phone-session' }) },
     contactModel: { getById: async () => ({ owner: 'owner' }) },
-    mediaUploader: uploader,
+    mediaProcessor: processor,
     sendWhatsAppMessage: async (...args) => { sent.push(args); return { messages: [{ id: 'wamid' }] }; },
   }));
   const server = app.listen(0);
@@ -53,9 +56,11 @@ test('image and video attachments reach the provider and message history', async
     for (const [mime, type] of [['image/png', 'image'], ['video/mp4', 'video']]) {
       const response = await fetch(url, { method: 'POST', body: form(mime) });
       assert.equal(response.status, 201);
-      assert.equal((await response.json()).media.type, type);
-      assert.equal(saved.at(-1).media.mimeType, mime);
+      assert.equal((await response.json()).channel, 'whatsapp');
+      assert.equal(saved.at(-1).channel, 'whatsapp');
+      assert.equal(Object.hasOwn(saved.at(-1), 'media'), false);
       assert.equal(sent.at(-1)[3].media.type, type);
+      assert.ok(sent.at(-1)[3].media.data);
     }
   });
 });
@@ -111,11 +116,11 @@ test('invalid attachment types, sizes, counts and captions are rejected before s
   });
 });
 
-test('a missing uploader never silently sends a text-only message', async () => {
+test('a missing media processor never silently sends a text-only message', async () => {
   await withServer(async (url, { saved, sent }) => {
     const response = await fetch(url, { method: 'POST', body: form('image/png') });
     assert.equal(response.status, 503);
     assert.equal(saved.length, 0);
     assert.equal(sent.length, 0);
-  }, { uploader: null });
+  }, { processor: null });
 });

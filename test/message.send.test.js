@@ -88,11 +88,13 @@ test('register accepts up to 300 distinct campaign recipients', async () => {
 });
 
 test('getAll returns only the authenticated user messages', async () => {
+  let filter;
   const controller = MessageController({
     entityId: 'Message',
-    model: {
-      getByCoincidence: async (filter) => [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: filter.sender }],
-    },
+    model: { getByCoincidence: async (query) => {
+      filter = query;
+      return [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: query.sender }];
+    } },
     receptorModel: {
       getByCoincidence: async () => [],
     },
@@ -107,6 +109,7 @@ test('getAll returns only the authenticated user messages', async () => {
   await controller.getAll(req, res);
 
   assert.equal(res.statusCode, 200);
+  assert.deepEqual(filter, { sender: user._id, hiddenAt: { $exists: false } });
   assert.deepEqual(res.body, [{ _id: '665f1a2b3c4d5e6f70819503', content: messagePayload.content, sender: user._id }]);
 });
 

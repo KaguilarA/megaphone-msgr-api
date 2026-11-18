@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  getWhatsAppChatMessages,
+  getWhatsAppChats,
   getWhatsAppConnectionStatus,
   sendWhatsAppMessage,
   startWhatsAppConnection,
@@ -181,6 +183,13 @@ test("rejects invalid input and missing WAHA configuration before requesting", a
     }),
     /WAHA_API_KEY is required/,
   );
+  await assert.rejects(
+    sendWhatsAppMessage("+14155552671", "Hello!", sessionRecord, {
+      ...config,
+      media: { type: "image", url: "https://example.test/image.jpg" },
+    }),
+    /Media requires base64 data/,
+  );
 });
 
 test("does not send from a session connected to a different source phone", async () => {
@@ -287,16 +296,20 @@ test("requires a message ID and treats server failures as uncertain", async () =
   );
 });
 
-test("sends image and video URL media with their caption", async () => {
-  for (const type of ["image", "video"]) {
+test("sends image and video base64 media with their caption", async () => {
+  for (const [type, mimeType, extension] of [
+    ["image", "image/jpeg", "jpg"],
+    ["video", "video/mp4", "mp4"],
+  ]) {
     let payload;
+    const data = Buffer.from("attachment").toString("base64");
     const sent = await sendWhatsAppMessage(
       "+14155552671",
       "Hola",
       sessionRecord,
       {
         ...options,
-        media: { type, url: "https://example.com/media", mimeType: `${type}/jpeg` },
+        media: { type, data, filename: `attachment.${extension}`, mimeType },
         fetchImpl: async (url, request) => {
           if (url.endsWith("/me")) {
             return { ok: true, status: 200, json: async () => ({ id: "14155552670@c.us" }) };
@@ -308,8 +321,9 @@ test("sends image and video URL media with their caption", async () => {
     );
     assert.equal(payload.url, `http://waha.example.test:3000/api/send${type === "image" ? "Image" : "Video"}`);
     assert.deepEqual(payload.body.file, {
-      url: "https://example.com/media",
-      mimetype: `${type}/jpeg`,
+      data,
+      filename: `attachment.${extension}`,
+      mimetype: mimeType,
     });
     assert.equal(payload.body.caption, "Hola");
     assert.equal(sent.messages[0].id, "wamid.test");
@@ -324,7 +338,12 @@ test("sends media without a caption when the message text is empty", async () =>
     sessionRecord,
     {
       ...options,
-      media: { type: "image", url: "https://example.com/media" },
+      media: {
+        type: "image",
+        data: Buffer.from("attachment").toString("base64"),
+        filename: "attachment.jpg",
+        mimeType: "image/jpeg",
+      },
       fetchImpl: async (url, request) => {
         if (url.endsWith("/me")) {
           return { ok: true, status: 200, json: async () => ({ id: "14155552670@c.us" }) };
@@ -334,7 +353,7 @@ test("sends media without a caption when the message text is empty", async () =>
       },
     },
   );
-  assert.equal(payload.file.url, "https://example.com/media");
+  assert.equal(payload.file.data, Buffer.from("attachment").toString("base64"));
   assert.equal(Object.hasOwn(payload, "caption"), false);
 });
 
@@ -353,5 +372,76 @@ test("requires an HTTP(S) URL without embedded credentials or query values", asy
       fetchImpl: async () => assert.fail("WAHA must not be called"),
     }),
     /must be an HTTP\(S\) URL/,
+  );
+});
+
+test("reads WAHA chats and chat messages without changing their storage", async () => {
+  const requests = [];
+  const fetchImpl = async (url, request) => {
+    requests.push({ url, request });
+    if (url.endsWith("/me")) {
+      return response(200, { id: "14155552670@c.us" });
+    }
+    if (url.includes("/chats/overview?")) {
+      return response(200, [{
+        id: "14155552671@c.us",
+        name: "Contacto",
+        lastMessage: {
+          id: "message-1",
+          body: "Hola",
+          timestamp: 1710000000,
+          fromMe: false,
+        },
+      }]);
+    }
+    return response(200, [{
+      id: "message-2",
+      body: "Respuesta",
+      timestamp: 1710000001,
+      fromMe: true,
+    }]);
+  };
+
+  const chats = await getWhatsAppChats(
+    sessionRecord,
+    options.sourcePhoneNumber,
+    { ...options, fetchImpl },
+  );
+  const messages = await getWhatsAppChatMessages(
+    sessionRecord,
+    options.sourcePhoneNumber,
+    "14155552671@c.us",
+    { ...options, fetchImpl },
+  );
+
+  assert.deepEqual(chats, [{
+    id: "14155552671@c.us",
+    name: "Contacto",
+    lastMessage: {
+      id: "message-1",
+      body: "Hola",
+      timestamp: "2024-03-09T16:00:00.000Z",
+      fromMe: false,
+    },
+  }]);
+  assert.deepEqual(messages, [{
+    id: "message-2",
+    body: "Respuesta",
+    timestamp: "2024-03-09T16:00:01.000Z",
+    fromMe: true,
+  }]);
+  assert.ok(requests.some(({ url }) => url.includes("/api/my-number/chats/overview?limit=50&offset=0")));
+  assert.ok(requests.some(({ url }) => url.includes("/api/my-number/chats/14155552671%40c.us/messages?")));
+});
+
+test("rejects unsafe WAHA chat IDs before requesting chat history", async () => {
+  await assert.rejects(
+    getWhatsAppChatMessages(
+      sessionRecord,
+      options.sourcePhoneNumber,
+      "../sessions",
+      { ...options, fetchImpl: async () => assert.fail("WAHA must not be called") },
+    ),
+    /valid WhatsApp chat ID/,
   );
 });

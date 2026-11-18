@@ -59,10 +59,6 @@ PORT=3000
 SESSION_SECRET=<at-least-32-random-characters>
 WAHA_API_URL=http://waha:3000
 WAHA_API_KEY=<private-waha-api-key>
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-CLOUDINARY_FOLDER=megaphone/messages
 ```
 
 `DB_HOST`, `DB_NAME`, `FRONTEND_URL`, `NODE_ENV`, `SESSION_SECRET`, and `ENCRYPTION_KEY` are
@@ -76,10 +72,13 @@ both Megaphone and WAHA. Set WAHA's webhook URL to `https://<api-host>/webhooks/
 subscribe to the `message` event. Megaphone stores incoming messages, associates them with
 owned contacts, and applies the user's enabled keyword rules and templates; it does not
 reply when there is no matching rule, contact, or required template data.
-Cloudinary variables are optional for text-only messages, but all three credentials are
-required together when uploading images or videos. Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB, and
-are stored as Cloudinary assets before their secure URL is sent through WhatsApp.
-Images are optimized locally with Sharp before upload, preserving their format without resizing.
+Message uploads accept one JPEG, PNG, or WebP image up to 5 MiB, or one MP4 or 3GP video up to 16 MiB.
+Images are optimized locally with Sharp and sent directly to WAHA as base64 data; attachments are
+not stored in an external media service, and neither attachment bytes nor attachment metadata are
+stored in MongoDB. Outbound email and WhatsApp message text and delivery results are retained for
+Megaphone's history and automation context. The history view reads chats directly from WAHA on
+demand; WAHA Store must be enabled for the session. Removing a history item only removes it from
+Megaphone and does not delete it from WhatsApp or the mail server.
 Production frontend builds use `/api` as the API base URL. Configure the reverse proxy to
 forward `/api` to this backend and preserve HTTPS cookies and the `X-Webhook-Hmac` and
 `X-Webhook-Hmac-Algorithm` headers.

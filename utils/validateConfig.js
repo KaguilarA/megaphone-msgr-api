@@ -17,14 +17,6 @@ export default function validateConfig(env = process.env) {
   if (env.ENCRYPTION_KEY && !/^[\da-fA-F]{64}$/.test(env.ENCRYPTION_KEY)) {
     invalid.push("ENCRYPTION_KEY (must be 64 hexadecimal characters)");
   }
-  const cloudinaryVariables = [
-    env.CLOUDINARY_CLOUD_NAME,
-    env.CLOUDINARY_API_KEY,
-    env.CLOUDINARY_API_SECRET,
-  ];
-  if (cloudinaryVariables.some(Boolean) && cloudinaryVariables.some((value) => !value?.trim())) {
-    invalid.push("Cloudinary (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are required together)");
-  }
   if (
     env.ENCRYPTION_ALGORITHM &&
     env.ENCRYPTION_ALGORITHM !== "aes-256-gcm"

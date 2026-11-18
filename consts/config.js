@@ -35,13 +35,8 @@ import WhatsAppAutomationRouter from "../routes/whatsappAutomation/routes.js";
 import { sendEmail } from "../integrations/email.js";
 import { createOperator, createSelfRegisteredUser } from "../setup/accounts.js";
 import SetupRouter from "../routes/setup/routes.js";
-import { uploadMediaBuffer } from "../integrations/cloudinary.js";
-import { optimizeImageBuffer } from "../integrations/imageOptimization.js";
+import { prepareWhatsAppMedia } from "../integrations/media.js";
 import {
-  CloudinaryApiKey,
-  CloudinaryApiSecret,
-  CloudinaryCloudName,
-  CloudinaryFolder,
   WahaApiKey,
   WahaApiUrl,
   WahaWebhookHmacKey,
@@ -56,7 +51,7 @@ export default [
       installationModel: InstallationModel, permissionModel: PermissionModel, userPermissionModel: UserPermissionModel,
       actions: { getStatus: "getInfo", complete: "getInfo" },
       serverFeatures: {
-        mediaUploadsConfigured: Boolean(CloudinaryCloudName && CloudinaryApiKey && CloudinaryApiSecret),
+        mediaUploadsConfigured: Boolean(WahaApiUrl && WahaApiKey),
         webhookConfigured: Boolean(WahaWebhookHmacKey),
         whatsappConfigured: Boolean(WahaApiUrl && WahaApiKey),
       },
@@ -151,26 +146,7 @@ export default [
       contactModel: ContactModel,
       stateModel: StateModel,
       whatsappConfig: { apiBaseUrl: WahaApiUrl, apiKey: WahaApiKey },
-      mediaUploader: async (file) => {
-        const isImage = file.mimetype.startsWith("image/");
-        const buffer = isImage
-          ? await optimizeImageBuffer(file.buffer, file.mimetype)
-          : file.buffer;
-        const result = await uploadMediaBuffer(buffer, {
-          cloudName: CloudinaryCloudName,
-          apiKey: CloudinaryApiKey,
-          apiSecret: CloudinaryApiSecret,
-          folder: CloudinaryFolder,
-        });
-
-        return {
-          type: isImage ? "image" : "video",
-          url: result.secure_url,
-          publicId: result.public_id,
-          mimeType: file.mimetype,
-          bytes: result.bytes,
-        };
-      },
+      mediaProcessor: prepareWhatsAppMedia,
       populatedFields: ["sender", "senderPhone", "deliveries.senderPhone", "state"],
       permissionModel: PermissionModel,
       userPermissionModel: UserPermissionModel,
@@ -179,6 +155,7 @@ export default [
         getAll: "getAll",
         getById: "getById",
         post: "register",
+        delete: "getAll",
       },
     },
     router: MessageRouter,
@@ -200,6 +177,7 @@ export default [
     config: {
       id: "Email",
       model: EmailModel,
+      messageModel: MessageModel,
       contactModel: ContactModel,
       stateModel: StateModel,
       sendEmail,

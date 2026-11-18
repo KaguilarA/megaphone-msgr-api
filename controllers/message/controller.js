@@ -1,4 +1,6 @@
 import {
+  getWhatsAppChatMessages as defaultGetWhatsAppChatMessages,
+  getWhatsAppChats as defaultGetWhatsAppChats,
   sendWhatsAppMessage as defaultSendWhatsAppMessage,
   verifyWhatsAppSession as defaultVerifyWhatsAppSession,
 } from "../../integrations/whatsapp.js";
@@ -15,8 +17,10 @@ export default function ({
   tokenModel,
   contactModel,
   stateModel,
-  mediaUploader,
+  mediaProcessor,
   whatsappConfig,
+  getWhatsAppChats = defaultGetWhatsAppChats,
+  getWhatsAppChatMessages = defaultGetWhatsAppChatMessages,
   verifyWhatsAppSession = defaultVerifyWhatsAppSession,
   sendWhatsAppMessage = defaultSendWhatsAppMessage,
 }) {
@@ -43,7 +47,7 @@ export default function ({
 
   async function getSourcePhone(userId, sourcePhoneId) {
     if (!phoneModel) return undefined;
-    if (!sourcePhoneId) {
+    if (typeof sourcePhoneId !== "string" || !sourcePhoneId.trim()) {
       throw requestError("sourcePhoneId is required.");
     }
 
@@ -139,12 +143,89 @@ export default function ({
     try {
       const id = req.session.userId;
       const data = await model.getByCoincidence(
-        { sender: id },
+        { sender: id, hiddenAt: { $exists: false } },
         { populate: populatedFields },
       );
       res.status(200).json(data);
     } catch (error) {
       res.status(500).json({ error: error.message });
+    }
+  }
+
+  function getHistoryPagination(query) {
+    const limit = query.limit === undefined ? 50 : Number(query.limit);
+    const offset = query.offset === undefined ? 0 : Number(query.offset);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100 ||
+        !Number.isInteger(offset) || offset < 0 || offset > 10_000) {
+      throw requestError("Invalid chat history pagination.");
+    }
+    return { limit, offset };
+  }
+
+  async function getWhatsAppHistoryContext(req) {
+    const sourcePhone = await getSourcePhone(
+      req.session.userId,
+      req.query.sourcePhoneId,
+    );
+    const token = await getWhatsAppToken(req.session.userId, sourcePhone);
+    return {
+      token,
+      sourcePhoneNumber: normalizePhoneNumber(sourcePhone).e164,
+    };
+  }
+
+  async function getWhatsAppChatsForUser(req, res) {
+    try {
+      const { token, sourcePhoneNumber } = await getWhatsAppHistoryContext(req);
+      const chats = await getWhatsAppChats(token, sourcePhoneNumber, {
+        ...whatsappConfig,
+        ...getHistoryPagination(req.query),
+      });
+      const hiddenIds = new Set(
+        await model.getHiddenProviderMessageIds?.(req.session.userId) || [],
+      );
+      return res.status(200).json(chats.map((chat) => ({
+        ...chat,
+        ...(hiddenIds.has(chat.lastMessage?.id) ? { lastMessage: null } : {}),
+      })));
+    } catch (error) {
+      if (error.providerStatus === 404 && error.providerOperation === "chat history") {
+        return res.status(503).json({
+          message: "El historial no está habilitado en WAHA. Verifica que Store esté activado para esta sesión.",
+        });
+      }
+      return res.status(error.status || 500).json({ message: error.message });
+    }
+  }
+
+  async function getWhatsAppChatMessagesForUser(req, res) {
+    try {
+      const { token, sourcePhoneNumber } = await getWhatsAppHistoryContext(req);
+      const pagination = getHistoryPagination(req.query);
+      const messages = await getWhatsAppChatMessages(
+        token,
+        sourcePhoneNumber,
+        req.params.chatId,
+        {
+          ...whatsappConfig,
+          ...pagination,
+        },
+      );
+      const hiddenIds = new Set(
+        await model.getHiddenProviderMessageIds?.(req.session.userId) || [],
+      );
+      return res.status(200).json({
+        messages: messages.filter((message) => !hiddenIds.has(message.id)),
+        nextOffset: pagination.offset + messages.length,
+        hasMore: messages.length === pagination.limit,
+      });
+    } catch (error) {
+      if (error.providerStatus === 404 && error.providerOperation === "chat messages") {
+        return res.status(503).json({
+          message: "El historial no está habilitado en WAHA. Verifica que Store esté activado para esta sesión.",
+        });
+      }
+      return res.status(error.status || 500).json({ message: error.message });
     }
   }
 
@@ -161,6 +242,9 @@ export default function ({
         populate: populatedFields,
       });
       if (!message) {
+        return res.status(404).json({ message: "Message not found." });
+      }
+      if (message.hiddenAt) {
         return res.status(404).json({ message: "Message not found." });
       }
       if (String(message.sender?._id || message.sender) !== String(req.session?.userId)) {
@@ -234,7 +318,7 @@ export default function ({
       if (req.file && content.length > 1024) {
         throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
       }
-      if (req.file && !mediaUploader) throw requestError("La carga de archivos no está configurada.", 503);
+      if (req.file && !mediaProcessor) throw requestError("La carga de archivos no está disponible.", 503);
       const sourcePhoneIds = phoneModel
         ? parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId)
         : [];
@@ -279,8 +363,8 @@ export default function ({
         }
       }
       const messageState = await getMessageState();
-      const media = req.file && mediaUploader
-        ? await mediaUploader(req.file)
+      const media = req.file && mediaProcessor
+        ? await mediaProcessor(req.file)
         : undefined;
 
       const deliveries = recipients.map((recipient, index) => {
@@ -303,7 +387,7 @@ export default function ({
         deliveryStatus: "pending",
         ...(sourcePhones[0] ? { senderPhone: sourcePhones[0]._id || sourcePhoneIds[0] } : {}),
         ...(messageState ? { state: messageState } : {}),
-        ...(media ? { media } : {}),
+        channel: "whatsapp",
       });
       recordedMessage = newMessage;
 
@@ -359,12 +443,7 @@ export default function ({
       if (!message || String(message.sender?._id || message.sender) !== String(req.session?.userId)) {
         throw requestError("Message not found.", 404);
       }
-      const receptors = await receptorModel.getByCoincidence({ message: messageId });
-
-      await Promise.all(
-        receptors.map((receptor) => receptorModel.delete(receptor._id)),
-      );
-      await model.delete(messageId);
+      await model.update(messageId, { hiddenAt: new Date() });
       return res.status(204).end();
     } catch (error) {
       return res.status(error.status || 500).json({ error: error.message });
@@ -374,6 +453,8 @@ export default function ({
   return {
     getAll,
     getById,
+    getWhatsAppChats: getWhatsAppChatsForUser,
+    getWhatsAppChatMessages: getWhatsAppChatMessagesForUser,
     register,
     delete: remove,
   };

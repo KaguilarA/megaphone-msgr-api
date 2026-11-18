@@ -5,6 +5,7 @@ import UserData from "../user/model.js";
 const model = {
   requestId: { type: String },
   senderMode: { type: String, enum: ["single", "round-robin"], default: "single" },
+  channel: { type: String, enum: ["whatsapp", "email"], default: "whatsapp", index: true },
   deliveryStatus: { type: String, enum: ["pending", "sending", "accepted", "partial", "failed"], default: "pending" },
   deliveries: [{
     recipient: String,
@@ -30,29 +31,14 @@ const model = {
   senderPhone: {
     type: Schema.Types.ObjectId,
     ref: PhoneData.name,
-    required: true,
     index: true,
   },
-  media: {
-    type: {
-      type: String,
-      enum: ["image", "video"],
-    },
-    url: {
-      type: String,
-      trim: true,
-    },
-    publicId: {
-      type: String,
-      trim: true,
-    },
-    mimeType: {
-      type: String,
-      trim: true,
-    },
-    bytes: {
-      type: Number,
-    },
+  senderEmail: {
+    type: String,
+    trim: true,
+  },
+  hiddenAt: {
+    type: Date,
   },
   state: [
     {
@@ -69,6 +55,9 @@ schema.index({ sender: 1, requestId: 1 }, {
   unique: true,
   partialFilterExpression: { requestId: { $type: "string" } },
   name: "unique_sender_request",
+});
+schema.index({ sender: 1, hiddenAt: 1, createdAt: -1 }, {
+  name: "message_history_owner_visible",
 });
 
 /**

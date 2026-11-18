@@ -140,6 +140,7 @@ test("stores an incoming message, uses campaign history and replies through its 
       from: "14155551234@c.us",
       fromMe: false,
       body: "¿Cuál es el precio?",
+      hasMedia: true,
     },
   };
   const { rawBody, signature } = signedRequest(body);
@@ -149,6 +150,7 @@ test("stores an incoming message, uses campaign history and replies through its 
   assert.equal(saved[0].direction, "inbound");
   assert.equal(saved[0].contact, "contact-1");
   assert.deepEqual(saved[0].providerMessageId, "provider-in-1");
+  assert.equal(Object.hasOwn(saved[0], "hasMedia"), false);
   assert.equal(sent.length, 1);
   assert.equal(sent[0].recipient, "+14155551234");
   assert.equal(

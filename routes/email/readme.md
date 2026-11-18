@@ -16,3 +16,6 @@ All routes require authentication and their corresponding permissions. Sending e
 | DELETE | `/:id` | Authenticated | Delete an email by ID. |
 
 The router delegates to `EmailController`.
+
+Successful outbound sends are recorded in the shared message history with the email channel,
+subject, message text, sender, and recipient delivery results.

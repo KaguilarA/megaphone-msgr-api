@@ -12,7 +12,14 @@ import mediaUpload, { IMAGE_TYPES, MAX_IMAGE_BYTES } from "../../middlewares/med
  */
 export default (data) => {
   const router = Router();
-  const { getAll, getById, register } = MessageController(data);
+  const {
+    getAll,
+    getById,
+    getWhatsAppChats,
+    getWhatsAppChatMessages,
+    register,
+    delete: remove,
+  } = MessageController(data);
   const auditDependencies = {
     actionLogModel: data.actionLogModel,
     permissionModel: data.permissionModel,
@@ -39,6 +46,22 @@ export default (data) => {
     register,
   );
   router.get("/", routePermission(data, data.actions.getAll), getAll);
+  router.get(
+    "/whatsapp/chats",
+    routePermission(data, data.actions.getAll),
+    getWhatsAppChats,
+  );
+  router.get(
+    "/whatsapp/chats/:chatId/messages",
+    routePermission(data, data.actions.getAll),
+    getWhatsAppChatMessages,
+  );
+  router.delete(
+    "/:id",
+    routePermission(data, data.actions.delete || data.actions.getAll),
+    actionLogMiddleware(auditDependencies, data.actions.delete || data.actions.getAll),
+    remove,
+  );
   router.get("/:id", routePermission(data, data.actions.getById), getById);
 
   return router;

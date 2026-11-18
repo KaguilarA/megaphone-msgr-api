@@ -5,7 +5,7 @@
  * @param {string} id - Controller identifier.
  * @property {import('owl-expressjs-utils').OwlModel} model - Email data-access model.
  */
-export default function ({ id, model, stateModel, contactModel, sendEmail }) {
+export default function ({ id, model, messageModel, stateModel, contactModel, sendEmail }) {
   function publicEmail(record) {
     if (!record) return record;
     const data = record.toJSON ? record.toJSON() : { ...record };
@@ -221,7 +221,6 @@ export default function ({ id, model, stateModel, contactModel, sendEmail }) {
       if (!contactModel || !sendEmail) {
         throw requestError("Email delivery is not configured.", 503);
       }
-
       const recipients = new Set();
       for (const contactId of new Set(contactIds.map(String))) {
         const contact = await contactModel.getById(contactId);
@@ -232,6 +231,9 @@ export default function ({ id, model, stateModel, contactModel, sendEmail }) {
         for (const contactEmail of contactEmails) recipients.add(contactEmail.email);
       }
       if (!recipients.size) throw requestError("Selected contacts have no email addresses.");
+      if (!messageModel?.save) {
+        throw requestError("Email message history is not available.", 503);
+      }
 
       const result = await sendEmail(sender, {
         to: sender.email,
@@ -240,7 +242,42 @@ export default function ({ id, model, stateModel, contactModel, sendEmail }) {
         ...(text?.trim() ? { text: text.trim() } : {}),
         ...(html?.trim() ? { html: html.trim() } : {}),
       });
-      return res.status(202).json({ accepted: recipients.size, messageId: result?.messageId });
+      const addresses = [...recipients];
+      const acceptedAddresses = Array.isArray(result?.accepted)
+        ? result.accepted.map((address) =>
+            (typeof address === "string" ? address : address?.address)?.toLowerCase(),
+          )
+        : addresses.map((address) => address.toLowerCase());
+      const acceptedSet = new Set(acceptedAddresses.filter(Boolean));
+      const deliveries = addresses.map((recipient) => ({
+        recipient,
+        status: acceptedSet.has(recipient.toLowerCase()) ? "accepted" : "rejected",
+        ...(result?.messageId ? { providerMessageId: result.messageId } : {}),
+      }));
+      const accepted = deliveries.filter((delivery) => delivery.status === "accepted").length;
+      const deliveryStatus = accepted === deliveries.length
+        ? "accepted"
+        : accepted ? "partial" : "failed";
+      let historyRecorded = true;
+      try {
+        await messageModel.save({
+          channel: "email",
+          header: subject.trim(),
+          content: text?.trim() || html?.trim() || "",
+          sender: userId,
+          senderEmail: sender.email,
+          deliveries,
+          deliveryStatus,
+        });
+      } catch (error) {
+        historyRecorded = false;
+        console.error("Email was sent but its history could not be saved:", error.message);
+      }
+      return res.status(202).json({
+        accepted,
+        messageId: result?.messageId,
+        historyRecorded,
+      });
     } catch (error) {
       if (error.status) return res.status(error.status).json({ message: error.message });
       console.error("Email delivery failed:", error.message);
