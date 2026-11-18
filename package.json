@@ -36,6 +36,7 @@
     "multer": "^2.5.0",
     "nodemailer": "^10.3.0",
     "owl-expressjs-utils": "^1.0.3",
+    "read-excel-file": "^9.3.17",
     "tinify": "^1.8.3"
   },
   "overrides": {
@@ -43,6 +44,7 @@
   },
   "devDependencies": {
     "es-module-lexer": "2.0.0",
+    "fflate": "^0.8.3",
     "javascript-obfuscator": "5.10.1",
     "mongodb-memory-server": "^11.3.0",
     "terser": "5.51.2"
