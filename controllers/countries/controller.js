@@ -1,1 +1,1 @@
-export default function o({id:o,model:d}){return{getAll:async function(o,e){const t=d.map(o=>({code:o.code,idd:o.dialCode})).filter(o=>o.idd&&o.code).sort((o,d)=>o.code.localeCompare(d.code));e.status(200).json(t)}}}
+export default function o({id:o,model:t}){return{getAll:async function(o,e){const c=n,d=t.map(o=>({code:o.code,idd:o.dialCode})).filter(o=>o.idd&&o.code).sort((o,n)=>o[c(0)].localeCompare(n.code));e.status(200)[c(1)](d)}}}function n(o,n){return o-=0,t()[o]}function t(){const o=["code","json"];return(t=function(){return o})()}

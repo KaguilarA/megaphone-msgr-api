@@ -1,1 +1,1 @@
-import{Router as o}from"express";import t from"../../controllers/auth/controller.js";export default r=>{const s=o(),{logIn:l,logout:e,status:u}=t(r);return s.post("/login",l),s.post("/logout",e),s.get("/status",u),s};
+function t(t,r){return t-=0,o()[t]}function o(){const t=["/logout"];return(o=function(){return t})()}import{Router as r}from"express";import n from"../../controllers/auth/controller.js";export default o=>{const u=t,s=r(),{logIn:e,logout:l,status:c}=n(o);return s.post("/login",e),s.post(u(0),l),s.get("/status",c),s};

@@ -1,0 +1,1 @@
+import{randomBytes as e}from"node:crypto";process.env.NODE_ENV??="test",process.env.ENCRYPTION_KEY??=e(32).toString("hex"),process.env.ENCRYPTION_ALGORITHM??="aes-256-gcm";

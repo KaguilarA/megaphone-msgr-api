@@ -1,0 +1,1 @@
+export function createHttpError(r,t=400){return Object.assign(new Error(r),{status:t})}

@@ -1,1 +1,1 @@
-function t(t,n){return t-=0,r()[t]}export default function n({model:n}){return{getAll:async function(r,e){const o=t;try{const t=await n.getAll();return e.json(t)}catch(t){return e.status(500)[o(0)]({message:"Permission list error.",error:t.message||t})}}}}function r(){const t=["json"];return(r=function(){return t})()}
+export default function t({model:t}){return{getAll:async function(e,r){try{const e=await t.getAll();return r.json(e)}catch(t){return r.status(500).json({message:"Permission list error.",error:t.message||t})}}}}
