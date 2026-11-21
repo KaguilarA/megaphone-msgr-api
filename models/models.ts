@@ -71,12 +71,13 @@ export const MessageModel = Object.assign(
           hiddenAt: { $exists: true },
           $or: [{ channel: "whatsapp" }, { channel: { $exists: false } }],
         })
-        .select("deliveries.providerMessageId")
+        .select("deliveries.providerMessageId deliveries.mediaResults.providerMessageId")
         .lean();
       return hiddenMessages.flatMap((message) =>
-        (message.deliveries || [])
-          .map((delivery) => delivery.providerMessageId)
-          .filter((providerMessageId) => typeof providerMessageId === "string"),
+        (message.deliveries || []).flatMap((delivery) => [
+          delivery.providerMessageId,
+          ...(delivery.mediaResults || []).map((result) => result.providerMessageId),
+        ].filter((providerMessageId) => typeof providerMessageId === "string")),
       );
     },
     getLatestForRecipient: async (owner, recipient, limit = 50) =>
@@ -85,7 +86,7 @@ export const MessageModel = Object.assign(
           sender: owner,
           $or: [{ channel: "whatsapp" }, { channel: { $exists: false } }],
           deliveries: {
-            $elemMatch: { recipient, status: "accepted" },
+            $elemMatch: { recipient, status: { $in: ["accepted", "partial"] } },
           },
         })
         .sort({ createdAt: -1 })

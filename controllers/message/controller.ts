@@ -6,7 +6,15 @@ import {
 } from "../../integrations/whatsapp.js";
 import { normalizePhoneNumber } from "../../utils/phoneNumber.js";
 import { createHttpError } from "../../utils/httpError.js";
-import type { MessageDelivery } from "../../types/domain.js";
+import {
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_COUNT,
+  MAX_MEDIA_FILES,
+  MAX_MEDIA_BYTES,
+  MAX_TOTAL_MEDIA_BYTES,
+  MAX_VIDEO_COUNT,
+} from "../../middlewares/media/upload.js";
+import type { MessageDelivery, MessageMediaResult } from "../../types/domain.js";
 
 const MAX_MESSAGE_RECIPIENTS = 300;
 
@@ -29,6 +37,15 @@ export default function ({
 
   function requestError(message, status = 400) {
     return createHttpError(message, status);
+  }
+
+  function getMediaDeliveryStatus(results: MessageMediaResult[]) {
+    const accepted = results.filter((result) => result.status === "accepted").length;
+    if (accepted === results.length) return "accepted";
+    if (accepted) return "partial";
+    if (results.every((result) => result.status === "rejected")) return "rejected";
+    if (results.some((result) => result.status === "unknown")) return "unknown";
+    return "rejected";
   }
 
   async function getMessageState(state?: unknown) {
@@ -272,9 +289,24 @@ export default function ({
         state,
         ...messageData
       } = req.body;
+      const files = Array.isArray(req.files) ? req.files : req.file ? [req.file] : [];
+      const imageFiles = files.filter((file) => file.mimetype.startsWith("image/"));
+      const videoFiles = files.filter((file) => file.mimetype.startsWith("video/"));
       const senderMode = rawSenderMode || "single";
-      if (!["single", "round-robin"].includes(senderMode)) {
-        throw requestError("senderMode must be single or round-robin.");
+      if (!["single", "round-robin", "per-media"].includes(senderMode)) {
+        throw requestError("senderMode must be single, round-robin, or per-media.");
+      }
+      if (
+        files.length > MAX_MEDIA_FILES ||
+        imageFiles.length > MAX_IMAGE_COUNT ||
+        videoFiles.length > MAX_VIDEO_COUNT
+      ) {
+        throw requestError("Se permiten hasta 10 imágenes y un video por envío.");
+      }
+      if (files.some((file) =>
+        file.size > (file.mimetype.startsWith("image/") ? MAX_IMAGE_BYTES : MAX_MEDIA_BYTES)
+      ) || files.reduce((total, file) => total + file.size, 0) > MAX_TOTAL_MEDIA_BYTES) {
+        throw requestError("Los archivos adjuntos superan el límite permitido.", 413);
       }
       if (sourcePhoneId !== undefined && rawSourcePhoneIds !== undefined) {
         throw requestError("Provide sourcePhoneId or sourcePhoneIds, not both.");
@@ -302,26 +334,30 @@ export default function ({
       const header = typeof messageData.header === "string" ? messageData.header.trim() : "";
       const rawContent = typeof messageData.content === "string" ? messageData.content : "";
       const content = rawContent.trim();
-      if (!content && !req.file) {
+      if (!content && !files.length) {
         throw requestError("Message content is required unless an attachment is included.");
       }
       if (rawContent.length > 4096) throw requestError("Message content cannot exceed 4096 characters.");
-      if (req.file && content.length > 1024) {
-        throw requestError("El texto de un mensaje con archivo no puede superar 1024 caracteres.");
+      if (files.length && content.length > 1024) {
+        throw requestError("El texto de un mensaje con archivos no puede superar 1024 caracteres.");
       }
-      if (req.file && !mediaProcessor) throw requestError("La carga de archivos no está disponible.", 503);
+      if (files.length && !mediaProcessor) throw requestError("La carga de archivos no está disponible.", 503);
       const sourcePhoneIds = phoneModel
         ? parseSourcePhoneIds(rawSourcePhoneIds, sourcePhoneId)
         : [];
       if (
         phoneModel &&
         ((senderMode === "single" && sourcePhoneIds.length !== 1) ||
-          (senderMode === "round-robin" && sourcePhoneIds.length < 2))
+          (senderMode === "round-robin" && sourcePhoneIds.length < 2) ||
+          (senderMode === "per-media" &&
+            (imageFiles.length < 2 || sourcePhoneIds.length !== imageFiles.length)))
       ) {
         throw requestError(
           senderMode === "single"
             ? "Select one source phone number."
-            : "Select at least two source phone numbers for distribution.",
+            : senderMode === "round-robin"
+              ? "Select at least two source phone numbers for distribution."
+              : "Select one distinct source phone number for each of at least two images.",
         );
       }
       const sourcePhones = phoneModel
@@ -354,24 +390,59 @@ export default function ({
         }
       }
       const messageState = await getMessageState();
-      const media = req.file && mediaProcessor
-        ? await mediaProcessor(req.file)
-        : undefined;
+      const media = [];
+      for (const file of files) {
+        const prepared = await mediaProcessor(file);
+        if (
+          !prepared ||
+          !["image", "video"].includes(prepared.type) ||
+          typeof prepared.data !== "string" ||
+          !prepared.data
+        ) {
+          throw requestError("No se pudo preparar uno de los archivos adjuntos.", 503);
+        }
+        media.push(prepared);
+      }
+      const firstImageIndex = media.findIndex((item) => item.type === "image");
 
       const deliveries: MessageDelivery[] = recipients.map((recipient, index) => {
-        const sourceSender = sourceSenders.length
-          ? sourceSenders[senderMode === "round-robin" ? index % sourceSenders.length : 0]
-          : undefined;
+        const sourceSender = senderMode === "round-robin"
+          ? sourceSenders[index % sourceSenders.length]
+          : senderMode === "single"
+            ? sourceSenders[0]
+            : undefined;
+        let imageIndex = 0;
+        const mediaResults = media.map((item, mediaIndex) => {
+          const mediaSender = senderMode === "per-media"
+            ? item.type === "image"
+              ? sourceSenders[imageIndex++]
+              : sourceSenders[0]
+            : sourceSender;
+          return {
+            mediaIndex,
+            mediaType: item.type,
+            ...(mediaSender ? { senderPhone: mediaSender.phone._id } : {}),
+            status: "pending" as const,
+          };
+        });
         return {
           recipient,
           status: "pending",
           ...(sourceSender ? { senderPhone: sourceSender.phone._id } : {}),
+          ...(mediaResults.length ? { mediaResults } : {}),
         };
       });
+      const mediaAttachments = media.map((item) => ({
+        mediaType: item.type,
+        ...(item.mediaUrl ? { mediaUrl: item.mediaUrl } : {}),
+      }));
       const newMessage = await model.save({
         header,
         content,
-        ...(media?.mediaUrl ? { mediaUrl: media.mediaUrl } : {}),
+        ...(mediaAttachments.length ? { mediaAttachments } : {}),
+        ...(media.find((item) => item.type === "image")?.mediaUrl
+          ? { mediaUrl: media.find((item) => item.type === "image").mediaUrl }
+          : {}),
         sender: id,
         contacts,
         senderMode,
@@ -390,30 +461,83 @@ export default function ({
       );
       for (const delivery of deliveries) {
         delivery.status = "sending";
+        const sourceSender = delivery.senderPhone
+          ? sourceSendersById.get(String(delivery.senderPhone))
+          : undefined;
+        if (delivery.mediaResults?.length) {
+          delivery.mediaResults.forEach((result) => {
+            result.status = "sending";
+          });
+        }
         await model.update(newMessage._id, { deliveries, deliveryStatus: "sending" });
-        try {
-          const sourceSender = sourceSendersById.get(String(delivery.senderPhone));
-          const result = await sendWhatsAppMessage(
-            delivery.recipient,
-            content,
-            sourceSender?.token,
-            {
-              ...(whatsappConfig || {}),
-              sourcePhoneNumber: sourceSender?.phoneNumber,
-              sessionVerified: Boolean(whatsappConfig),
-              media,
-            },
-          );
-          delivery.status = "accepted";
-          delivery.providerMessageId = result?.messages?.[0]?.id;
-        } catch (error) {
-          // A timeout cannot establish whether WAHA accepted the message. Never retry automatically.
-          delivery.status = error.providerRejected ? "rejected" : "unknown";
+        if (media.length) {
+          let imageIndex = 0;
+          const mediaResults = await Promise.all(media.map(async (item, mediaIndex) => {
+            const mediaSender = senderMode === "per-media"
+              ? item.type === "image"
+                ? sourceSenders[imageIndex++]
+                : sourceSenders[0]
+              : sourceSender;
+            const caption = mediaIndex === firstImageIndex ||
+              (firstImageIndex === -1 && item.type === "video")
+              ? content
+              : "";
+            try {
+              const result = await sendWhatsAppMessage(
+                delivery.recipient,
+                caption,
+                mediaSender?.token,
+                {
+                  ...(whatsappConfig || {}),
+                  sourcePhoneNumber: mediaSender?.phoneNumber,
+                  sessionVerified: Boolean(whatsappConfig),
+                  media: item,
+                },
+              );
+              return {
+                ...delivery.mediaResults[mediaIndex],
+                status: "accepted" as const,
+                providerMessageId: result?.messages?.[0]?.id,
+              };
+            } catch (error) {
+              // A timeout cannot establish whether WAHA accepted the message. Never retry automatically.
+              return {
+                ...delivery.mediaResults[mediaIndex],
+                status: error.providerRejected ? "rejected" as const : "unknown" as const,
+              };
+            }
+          }));
+          delivery.mediaResults = mediaResults;
+          delivery.providerMessageId = mediaResults.find((result) => result.providerMessageId)?.providerMessageId;
+          delivery.status = getMediaDeliveryStatus(mediaResults);
+        } else {
+          try {
+            const result = await sendWhatsAppMessage(
+              delivery.recipient,
+              content,
+              sourceSender?.token,
+              {
+                ...(whatsappConfig || {}),
+                sourcePhoneNumber: sourceSender?.phoneNumber,
+                sessionVerified: Boolean(whatsappConfig),
+              },
+            );
+            delivery.status = "accepted";
+            delivery.providerMessageId = result?.messages?.[0]?.id;
+          } catch (error) {
+            // A timeout cannot establish whether WAHA accepted the message. Never retry automatically.
+            delivery.status = error.providerRejected ? "rejected" : "unknown";
+          }
         }
         await model.update(newMessage._id, { deliveries });
       }
       const accepted = deliveries.filter((delivery) => delivery.status === "accepted").length;
-      const deliveryStatus = accepted === deliveries.length ? "accepted" : accepted ? "partial" : "failed";
+      const partial = deliveries.some((delivery) => delivery.status === "partial");
+      const deliveryStatus = accepted === deliveries.length
+        ? "accepted"
+        : accepted || partial
+          ? "partial"
+          : "failed";
       if (deliveries.length) await model.update(newMessage._id, { deliveries, deliveryStatus });
 
       res.status(201).json({ ...newMessage.toJSON(), receptors, deliveries, deliveryStatus });

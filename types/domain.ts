@@ -8,14 +8,29 @@ export type MessageDeliveryStatus =
   | "pending"
   | "sending"
   | "accepted"
+  | "partial"
   | "rejected"
   | "unknown";
+
+export interface MessageMediaResult {
+  mediaIndex: number;
+  mediaType: "image" | "video";
+  senderPhone?: EntityId;
+  status: MessageDeliveryStatus;
+  providerMessageId?: string;
+}
 
 export interface MessageDelivery {
   recipient: string;
   senderPhone?: EntityId;
   status: MessageDeliveryStatus;
   providerMessageId?: string;
+  mediaResults?: MessageMediaResult[];
+}
+
+export interface MessageMediaAttachment {
+  mediaType: "image" | "video";
+  mediaUrl?: string;
 }
 
 export interface MessageRecord {
@@ -26,6 +41,8 @@ export interface MessageRecord {
   content: string;
   header?: string;
   mediaUrl?: string;
+  mediaAttachments?: MessageMediaAttachment[];
+  senderMode?: "single" | "round-robin" | "per-media";
   senderPhone?: EntityId;
   senderEmail?: string;
   requestId?: string;

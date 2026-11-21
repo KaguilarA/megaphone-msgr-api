@@ -4,14 +4,21 @@ import UserData from "../user/model.js";
 
 const model: SchemaDefinition = {
   requestId: { type: String },
-  senderMode: { type: String, enum: ["single", "round-robin"], default: "single" },
+  senderMode: { type: String, enum: ["single", "round-robin", "per-media"], default: "single" },
   channel: { type: String, enum: ["whatsapp", "email"], default: "whatsapp", index: true },
   deliveryStatus: { type: String, enum: ["pending", "sending", "accepted", "partial", "failed"], default: "pending" },
   deliveries: [{
     recipient: String,
     senderPhone: { type: Schema.Types.ObjectId, ref: PhoneData.name },
-    status: { type: String, enum: ["pending", "sending", "accepted", "rejected", "unknown"], default: "pending" },
+    status: { type: String, enum: ["pending", "sending", "accepted", "partial", "rejected", "unknown"], default: "pending" },
     providerMessageId: String,
+    mediaResults: [{
+      mediaIndex: Number,
+      mediaType: { type: String, enum: ["image", "video"] },
+      senderPhone: { type: Schema.Types.ObjectId, ref: PhoneData.name },
+      status: { type: String, enum: ["pending", "sending", "accepted", "partial", "rejected", "unknown"], default: "pending" },
+      providerMessageId: String,
+    }],
   }],
   content: {
     type: String,
@@ -22,6 +29,10 @@ const model: SchemaDefinition = {
     type: String,
     trim: true,
   },
+  mediaAttachments: [{
+    mediaType: { type: String, enum: ["image", "video"], required: true },
+    mediaUrl: { type: String, trim: true },
+  }],
   header: {
     type: String,
     trim: true,
